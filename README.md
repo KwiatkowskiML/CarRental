@@ -1,4 +1,5 @@
 ## Database
+![alt text](docs/img/database_schema.png)
 ### Docker
 in order to start a database on your local instance run
 ```
