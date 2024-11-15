@@ -26,7 +26,30 @@ namespace CarRental.WebAPI.Controllers
             try
             {
                 var cars = await _repository.GetAvailableCarsAsync(filter);
-                return Ok(cars);
+                
+                var carDTOs = cars.Select(c => new CarDTO
+                {
+                    CarId = c.CarId,
+                    LicensePlate = c.LicensePlate,
+                    Brand = c.Brand,
+                    Model = c.Model,
+                    Year = c.Year,
+                    Status = c.Status,
+                    Location = c.Location,
+                    EngineCapacity = c.EngineCapacity,
+                    Power = c.Power,
+                    FuelType = c.FuelType,
+                    Description = c.Description,
+                    CarProvider = c.CarProvider != null ? new CarProviderDTO
+                    {
+                        CarProviderId = c.CarProvider.CarProviderId,
+                        Name = c.CarProvider.Name,
+                        ContactEmail = c.CarProvider.ContactEmail,
+                        ContactPhone = c.CarProvider.ContactPhone
+                    } : null
+                }).ToList();
+
+                return Ok(carDTOs);
             }
             catch (DatabaseOperationException ex)
             {
