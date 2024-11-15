@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using CarRental.WebAPI.Data.Context;
 using CarRental.WebAPI.Data.Repositories;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,15 +17,18 @@ builder.Services.AddDbContext<CarRentalContext>(options =>
 
 // Register Repository
 builder.Services.AddScoped<ICarRentalRepository, CarRentalRepository>();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => 
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
