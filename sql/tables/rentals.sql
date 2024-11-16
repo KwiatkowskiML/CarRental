@@ -5,7 +5,7 @@ CREATE TABLE rentals (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE,
     has_gps BOOLEAN,
     has_child_seat BOOLEAN,
     insurance_type VARCHAR(255)

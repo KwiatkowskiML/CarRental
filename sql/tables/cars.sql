@@ -11,5 +11,5 @@ CREATE TABLE cars (
     power INT NOT NULL,
     fuel_type VARCHAR(50) NOT NULL,
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );

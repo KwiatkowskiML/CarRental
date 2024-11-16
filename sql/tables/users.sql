@@ -5,5 +5,5 @@ CREATE TABLE users (
     last_name VARCHAR(100) NOT NULL,
     age INT NOT NULL,
     location VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );
