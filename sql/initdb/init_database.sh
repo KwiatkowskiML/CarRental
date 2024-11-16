@@ -2,7 +2,7 @@
 
 db_name="car_rental_db"
 sql_files_path="/sql_tables"
-sql_table_names=("users" "customers" "employees" "car_providers" "cars" "rentals" "returns" "offers")
+sql_table_names=("users" "customers" "employees" "car_providers" "cars" "insurances" "rentals" "offers" "returns")
 
 echo "Checking if database $db_name exists"
 if psql -U "$POSTGRES_USER" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$db_name';" | grep -q 1; then

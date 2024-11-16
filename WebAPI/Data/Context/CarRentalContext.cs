@@ -139,6 +139,7 @@ public partial class CarRentalContext : DbContext
 
             entity.Property(e => e.RentalId).HasColumnName("rental_id");
             entity.Property(e => e.CarId).HasColumnName("car_id");
+            entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone")
@@ -147,9 +148,6 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.EndDate).HasColumnName("end_date");
             entity.Property(e => e.HasChildSeat).HasColumnName("has_child_seat");
             entity.Property(e => e.HasGps).HasColumnName("has_gps");
-            entity.Property(e => e.InsuranceType)
-                .HasMaxLength(255)
-                .HasColumnName("insurance_type");
             entity.Property(e => e.StartDate).HasColumnName("start_date");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
@@ -162,6 +160,10 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.Customer).WithMany(p => p.Rentals)
                 .HasForeignKey(d => d.CustomerId)
                 .HasConstraintName("rentals_customer_id_fkey");
+
+            entity.HasOne(d => d.Insurance).WithMany()
+                .HasForeignKey(d => d.InsuranceId)
+                .HasConstraintName("rentals_insurance_id_fkey");
         });
 
         modelBuilder.Entity<Return>(entity =>
@@ -227,6 +229,7 @@ public partial class CarRentalContext : DbContext
                 .HasColumnType("decimal(10, 2)");
             entity.Property(e => e.OfferId).HasColumnName("offer_id");
             entity.Property(e => e.CarId).HasColumnName("car_id");
+            entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone")
@@ -235,10 +238,11 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.EndDate).HasColumnName("end_date");
             entity.Property(e => e.HasChildSeat).HasColumnName("has_child_seat");
             entity.Property(e => e.HasGps).HasColumnName("has_gps");
-            entity.Property(e => e.InsuranceType)
-                .HasMaxLength(255)
-                .HasColumnName("insurance_type");
             entity.Property(e => e.StartDate).HasColumnName("start_date");
+
+            entity.HasOne(d => d.Insurance).WithMany()
+                .HasForeignKey(d => d.InsuranceId)
+                .HasConstraintName("offers_insurance_id_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

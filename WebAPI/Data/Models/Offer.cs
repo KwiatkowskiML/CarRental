@@ -13,6 +13,8 @@ public partial class Offer
 
     public int? CarId { get; set; }
 
+    public int? InsuranceId { get; set; }
+    
     public DateOnly StartDate { get; set; }
 
     public DateOnly EndDate { get; set; }
@@ -23,7 +25,7 @@ public partial class Offer
 
     public bool? HasChildSeat { get; set; }
 
-    public string? InsuranceType { get; set; }
+    public virtual Insurance? Insurance { get; set; }
 
     public virtual Car? Car { get; set; }
 
