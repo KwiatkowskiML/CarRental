@@ -37,3 +37,8 @@ INSERT INTO rentals (customer_id, car_id, start_date, end_date, status, has_gps,
 INSERT INTO returns (rental_id, return_date, condition_description, photo_url, processed_by) VALUES
 (1, '2024-01-07', 'Good condition, minor scratches', 'https://storage.example.com/photos/return1.jpg', 1),
 (2, '2024-02-05', 'Excellent condition', 'https://storage.example.com/photos/return2.jpg', 2);
+
+INSERT INTO offers (total_price, customer_id, car_id, start_date, end_date, created_at, has_gps, has_child_seat, insurance_type)
+VALUES 
+    (1000, 1, 1, '2024-11-20', '2024-11-25', CURRENT_TIMESTAMP, TRUE, FALSE, 'Full Insurance'),
+    (2000, 2, 2, '2024-11-22', '2024-11-27', CURRENT_TIMESTAMP, FALSE, TRUE, 'Standard Insurance');

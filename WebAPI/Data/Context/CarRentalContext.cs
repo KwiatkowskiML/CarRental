@@ -26,6 +26,8 @@ public partial class CarRentalContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<Offer> Offers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Car>(entity =>
@@ -212,6 +214,31 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.Location)
                 .HasMaxLength(255)
                 .HasColumnName("location");
+        });
+
+        modelBuilder.Entity<Offer>(entity =>
+        {
+            entity.HasKey(e => e.OfferId).HasName("offers_pkey");
+
+            entity.ToTable("offers");
+
+            entity.Property(e => e.TotalPrice)
+                .HasColumnName("total_price")
+                .HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.OfferId).HasColumnName("offer_id");
+            entity.Property(e => e.CarId).HasColumnName("car_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.EndDate).HasColumnName("end_date");
+            entity.Property(e => e.HasChildSeat).HasColumnName("has_child_seat");
+            entity.Property(e => e.HasGps).HasColumnName("has_gps");
+            entity.Property(e => e.InsuranceType)
+                .HasMaxLength(255)
+                .HasColumnName("insurance_type");
+            entity.Property(e => e.StartDate).HasColumnName("start_date");
         });
 
         OnModelCreatingPartial(modelBuilder);
