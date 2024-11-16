@@ -94,18 +94,70 @@ Generate a secure JWT secret using one of these methods:
 # Using Node.js
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'));"
 ```
-
 ## Backend (.NET)
 
-[Rest of the existing Backend section...]
+### Prerequisites
+- .NET 8.0 SDK
+
+### Running the Backend
+1. Navigate to the WebAPI directory:
+bash
+cd WebAPI
+
+Restore dependencies:
+bash
+dotnet restore
+
+Run the application:
+bash
+dotnet run
+
+The API will be available at:
+- HTTP: http://localhost:5024
+- HTTPS: https://localhost:7141
+- Swagger UI: http://localhost:5024/swagger/
 
 ## Frontend (React)
 
-[Rest of the existing Frontend section...]
+### Prerequisites
+- Node.js (v18 or later)
+- npm (included with Node.js)
+
+### Running the Frontend
+1. Navigate to the Client directory:
+```bash
+cd Client
+```
+
+Install dependencies:
+```bash
+npm install
+```
+
+Start the development server:
+```bash
+npm run dev
+```
+The frontend will be available at http://localhost:5173
 
 ## Development
 
-[Rest of the existing Development section...]
+For local development, you'll need to run both the backend and frontend:
+
+Start the database:
+bash
+docker-compose up -d
+
+Start the backend (in a new terminal):
+bash
+cd WebAPI
+dotnet run
+
+Start the frontend (in a new terminal):
+bash
+cd Client
+npm run dev
+
 
 ## Project Structure
 ```
@@ -121,6 +173,15 @@ CarRental/
 └── docs/           # Documentation
 ```
 
-## Technologies
 
-[Rest of the existing Technologies section...]
+## Technologies
+- Backend:
+  - .NET 8
+  - Entity Framework Core
+  - PostgreSQL
+- Frontend:
+  - React
+  - Vite
+- Infrastructure:
+  - Docker
+  - Docker Compose
