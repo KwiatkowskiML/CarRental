@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using CarRental.WebAPI.Data.Models;
-using WebAPI.Data.Models;
 
 namespace CarRental.WebAPI.Data.Context;
 
@@ -148,11 +147,7 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.HasGps).HasColumnName("has_gps");
             entity.Property(e => e.InsuranceType)
                 .HasMaxLength(255)
-                .HasColumnName("insurance_type")
-                .HasConversion(
-                    v => v.ToString(),
-                    v => TryParseInsuranceType(v)
-                );
+                .HasColumnName("insurance_type");
             entity.Property(e => e.StartDate).HasColumnName("start_date");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
@@ -223,9 +218,4 @@ public partial class CarRentalContext : DbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
-
-    private static InsuranceTypeEnum TryParseInsuranceType(string value)
-    {
-        return Enum.TryParse(value, out InsuranceTypeEnum result) ? result : default;
-    }
 }
