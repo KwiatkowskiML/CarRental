@@ -6,7 +6,7 @@ namespace CarRental.WebAPI.Data.Models;
 public partial class Car
 {
     public int CarId { get; set; }
-    public int? CarProviderId { get; set; }
+    public int CarProviderId { get; set; }
     public string LicensePlate { get; set; } = null!;
     public string Brand { get; set; } = null!;
     public string Model { get; set; } = null!;
@@ -20,7 +20,6 @@ public partial class Car
     public DateTime? CreatedAt { get; set; }
     public decimal BasePrice { get; set; }
 
-    // why nullable
     public virtual CarProvider? CarProvider { get; set; }
 
     public virtual ICollection<Rental> Rentals { get; set; } = new List<Rental>();

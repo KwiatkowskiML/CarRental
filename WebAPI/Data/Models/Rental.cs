@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using WebAPI.Data.Models;
 
 namespace CarRental.WebAPI.Data.Models;
 
@@ -23,7 +24,7 @@ public partial class Rental
 
     public bool? HasChildSeat { get; set; }
 
-    public string? InsuranceType { get; set; }
+    public InsuranceTypeEnum? InsuranceType { get; set; }
 
     public virtual Car? Car { get; set; }
 

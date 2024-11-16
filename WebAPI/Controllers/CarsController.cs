@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.Models;
 
 namespace CarRental.WebAPI.Controllers
 {   
@@ -25,7 +26,6 @@ namespace CarRental.WebAPI.Controllers
             _logger = logger;
         }
 
-        // todo: if user is a client and the dates are specified, do not return cars that are reserved for the period
         [HttpGet]
         public async Task<IActionResult> GetCars([FromQuery] CarFilter filter)
         {
@@ -64,7 +64,6 @@ namespace CarRental.WebAPI.Controllers
             }
         }
         
-        [Authorize]
         [HttpGet("user/{userId}/rentals")]
         public async Task<IActionResult> GetUserRentals(int userId)
         {
@@ -80,8 +79,7 @@ namespace CarRental.WebAPI.Controllers
             }
         }
 
-        //[Authorize]
-        [HttpPost("calculate-rental")]
+        [HttpPost("get-offer")]
         public async Task<ActionResult<RentalOfferResponse>> CalculateRental([FromBody] RentalCalculationRequest request)
         {
             try
@@ -117,10 +115,10 @@ namespace CarRental.WebAPI.Controllers
                 basePrice = (basePrice / customer.DrivingLicenseYears) + basePrice;
 
                 // calculating insurance cost
-                decimal insuranceCost = request.InsuranceType.ToLower() switch
+                decimal insuranceCost = request.InsuranceType switch
                 {
-                    "standard insurance" => basePrice * 0.1m, 
-                    "full insurance" => basePrice * 0.15m,    
+                    InsuranceTypeEnum.StandardInsurance => basePrice * 0.1m, 
+                    InsuranceTypeEnum.NoInsurance => 0,    
                     _ => 0m
                 };
 
@@ -133,13 +131,13 @@ namespace CarRental.WebAPI.Controllers
                 var response = new RentalOfferResponse
                 {
                     TotalPrice = totalPrice,
-                    InsuranceType = request.InsuranceType,
+                    InsuranceType = request.InsuranceType.ToString(),
                     HasGps = request.HasGps,
                     HasChildSeat = request.HasChildSeat,
                     CarProvider = new CarProviderDTO
                     {
-                        CarProviderId = car.CarProvider.CarProviderId,
-                        Name = car.CarProvider.Name,
+                        CarProviderId = car.CarProviderId,
+                        Name = car.CarProvider!.Name,
                         ContactEmail = car.CarProvider.ContactEmail,
                         ContactPhone = car.CarProvider.ContactPhone
                     }
