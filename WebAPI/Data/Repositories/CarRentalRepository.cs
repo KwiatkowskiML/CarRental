@@ -223,5 +223,78 @@ namespace CarRental.WebAPI.Data.Repositories
             await _context.SaveChangesAsync();
             return user;
         }
+
+        public async Task<Insurance?> GetInsuranceByIdAsync(int insuranceId)
+        {
+            try
+            {
+                return await _context.Insurances
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(i => i.InsuranceId == insuranceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching insurance by id {InsuranceId}", insuranceId);
+                throw new DatabaseOperationException($"Failed to fetch insurance with ID {insuranceId}", ex);
+            }
+        }
+
+        public async Task CreateOfferAsync(Offer offer)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var car = await _context.Cars
+                    .FirstOrDefaultAsync(c => c.CarId == offer.CarId);
+
+                if (car == null)
+                    throw new InvalidOperationException($"Car with ID {offer.CarId} not found");
+
+                var hasConflict = await _context.Rentals
+                    .AnyAsync(r => r.CarId == offer.CarId &&
+                                r.Status != "cancelled" &&
+                                ((r.StartDate <= offer.EndDate && r.EndDate >= offer.StartDate) ||
+                                (r.StartDate >= offer.StartDate && r.StartDate <= offer.EndDate)));
+
+                if (hasConflict)
+                    throw new InvalidOperationException("Car is not available for the selected dates");
+
+                if (offer.CustomerId.HasValue)
+                {
+                    var customerExists = await _context.Customers
+                        .AnyAsync(c => c.CustomerId == offer.CustomerId);
+
+                    if (!customerExists)
+                        throw new InvalidOperationException($"Customer with ID {offer.CustomerId} not found");
+                }
+
+                // Validate the insurance exists
+                if (offer.InsuranceId.HasValue)
+                {
+                    var insuranceExists = await _context.Insurances
+                        .AnyAsync(i => i.InsuranceId == offer.InsuranceId);
+
+                    if (!insuranceExists)
+                        throw new InvalidOperationException($"Insurance with ID {offer.InsuranceId} not found");
+                }
+
+                // Set creation timestamp if not already set
+                if (!offer.CreatedAt.HasValue)
+                    offer.CreatedAt = DateTime.UtcNow;
+
+                // Add the offer to the context
+                await _context.Offers.AddAsync(offer);
+                await _context.SaveChangesAsync();
+
+                // Commit the transaction
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error creating offer for car {CarId}", offer.CarId);
+                throw new DatabaseOperationException("Failed to create offer", ex);
+            }
+        }
     }
 }

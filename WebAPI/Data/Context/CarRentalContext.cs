@@ -28,6 +28,8 @@ public partial class CarRentalContext : DbContext
 
     public virtual DbSet<Offer> Offers { get; set; }
 
+    public virtual DbSet<Insurance> Insurances { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Car>(entity =>
@@ -243,6 +245,17 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.Insurance).WithMany()
                 .HasForeignKey(d => d.InsuranceId)
                 .HasConstraintName("offers_insurance_id_fkey");
+        });
+
+        modelBuilder.Entity<Insurance>(entity =>
+        {
+            entity.HasKey(e => e.InsuranceId).HasName("insurances_pkey");
+
+            entity.ToTable("insurances");
+
+            entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
+            entity.Property(e => e.Price).HasColumnName("price");
+            entity.Property(e => e.name).HasColumnName("name");
         });
 
         OnModelCreatingPartial(modelBuilder);

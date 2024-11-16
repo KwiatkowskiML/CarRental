@@ -82,7 +82,7 @@ namespace CarRental.WebAPI.Controllers
 
         //[Authorize]
         [HttpPost("get-offer")]
-        public async Task<ActionResult<RentalOfferResponse>> CalculateRental([FromBody] RentalCalculationRequest request)
+        public async Task<IActionResult> CalculateRental([FromBody] RentalCalculationRequest request)
         {
             try
             {
@@ -111,47 +111,98 @@ namespace CarRental.WebAPI.Controllers
                     return NotFound("Customer not found");
                 }
 
-                // calculating base price
-                var duration = request.EndDate.DayNumber - request.StartDate.DayNumber + 1;
-                var basePrice = car.BasePrice * duration;
-                basePrice = (basePrice / customer.DrivingLicenseYears) + basePrice;
+                var insurance = await _repository.GetInsuranceByIdAsync(request.InsuranceId);
+                if (insurance == null)
+                    return NotFound("Insurance package not found");
 
-                // calculating insurance cost
-                decimal insuranceCost = request.InsuranceType.ToLower() switch
+                // calculate total price
+                decimal totalPrice = CalculateTotalPrice(
+                    car.BasePrice,
+                    request.StartDate,
+                    request.EndDate,
+                    insurance.Price,
+                    request.HasGps,
+                    request.HasChildSeat
+                );
+
+                // create new offer
+                var offer = new Offer
                 {
-                    "standard insurance" => basePrice * 0.1m, 
-                    "full insurance" => basePrice * 0.15m,    
-                    _ => 0m
-                };
-
-                // other additional costs calculation
-                decimal gpsPrice = request.HasGps ? 3.0m * duration : 0m;
-                decimal childSeatPrice = request.HasChildSeat ? 2.0m * duration : 0m;
-
-                decimal totalPrice = basePrice + insuranceCost + gpsPrice + childSeatPrice;
-
-                var response = new RentalOfferResponse
-                {
+                    CustomerId = customer.CustomerId,
+                    CarId = request.CarId,
+                    InsuranceId = request.InsuranceId,
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
                     TotalPrice = totalPrice,
-                    InsuranceType = request.InsuranceType,
                     HasGps = request.HasGps,
                     HasChildSeat = request.HasChildSeat,
-                    CarProvider = new CarProviderDTO
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // 8. Save offer to database
+                await _repository.CreateOfferAsync(offer);
+
+                // 9. Return offer details
+                var response = new
+                {
+                    OfferId = offer.OfferId,
+                    TotalPrice = offer.TotalPrice,
+                    StartDate = offer.StartDate,
+                    EndDate = offer.EndDate,
+                    CarDetails = new
                     {
-                        CarProviderId = car.CarProviderId,
-                        Name = car.CarProvider!.Name,
-                        ContactEmail = car.CarProvider.ContactEmail,
-                        ContactPhone = car.CarProvider.ContactPhone
+                        car.Brand,
+                        car.Model,
+                        car.Year,
+                        car.Location
+                    },
+                    Insurance = new
+                    {
+                        insurance.name,
+                        insurance.Price
+                    },
+                    Extras = new
+                    {
+                        offer.HasGps,
+                        offer.HasChildSeat
                     }
                 };
 
                 return Ok(response);
+
             }
             catch (DatabaseOperationException ex)
             {
                 _logger.LogError(ex, "Error calculating rental price");
                 return StatusCode(500, "An error occurred while calculating the rental price");
             }
+        }
+
+        private decimal CalculateTotalPrice(
+            decimal basePrice,
+            DateOnly startDate,
+            DateOnly endDate,
+            decimal insurancePrice,
+            bool hasGps,
+            bool hasChildSeat)
+        {
+            // Calculate number of days
+            int numberOfDays = endDate.DayNumber - startDate.DayNumber;
+
+            // Base price for the rental period
+            decimal totalPrice = basePrice * numberOfDays;
+
+            // Add insurance cost
+            totalPrice += insurancePrice * numberOfDays;
+
+            // Add extras
+            if (hasGps)
+                totalPrice += 10.00m * numberOfDays; // GPS costs $10 per day
+
+            if (hasChildSeat)
+                totalPrice += 15.00m * numberOfDays; // Child seat costs $15 per day
+
+            return totalPrice;
         }
     }
 }
