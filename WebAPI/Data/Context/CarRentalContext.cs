@@ -66,7 +66,9 @@ public partial class CarRentalContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("status");
             entity.Property(e => e.Year).HasColumnName("year");
-
+            entity.Property(e => e.BasePrice)
+                .HasColumnName("base_price")
+                .HasColumnType("decimal(10, 2)");
             entity.HasOne(d => d.CarProvider).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.CarProviderId)
                 .HasConstraintName("cars_car_provider_id_fkey");
