@@ -33,11 +33,15 @@ export function CarList() {
 
     // Filtrowanie po tekście wyszukiwania
     if (filters.searchText) {
-      const searchLower = filters.searchText.toLowerCase();
-      filtered = filtered.filter(car => 
-        car.brand.toLowerCase().includes(searchLower) ||
-        car.model.toLowerCase().includes(searchLower)
-      );
+      const searchTerms = filters.searchText.toLowerCase().split(' ');
+      filtered = filtered.filter(car => {
+        const carFullName = `${car.brand} ${car.model}`.toLowerCase();
+        return searchTerms.every(term => 
+          carFullName.includes(term) ||
+          car.brand.toLowerCase().includes(term) ||
+          car.model.toLowerCase().includes(term)
+        );
+      });
     }
 
     // Filtrowanie po marce
