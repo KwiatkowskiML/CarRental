@@ -3,7 +3,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './auth/AuthContext';
 import { AuthGuard } from './auth/AuthGuard';
 import { LoginPage } from './auth/LoginPage';
-import { CarList } from './components/CarList';
+import { CarList } from './components/car/CarList';
 
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
