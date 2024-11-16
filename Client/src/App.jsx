@@ -15,8 +15,8 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <AuthProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={
@@ -25,8 +25,8 @@ function App() {
               </AuthGuard>
             } />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </GoogleOAuthProvider>
   );
 }

@@ -96,17 +96,16 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'));"
 ```
 ## Backend (.NET)
 
-### Prerequisites
-- .NET 8.0 SDK
+### Backend Configuration
 
-### Running the Backend
-1. Navigate to the WebAPI directory:
+1. Create the development configuration file:
 ```bash
 cd WebAPI
+cp appsettings.template.json appsettings.Development.json
 ```
 Restore dependencies:
 ```bash
-dotnet restore
+cp appsettings.template.json appsettings.json
 ```
 Run the application:
 ```bash
@@ -127,6 +126,7 @@ The API will be available at:
 1. Navigate to the Client directory:
 ```bash
 cd Client
+cp .env.template .env
 ```
 
 Install dependencies:
