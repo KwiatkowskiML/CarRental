@@ -81,7 +81,7 @@ namespace CarRental.WebAPI.Controllers
         }
 
         //[Authorize]
-        [HttpPost("calculate-rental")]
+        [HttpPost("get-offer")]
         public async Task<ActionResult<RentalOfferResponse>> CalculateRental([FromBody] RentalCalculationRequest request)
         {
             try
@@ -138,8 +138,8 @@ namespace CarRental.WebAPI.Controllers
                     HasChildSeat = request.HasChildSeat,
                     CarProvider = new CarProviderDTO
                     {
-                        CarProviderId = car.CarProvider.CarProviderId,
-                        Name = car.CarProvider.Name,
+                        CarProviderId = car.CarProviderId,
+                        Name = car.CarProvider!.Name,
                         ContactEmail = car.CarProvider.ContactEmail,
                         ContactPhone = car.CarProvider.ContactPhone
                     }

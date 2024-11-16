@@ -6,7 +6,7 @@ namespace CarRental.WebAPI.Data.Models;
 public partial class Car
 {
     public int CarId { get; set; }
-    public int? CarProviderId { get; set; }
+    public int CarProviderId { get; set; }
     public string LicensePlate { get; set; } = null!;
     public string Brand { get; set; } = null!;
     public string Model { get; set; } = null!;
