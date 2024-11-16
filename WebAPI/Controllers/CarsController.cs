@@ -4,10 +4,12 @@ using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.DTOs;
+using CarRental.WebAPI.Data.Models;
 
 namespace CarRental.WebAPI.Controllers
 {   
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CarsController : ControllerBase
@@ -23,6 +25,7 @@ namespace CarRental.WebAPI.Controllers
             _logger = logger;
         }
 
+        // todo: if user is a client and the dates are specified, do not return cars that are reserved for the period
         [HttpGet]
         public async Task<IActionResult> GetCars([FromQuery] CarFilter filter)
         {
@@ -74,6 +77,80 @@ namespace CarRental.WebAPI.Controllers
             {
                 _logger.LogError(ex, "Error fetching user rentals");
                 return StatusCode(500, "An error occurred while fetching rentals");
+            }
+        }
+
+        //[Authorize]
+        [HttpPost("calculate-rental")]
+        public async Task<ActionResult<RentalOfferResponse>> CalculateRental([FromBody] RentalCalculationRequest request)
+        {
+            try
+            {
+                var car = await _repository.GetCarByIdAsync(request.CarId);
+                if (car == null)
+                {
+                    return NotFound("Car not found");
+                }
+
+                // checking car availability in the selected period
+                var filter = new CarFilter
+                {
+                    StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
+                    EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue)
+                };
+                var availableCars = await _repository.GetAvailableCarsAsync(filter);
+                if (!availableCars.Any(c => c.CarId == request.CarId))
+                {
+                    return BadRequest("Car is not available for the selected dates");
+                }
+
+                // fetching customer
+                var customer = await _repository.GetCustomerByUserId(request.UserId);
+                if (customer == null)
+                {
+                    return NotFound("Customer not found");
+                }
+
+                // calculating base price
+                var duration = request.EndDate.DayNumber - request.StartDate.DayNumber + 1;
+                var basePrice = car.BasePrice * duration;
+                basePrice = (basePrice / customer.DrivingLicenseYears) + basePrice;
+
+                // calculating insurance cost
+                decimal insuranceCost = request.InsuranceType.ToLower() switch
+                {
+                    "standard insurance" => basePrice * 0.1m, 
+                    "full insurance" => basePrice * 0.15m,    
+                    _ => 0m
+                };
+
+                // other additional costs calculation
+                decimal gpsPrice = request.HasGps ? 3.0m * duration : 0m;
+                decimal childSeatPrice = request.HasChildSeat ? 2.0m * duration : 0m;
+
+                decimal totalPrice = basePrice + insuranceCost + gpsPrice + childSeatPrice;
+
+                var response = new RentalOfferResponse
+                {
+                    TotalPrice = totalPrice,
+                    InsuranceType = request.InsuranceType,
+                    HasGps = request.HasGps,
+                    HasChildSeat = request.HasChildSeat,
+                    CarProvider = new CarProviderDTO
+                    {
+                        CarProviderId = car.CarProvider.CarProviderId,
+                        Name = car.CarProvider.Name,
+                        ContactEmail = car.CarProvider.ContactEmail,
+                        ContactPhone = car.CarProvider.ContactPhone
+                    }
+                };
+
+                return Ok(response);
+            }
+            catch (DatabaseOperationException ex)
+            {
+                _logger.LogError(ex, "Error calculating rental price");
+                return StatusCode(500, "An error occurred while calculating the rental price");
             }
         }
     }

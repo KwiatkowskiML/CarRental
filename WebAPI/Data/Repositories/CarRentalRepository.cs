@@ -111,6 +111,20 @@ namespace CarRental.WebAPI.Data.Repositories
             }
         }
 
+        public async Task<Customer?> GetCustomerByUserId(int userId)
+        {
+            try
+            {
+                return await _context.Customers
+                    .FirstOrDefaultAsync(c => c.UserId == userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching customer by userId");
+                throw new DatabaseOperationException($"Failed to fetch customer with userId {userId}", ex);
+            }
+        }
+
         public async Task<List<Rental>> GetUserRentalsAsync(int userId)
         {
             try

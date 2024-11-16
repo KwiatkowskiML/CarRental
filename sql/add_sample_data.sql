@@ -22,10 +22,10 @@ INSERT INTO customers (user_id, driving_license_years) VALUES
 (3, 8);
 
 -- Insert cars
-INSERT INTO cars (car_provider_id, license_plate, brand, model, year, status, location, engine_capacity, power, fuel_type, description) VALUES
-(1, 'ABC123', 'BMW', '330i', 2023, 'available', 'New York', 2.0, 255, 'Petrol', 'Luxury sedan with premium features'),
-(1, 'XYZ789', 'Mercedes', 'C300', 2022, 'available', 'Los Angeles', 2.0, 255, 'Petrol', 'Executive class vehicle'),
-(2, 'DEF456', 'Audi', 'Q5', 2023, 'available', 'Chicago', 2.0, 261, 'Petrol', 'Premium SUV');
+INSERT INTO cars (car_provider_id, license_plate, brand, model, year, status, location, engine_capacity, power, fuel_type, base_price, description) VALUES
+(1, 'ABC123', 'BMW', '330i', 2023, 'available', 'New York', 2.0, 255, 'Petrol', 100.00, 'Luxury sedan with premium features'),
+(1, 'XYZ789', 'Mercedes', 'C300', 2022, 'available', 'Los Angeles', 2.0, 255, 'Petrol', 200.00,'Executive class vehicle'),
+(2, 'DEF456', 'Audi', 'Q5', 2023, 'available', 'Chicago', 2.0, 261, 'Petrol', 150.00, 'Premium SUV');
 
 -- Insert rentals
 INSERT INTO rentals (customer_id, car_id, start_date, end_date, status, has_gps, has_child_seat, insurance_type) VALUES
