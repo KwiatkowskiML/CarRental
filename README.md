@@ -55,7 +55,7 @@ cp appsettings.template.json appsettings.json
 1. Create the environment file:
 ```bash
 cd Client
-cp .env.template .env
+cp .env.example .env
 ```
 
 2. Update the .env file with your Google Client ID:
@@ -167,7 +167,7 @@ CarRental/
 │   ├── appsettings.json          # Production settings (gitignored)
 │   └── appsettings.Development.json  # Development settings (gitignored)
 ├── Client/          # Frontend React application
-│   ├── .env.template  # Template for environment variables
+│   ├── .env.example  # Template for environment variables
 │   └── .env          # Environment variables (gitignored)
 ├── sql/            # Database scripts
 └── docs/           # Documentation
