@@ -58,6 +58,11 @@ cd Client
 ```bash
 npm install
 ```
+or better yet:
+```bash
+npm ci
+```
+second option will install dependencies as specified in the package-lock.json
 
 3. Start the development server:
 ```bash
@@ -107,10 +112,4 @@ CarRental/
 - Infrastructure:
   - Docker
   - Docker Compose
-
-## Contributing
-1. Ensure you have all prerequisites installed
-2. Fork the repository
-3. Create a new branch for your feature
-4. Make your changes
-5. Submit a pull request
+  
