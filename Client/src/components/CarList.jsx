@@ -18,7 +18,6 @@ export function CarList() {
       .then(res => res.json())
       .then(data => {
         const availableCars = data.filter(car => car.status === 'available');
-        console.log('Available cars:', availableCars);
         setCars(availableCars);
         setFilteredCars(availableCars);
         setLoading(false);
@@ -29,22 +28,46 @@ export function CarList() {
       });
   }, [user.token]);
 
-  const handleSearch = (searchText) => {
-    console.log('Search text:', searchText);
-    
-    if (!searchText.trim()) {
-      setFilteredCars(cars);
-      return;
+  const handleSearch = (filters) => {
+    let filtered = [...cars];
+
+    // Filtrowanie po tekście wyszukiwania
+    if (filters.searchText) {
+      const searchLower = filters.searchText.toLowerCase();
+      filtered = filtered.filter(car => 
+        car.brand.toLowerCase().includes(searchLower) ||
+        car.model.toLowerCase().includes(searchLower)
+      );
     }
 
-    const searchLower = searchText.toLowerCase();
-    const filtered = cars.filter(car => {
-      const brandMatch = car.brand?.toLowerCase().includes(searchLower) || false;
-      const modelMatch = car.model?.toLowerCase().includes(searchLower) || false;
-      return brandMatch || modelMatch;
-    });
-    
-    console.log('Filtered cars:', filtered);
+    // Filtrowanie po marce
+    if (filters.brand) {
+      filtered = filtered.filter(car => car.brand === filters.brand);
+    }
+
+    // Filtrowanie po modelu
+    if (filters.model) {
+      filtered = filtered.filter(car => car.model === filters.model);
+    }
+
+    // Filtrowanie po roku
+    if (filters.year) {
+      filtered = filtered.filter(car => car.year.toString() === filters.year);
+    }
+
+    // Filtrowanie po typie paliwa
+    if (filters.fuelType) {
+      filtered = filtered.filter(car => car.fuelType === filters.fuelType);
+    }
+
+    // Filtrowanie po mocy
+    if (filters.power.min !== null) {
+      filtered = filtered.filter(car => car.power >= filters.power.min);
+    }
+    if (filters.power.max !== null) {
+      filtered = filtered.filter(car => car.power <= filters.power.max);
+    }
+
     setFilteredCars(filtered);
   };
 
@@ -56,7 +79,7 @@ export function CarList() {
       <div style={{ padding: '20px' }}>
         <h1>Available Cars</h1>
         
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar cars={cars} onSearch={handleSearch} />
 
         <div style={{ 
           display: 'grid', 
@@ -75,6 +98,7 @@ export function CarList() {
                 <p>Year: {car.year}</p>
                 <p>Location: {car.location}</p>
                 <p>Fuel Type: {car.fuelType}</p>
+                <p>Power: {car.power} HP</p>
               </div>
             ))
           ) : (
