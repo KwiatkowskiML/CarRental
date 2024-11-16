@@ -4,5 +4,5 @@ CREATE TABLE car_providers (
     api_key VARCHAR(255) UNIQUE NOT NULL,
     contact_email VARCHAR(255) NOT NULL,
     contact_phone VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );

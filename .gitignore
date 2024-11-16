@@ -11,6 +11,8 @@ obj/
 *.jfm
 *.pfx
 *.publishsettings
+*/appsettings.json
+*/appsettings.Development.json
 
 # Node/React
 node_modules/
@@ -20,6 +22,8 @@ dist-ssr/
 .env
 .env.*
 !.env.example
+*package-lock.json
+.vite
 
 # IDE
 .idea/

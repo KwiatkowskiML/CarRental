@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using CarRental.WebAPI.Data.Context;
 using CarRental.WebAPI.Data.Repositories;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
+using CarRental.WebAPI.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +18,31 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CarRentalContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register Repository
+// Configure Authentication
+builder.Services.Configure<GoogleAuthOptions>(
+    builder.Configuration.GetSection("GoogleAuth"));
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("Jwt"));
+
+// Register Repositories and Services
 builder.Services.AddScoped<ICarRentalRepository, CarRentalRepository>();
+builder.Services.AddScoped<GoogleAuthService>();
+
+// Configure JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret is not configured")))
+        };
+    });
 
 var app = builder.Build();
 
@@ -27,7 +54,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add authentication middleware before authorization
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

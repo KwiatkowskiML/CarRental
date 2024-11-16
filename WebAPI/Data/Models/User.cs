@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarRental.WebAPI.Data.Models;
 
@@ -17,6 +18,7 @@ public partial class User
 
     public string? Location { get; set; }
 
+    [Column(TypeName = "timestamp with time zone")]
     public DateTime? CreatedAt { get; set; }
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();

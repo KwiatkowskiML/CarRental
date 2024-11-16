@@ -2,9 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CarRental.WebAPI.Controllers
-{
+{   
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CarsController : ControllerBase
@@ -57,7 +60,8 @@ namespace CarRental.WebAPI.Controllers
                 return StatusCode(500, "An error occurred while fetching cars");
             }
         }
-
+        
+        [Authorize]
         [HttpGet("user/{userId}/rentals")]
         public async Task<IActionResult> GetUserRentals(int userId)
         {

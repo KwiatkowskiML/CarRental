@@ -5,5 +5,5 @@ CREATE TABLE returns (
     condition_description TEXT,
     photo_url VARCHAR(255),
     processed_by INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );

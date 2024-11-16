@@ -43,7 +43,7 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.CarProviderId).HasColumnName("car_provider_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.EngineCapacity)
@@ -92,7 +92,7 @@ public partial class CarRentalContext : DbContext
                 .HasColumnName("contact_phone");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
@@ -117,10 +117,6 @@ public partial class CarRentalContext : DbContext
             entity.ToTable("employees");
 
             entity.Property(e => e.EmployeeId).HasColumnName("employee_id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
             entity.Property(e => e.Role)
                 .HasMaxLength(100)
                 .HasColumnName("role");
@@ -141,7 +137,7 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.CarId).HasColumnName("car_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
             entity.Property(e => e.EndDate).HasColumnName("end_date");
@@ -174,7 +170,7 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.ConditionDescription).HasColumnName("condition_description");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.PhotoUrl)
                 .HasMaxLength(255)
@@ -200,7 +196,7 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.Age).HasColumnName("age");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
