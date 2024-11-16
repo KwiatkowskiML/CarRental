@@ -101,17 +101,17 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'));"
 
 ### Running the Backend
 1. Navigate to the WebAPI directory:
-bash
+```bash
 cd WebAPI
-
+```
 Restore dependencies:
-bash
+```bash
 dotnet restore
-
+```
 Run the application:
-bash
+```bash
 dotnet run
-
+```
 The API will be available at:
 - HTTP: http://localhost:5024
 - HTTPS: https://localhost:7141
