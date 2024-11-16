@@ -11,7 +11,5 @@ public partial class Employee
 
     public string Role { get; set; } = null!;
 
-    public DateTime? CreatedAt { get; set; }
-
     public virtual User? User { get; set; }
 }
