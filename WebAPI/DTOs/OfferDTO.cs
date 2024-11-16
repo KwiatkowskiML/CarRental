@@ -7,10 +7,6 @@ public class OfferDTO
     public decimal TotalPrice { get; set; }
 
     public int? CustomerId { get; set; }
-
-    public int? CarId { get; set; }
-
-    public int? InsuranceId { get; set; }
     
     public DateOnly StartDate { get; set; }
 

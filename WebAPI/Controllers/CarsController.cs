@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.Maps;
 
 namespace CarRental.WebAPI.Controllers
 {   
@@ -82,7 +83,7 @@ namespace CarRental.WebAPI.Controllers
 
         //[Authorize]
         [HttpPost("get-offer")]
-        public async Task<IActionResult> CalculateRental([FromBody] RentalCalculationRequest request)
+        public async Task<ActionResult<OfferDTO>> CalculateRental([FromBody] RentalCalculationRequest request)
         {
             try
             {
@@ -122,7 +123,8 @@ namespace CarRental.WebAPI.Controllers
                     request.EndDate,
                     insurance.Price,
                     request.HasGps,
-                    request.HasChildSeat
+                    request.HasChildSeat,
+                    customer.DrivingLicenseYears
                 );
 
                 // create new offer
@@ -139,34 +141,9 @@ namespace CarRental.WebAPI.Controllers
                     CreatedAt = DateTime.UtcNow
                 };
 
-                // 8. Save offer to database
                 await _repository.CreateOfferAsync(offer);
 
-                // 9. Return offer details
-                var response = new
-                {
-                    OfferId = offer.OfferId,
-                    TotalPrice = offer.TotalPrice,
-                    StartDate = offer.StartDate,
-                    EndDate = offer.EndDate,
-                    CarDetails = new
-                    {
-                        car.Brand,
-                        car.Model,
-                        car.Year,
-                        car.Location
-                    },
-                    Insurance = new
-                    {
-                        insurance.name,
-                        insurance.Price
-                    },
-                    Extras = new
-                    {
-                        offer.HasGps,
-                        offer.HasChildSeat
-                    }
-                };
+                var response = Mapper.OfferToOfferDto(offer);
 
                 return Ok(response);
 
@@ -184,23 +161,19 @@ namespace CarRental.WebAPI.Controllers
             DateOnly endDate,
             decimal insurancePrice,
             bool hasGps,
-            bool hasChildSeat)
+            bool hasChildSeat,
+            int yearsOfExperience)
         {
-            // Calculate number of days
-            int numberOfDays = endDate.DayNumber - startDate.DayNumber;
-
-            // Base price for the rental period
+            int numberOfDays = endDate.DayNumber - startDate.DayNumber + 1;
             decimal totalPrice = basePrice * numberOfDays;
+            totalPrice += totalPrice / yearsOfExperience;
 
-            // Add insurance cost
             totalPrice += insurancePrice * numberOfDays;
 
-            // Add extras
             if (hasGps)
-                totalPrice += 10.00m * numberOfDays; // GPS costs $10 per day
-
+                totalPrice += 10.00m * numberOfDays;
             if (hasChildSeat)
-                totalPrice += 15.00m * numberOfDays; // Child seat costs $15 per day
+                totalPrice += 15.00m * numberOfDays;
 
             return totalPrice;
         }
