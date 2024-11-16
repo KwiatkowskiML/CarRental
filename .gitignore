@@ -11,6 +11,7 @@ obj/
 *.jfm
 *.pfx
 *.publishsettings
+*/appsettings.json
 
 # Node/React
 node_modules/

@@ -13,5 +13,8 @@ namespace CarRental.WebAPI.Data.Repositories.Interfaces
         Task<List<Rental>> GetUserRentalsAsync(int userId);
         Task<bool> CreateRentalAsync(Rental rental);
         Task<bool> ProcessReturnAsync(Return carReturn);
+
+        Task<User?> GetUserByEmail(string email);
+        Task<User> CreateUser(User user);
     }
 }

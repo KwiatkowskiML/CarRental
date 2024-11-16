@@ -196,5 +196,18 @@ namespace CarRental.WebAPI.Data.Repositories
                 throw new DatabaseOperationException("Failed to process return", ex);
             }
         }
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User> CreateUser(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
     }
 }
