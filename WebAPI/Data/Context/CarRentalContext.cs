@@ -26,6 +26,10 @@ public partial class CarRentalContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<Offer> Offers { get; set; }
+
+    public virtual DbSet<Insurance> Insurances { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Car>(entity =>
@@ -66,7 +70,9 @@ public partial class CarRentalContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("status");
             entity.Property(e => e.Year).HasColumnName("year");
-
+            entity.Property(e => e.BasePrice)
+                .HasColumnName("base_price")
+                .HasColumnType("decimal(10, 2)");
             entity.HasOne(d => d.CarProvider).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.CarProviderId)
                 .HasConstraintName("cars_car_provider_id_fkey");
@@ -135,6 +141,7 @@ public partial class CarRentalContext : DbContext
 
             entity.Property(e => e.RentalId).HasColumnName("rental_id");
             entity.Property(e => e.CarId).HasColumnName("car_id");
+            entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone")
@@ -143,9 +150,6 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.EndDate).HasColumnName("end_date");
             entity.Property(e => e.HasChildSeat).HasColumnName("has_child_seat");
             entity.Property(e => e.HasGps).HasColumnName("has_gps");
-            entity.Property(e => e.InsuranceType)
-                .HasMaxLength(255)
-                .HasColumnName("insurance_type");
             entity.Property(e => e.StartDate).HasColumnName("start_date");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
@@ -158,6 +162,10 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.Customer).WithMany(p => p.Rentals)
                 .HasForeignKey(d => d.CustomerId)
                 .HasConstraintName("rentals_customer_id_fkey");
+
+            entity.HasOne(d => d.Insurance).WithMany()
+                .HasForeignKey(d => d.InsuranceId)
+                .HasConstraintName("rentals_insurance_id_fkey");
         });
 
         modelBuilder.Entity<Return>(entity =>
@@ -210,6 +218,44 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.Location)
                 .HasMaxLength(255)
                 .HasColumnName("location");
+        });
+
+        modelBuilder.Entity<Offer>(entity =>
+        {
+            entity.HasKey(e => e.OfferId).HasName("offers_pkey");
+
+            entity.ToTable("offers");
+
+            entity.Property(e => e.TotalPrice)
+                .HasColumnName("total_price")
+                .HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.OfferId).HasColumnName("offer_id");
+            entity.Property(e => e.CarId).HasColumnName("car_id");
+            entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.EndDate).HasColumnName("end_date");
+            entity.Property(e => e.HasChildSeat).HasColumnName("has_child_seat");
+            entity.Property(e => e.HasGps).HasColumnName("has_gps");
+            entity.Property(e => e.StartDate).HasColumnName("start_date");
+
+            entity.HasOne(d => d.Insurance).WithMany()
+                .HasForeignKey(d => d.InsuranceId)
+                .HasConstraintName("offers_insurance_id_fkey");
+        });
+
+        modelBuilder.Entity<Insurance>(entity =>
+        {
+            entity.HasKey(e => e.InsuranceId).HasName("insurances_pkey");
+
+            entity.ToTable("insurances");
+
+            entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
+            entity.Property(e => e.Price).HasColumnName("price");
+            entity.Property(e => e.name).HasColumnName("name");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -22,18 +22,28 @@ INSERT INTO customers (user_id, driving_license_years) VALUES
 (3, 8);
 
 -- Insert cars
-INSERT INTO cars (car_provider_id, license_plate, brand, model, year, status, location, engine_capacity, power, fuel_type, description) VALUES
-(1, 'ABC123', 'BMW', '330i', 2023, 'available', 'New York', 2.0, 255, 'Petrol', 'Luxury sedan with premium features'),
-(1, 'XYZ789', 'Mercedes', 'C300', 2022, 'available', 'Los Angeles', 2.0, 255, 'Petrol', 'Executive class vehicle'),
-(2, 'DEF456', 'Audi', 'Q5', 2023, 'available', 'Chicago', 2.0, 261, 'Petrol', 'Premium SUV');
+INSERT INTO cars (car_provider_id, license_plate, brand, model, year, status, location, engine_capacity, power, fuel_type, base_price, description) VALUES
+(1, 'ABC123', 'BMW', '330i', 2023, 'available', 'New York', 2.0, 255, 'Petrol', 100.00, 'Luxury sedan with premium features'),
+(1, 'XYZ789', 'Mercedes', 'C300', 2022, 'available', 'Los Angeles', 2.0, 255, 'Petrol', 200.00,'Executive class vehicle'),
+(2, 'DEF456', 'Audi', 'Q5', 2023, 'available', 'Chicago', 2.0, 261, 'Petrol', 150.00, 'Premium SUV');
+
+INSERT INTO insurances (price, name)
+VALUES 
+    (50.00, 'Standard Insurance'),
+    (100.00, 'Full Insurance');
 
 -- Insert rentals
-INSERT INTO rentals (customer_id, car_id, start_date, end_date, status, has_gps, has_child_seat, insurance_type) VALUES
-(1, 1, '2024-01-01', '2024-01-07', 'completed', true, false, 'Full Coverage'),
-(2, 2, '2024-02-01', '2024-02-05', 'completed', true, true, 'Basic'),
-(3, 3, '2024-03-01', '2024-03-10', 'active', false, false, 'Premium');
+INSERT INTO rentals (customer_id, car_id, insurance_id, start_date, end_date, status, has_gps, has_child_seat) VALUES
+(1, 1, 1, '2024-01-01', '2024-01-07', 'completed', true, false),
+(2, 2, 2, '2024-02-01', '2024-02-05', 'completed', true, true),
+(3, 3, 1, '2024-03-01', '2024-03-10', 'active', false, false);
 
 -- Insert returns
 INSERT INTO returns (rental_id, return_date, condition_description, photo_url, processed_by) VALUES
 (1, '2024-01-07', 'Good condition, minor scratches', 'https://storage.example.com/photos/return1.jpg', 1),
 (2, '2024-02-05', 'Excellent condition', 'https://storage.example.com/photos/return2.jpg', 2);
+
+INSERT INTO offers (insurance_id, customer_id, car_id, total_price, start_date, end_date, created_at, has_gps, has_child_seat)
+VALUES 
+    (1, 1, 1, 1000, '2024-11-20', '2024-11-25', CURRENT_TIMESTAMP, TRUE, FALSE),
+    (2, 2, 2, 2000, '2024-11-22', '2024-11-27', CURRENT_TIMESTAMP, FALSE, TRUE);

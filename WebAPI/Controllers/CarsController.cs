@@ -4,6 +4,9 @@ using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.DTOs;
+using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.Maps;
 
 namespace CarRental.WebAPI.Controllers
 {   
@@ -23,6 +26,7 @@ namespace CarRental.WebAPI.Controllers
             _logger = logger;
         }
 
+        // todo: if user is a client and the dates are specified, do not return cars that are reserved for the period
         [HttpGet]
         public async Task<IActionResult> GetCars([FromQuery] CarFilter filter)
         {
@@ -75,6 +79,103 @@ namespace CarRental.WebAPI.Controllers
                 _logger.LogError(ex, "Error fetching user rentals");
                 return StatusCode(500, "An error occurred while fetching rentals");
             }
+        }
+
+        [Authorize]
+        [HttpPost("get-offer")]
+        public async Task<ActionResult<OfferDTO>> CalculateRental([FromBody] RentalCalculationRequest request)
+        {
+            try
+            {
+                var car = await _repository.GetCarByIdAsync(request.CarId);
+                if (car == null)
+                {
+                    return NotFound("Car not found");
+                }
+
+                // checking car availability in the selected period
+                var filter = new CarFilter
+                {
+                    StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
+                    EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue)
+                };
+                var availableCars = await _repository.GetAvailableCarsAsync(filter);
+                if (!availableCars.Any(c => c.CarId == request.CarId))
+                {
+                    return BadRequest("Car is not available for the selected dates");
+                }
+
+                // fetching customer
+                var customer = await _repository.GetCustomerByUserId(request.UserId);
+                if (customer == null)
+                {
+                    return NotFound("Customer not found");
+                }
+
+                var insurance = await _repository.GetInsuranceByIdAsync(request.InsuranceId);
+                if (insurance == null)
+                    return NotFound("Insurance package not found");
+
+                // calculate total price
+                decimal totalPrice = CalculateTotalPrice(
+                    car.BasePrice,
+                    request.StartDate,
+                    request.EndDate,
+                    insurance.Price,
+                    request.HasGps,
+                    request.HasChildSeat,
+                    customer.DrivingLicenseYears
+                );
+
+                // create new offer
+                var offer = new Offer
+                {
+                    CustomerId = customer.CustomerId,
+                    CarId = request.CarId,
+                    InsuranceId = request.InsuranceId,
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
+                    TotalPrice = totalPrice,
+                    HasGps = request.HasGps,
+                    HasChildSeat = request.HasChildSeat,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _repository.CreateOfferAsync(offer);
+
+                var response = Mapper.OfferToOfferDto(offer);
+
+                return Ok(response);
+
+            }
+            catch (DatabaseOperationException ex)
+            {
+                _logger.LogError(ex, "Error calculating rental price");
+                return StatusCode(500, "An error occurred while calculating the rental price");
+            }
+        }
+
+        private decimal CalculateTotalPrice(
+            decimal basePrice,
+            DateOnly startDate,
+            DateOnly endDate,
+            decimal insurancePrice,
+            bool hasGps,
+            bool hasChildSeat,
+            int yearsOfExperience)
+        {
+            int numberOfDays = endDate.DayNumber - startDate.DayNumber + 1;
+            decimal totalPrice = basePrice * numberOfDays;
+            totalPrice += totalPrice / yearsOfExperience;
+
+            totalPrice += insurancePrice * numberOfDays;
+
+            if (hasGps)
+                totalPrice += 10.00m * numberOfDays;
+            if (hasChildSeat)
+                totalPrice += 15.00m * numberOfDays;
+
+            return totalPrice;
         }
     }
 }

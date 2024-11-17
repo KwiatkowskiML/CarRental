@@ -23,7 +23,9 @@ public partial class Rental
 
     public bool? HasChildSeat { get; set; }
 
-    public string? InsuranceType { get; set; }
+    public int InsuranceId { get; set; }
+
+    public virtual Insurance? Insurance { get; set; }
 
     public virtual Car? Car { get; set; }
 
