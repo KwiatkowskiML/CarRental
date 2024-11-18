@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Button } from '../ui/Button';
+import { CarPriceDialog } from './CarPriceDialog';
 
 export function CarDetails() {
   const { carId } = useParams();
   const { user } = useAuth();
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [totalPrice, setTotalPrice] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation();
-  const totalPrice = location.state?.totalPrice;
 
   useEffect(() => {
     fetch('/api/cars', {
@@ -29,6 +30,33 @@ export function CarDetails() {
         setLoading(false);
       });
   }, [carId, user.token]);
+
+  const handleGetOffer = async (options) => {
+    try {
+      const response = await fetch('/api/cars/get-offer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          carId: car.carId,
+          userId: 1, // TO DO
+          startDate: options.startDate,
+          endDate: options.endDate,
+          insuranceId: options.insuranceId,
+          hasGps: options.hasGps,
+          hasChildSeat: options.hasChildSeat
+        })
+      });
+
+      const data = await response.json();
+      setTotalPrice(data.totalPrice);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error getting offer:', error);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (!car) return <div>Car not found</div>;
@@ -99,7 +127,7 @@ export function CarDetails() {
             fontSize: '16px',
             marginBottom: '32px'
           }}>
-            <DetailRow label="Pojemność" value={`${car.engineCapacity.toFixed(1)} l`} />
+            <DetailRow label="Pojemność" value={`${car.engineCapacity} l`} />
             <DetailRow label="Moc" value={`${car.power} KM`} />
             <DetailRow label="Paliwo" value={car.fuelType} />
             <DetailRow label="Rok produkcji" value={car.year} />
@@ -107,10 +135,13 @@ export function CarDetails() {
             <DetailRow label="Numer rejestracyjny" value={car.licensePlate} />
             <DetailRow label="Status" value={car.status} />
             {car.description && (
-              <div style={{ marginTop: '8px' }}>
-                <strong>Opis:</strong>
-                <p>{car.description}</p>
-              </div>
+              <DetailRow label="Opis" value={car.description} />
+            )}
+            {car.carProvider && (
+              <DetailRow 
+                label="Dostawca" 
+                value={`${car.carProvider.name} (${car.carProvider.contactEmail})`} 
+              />
             )}
           </div>
 
@@ -119,21 +150,39 @@ export function CarDetails() {
             alignItems: 'center',
             gap: '16px'
           }}>
-            <Button variant="primary">
-              Rent Me
-            </Button>
-            {totalPrice && (
-              <div style={{
-                fontSize: '24px',
-                fontWeight: 'bold',
-                color: '#8B4513'
-              }}>
-                {totalPrice.toFixed(2)} PLN
-              </div>
+            {totalPrice ? (
+              <>
+                <div style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#8B4513'
+                }}>
+                  {totalPrice.toFixed(2)} PLN
+                </div>
+                <Button 
+                  variant="primary"
+                  onClick={() => {}}  // TO DO
+                >
+                  Rent Me
+                </Button>
+              </>
+            ) : (
+              <Button 
+                variant="primary"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                Zapytaj o cenę
+              </Button>
             )}
           </div>
         </div>
       </div>
+
+      <CarPriceDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={handleGetOffer}
+      />
     </div>
   );
 }
