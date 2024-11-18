@@ -71,20 +71,18 @@ export function CarList() {
     }
 
     setFilteredCars(filtered);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
   };
 
-  // Obliczanie indeksów dla aktualnej strony
   const indexOfLastCar = currentPage * carsPerPage;
   const indexOfFirstCar = indexOfLastCar - carsPerPage;
   const currentCars = filteredCars.slice(indexOfFirstCar, indexOfLastCar);
   const totalPages = Math.ceil(filteredCars.length / carsPerPage);
 
-  // Funkcja zmiany strony
   const paginate = (pageNumber) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
-    window.scrollTo(0, 0); // Przewiń do góry strony
+    window.scrollTo(0, 0);
   };
 
   if (loading) return <div>Loading...</div>;
