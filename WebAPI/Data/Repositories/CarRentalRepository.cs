@@ -4,6 +4,8 @@ using CarRental.WebAPI.Data.Models;
 using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
+using WebAPI.DTOs;
+using WebAPI.Data.Maps;
 
 namespace CarRental.WebAPI.Data.Repositories
 {
@@ -79,6 +81,41 @@ namespace CarRental.WebAPI.Data.Repositories
             {
                 _logger.LogError(ex, "Error fetching available cars with filters");
                 throw new DatabaseOperationException("Failed to fetch available cars", ex);
+            }
+        }
+
+        public async Task<OfferDTO?> GetOffer(GetOfferRequest filter)
+        {
+            try
+            {
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(c => c.UserId == filter.UserId);
+
+                if (customer == null)
+                    return null;
+
+                var offer = await _context.Offers
+                    .Include(o => o.Insurance)
+                    .Include(o => o.Car)
+                        .ThenInclude(c => c.CarProvider)
+                    .FirstOrDefaultAsync(o => 
+                        o.CarId == filter.CarId &&
+                        o.CustomerId == customer.CustomerId &&
+                        o.InsuranceId == filter.InsuranceId &&
+                        o.StartDate == filter.StartDate &&
+                        o.EndDate == filter.EndDate &&
+                        o.HasGps == filter.HasGps &&
+                        o.HasChildSeat == filter.HasChildSeat);
+
+                if (offer == null)
+                    return null;
+                else
+                    return Mapper.OfferToOfferDto(offer);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching offer for filter: {@Filter}", filter);
+                throw new DatabaseOperationException("Failed to fetch offer", ex);
             }
         }
 

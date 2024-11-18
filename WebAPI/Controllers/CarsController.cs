@@ -68,11 +68,13 @@ namespace CarRental.WebAPI.Controllers
         {
             try
             {
+                var existingOffer = await _repository.GetOffer(request);
+                if (existingOffer != null)
+                    return Ok(existingOffer);
+
                 var car = await _repository.GetCarByIdAsync(request.CarId);
                 if (car == null)
-                {
                     return NotFound("Car not found");
-                }
 
                 // checking car availability in the selected period
                 var filter = new CarFilter
@@ -80,6 +82,7 @@ namespace CarRental.WebAPI.Controllers
                     StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
                     EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue)
                 };
+                
                 var availableCars = await _repository.GetAvailableCarsAsync(filter);
                 if (!availableCars.Any(c => c.CarId == request.CarId))
                 {
