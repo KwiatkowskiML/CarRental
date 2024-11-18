@@ -68,7 +68,7 @@ export function CarDetails() {
         alignItems: 'start'
       }}>
         <img 
-          src="/api/placeholder/600/400"
+          src="" // TO DO
           alt={`${car.brand} ${car.model}`}
           style={{
             width: '100%',
@@ -99,12 +99,12 @@ export function CarDetails() {
             fontSize: '16px',
             marginBottom: '32px'
           }}>
-            <DetailRow label="Pojemność" value={`${car.engine_capacity.toFixed(1)} l`} />
+            <DetailRow label="Pojemność" value={`${car.engineCapacity.toFixed(1)} l`} />
             <DetailRow label="Moc" value={`${car.power} KM`} />
-            <DetailRow label="Paliwo" value={car.fuel_type} />
+            <DetailRow label="Paliwo" value={car.fuelType} />
             <DetailRow label="Rok produkcji" value={car.year} />
             <DetailRow label="Lokalizacja" value={car.location} />
-            <DetailRow label="Numer rejestracyjny" value={car.license_plate} />
+            <DetailRow label="Numer rejestracyjny" value={car.licensePlate} />
             <DetailRow label="Status" value={car.status} />
             {car.description && (
               <div style={{ marginTop: '8px' }}>
