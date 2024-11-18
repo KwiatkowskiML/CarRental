@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CarRental.WebAPI.Controllers
 {   
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase

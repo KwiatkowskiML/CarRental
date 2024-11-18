@@ -26,7 +26,6 @@ namespace CarRental.WebAPI.Controllers
             _logger = logger;
         }
 
-        // todo: if user is a client and the dates are specified, do not return cars that are reserved for the period
         [HttpGet]
         public async Task<IActionResult> GetCars([FromQuery] CarFilter filter)
         {
