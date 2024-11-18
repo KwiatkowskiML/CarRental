@@ -64,22 +64,6 @@ namespace CarRental.WebAPI.Controllers
                 return StatusCode(500, "An error occurred while fetching cars");
             }
         }
-        
-        [Authorize]
-        [HttpGet("user/{userId}/rentals")]
-        public async Task<IActionResult> GetUserRentals(int userId)
-        {
-            try
-            {
-                var rentals = await _repository.GetUserRentalsAsync(userId);
-                return Ok(rentals);
-            }
-            catch (DatabaseOperationException ex)
-            {
-                _logger.LogError(ex, "Error fetching user rentals");
-                return StatusCode(500, "An error occurred while fetching rentals");
-            }
-        }
 
         [Authorize]
         [HttpPost("get-offer")]

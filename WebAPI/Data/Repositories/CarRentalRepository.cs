@@ -125,16 +125,32 @@ namespace CarRental.WebAPI.Data.Repositories
             }
         }
 
-        public async Task<List<Rental>> GetUserRentalsAsync(int userId)
+        public async Task<List<RentalDTO>> GetUserRentalsAsync(int userId)
         {
             try
             {
-                return await _context.Rentals
-                    .Include(r => r.Car)
-                    .Include(r => r.Customer)
+                var rentals = await _context.Rentals
+                    .Include(r => r.Insurance) // Optional: Include related Insurance details
                     .Where(r => r.Customer != null && r.Customer.UserId == userId)
                     .OrderByDescending(r => r.CreatedAt)
                     .ToListAsync();
+
+                var rentalDTOs = rentals.Select(r => new RentalDTO
+                {
+                    RentalId = r.RentalId,
+                    CustomerId = r.CustomerId,
+                    CarId = r.CarId,
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    Status = r.Status,
+                    CreatedAt = r.CreatedAt,
+                    HasGps = r.HasGps,
+                    HasChildSeat = r.HasChildSeat,
+                    InsuranceId = r.InsuranceId,
+                    Insurance = r.Insurance
+                }).ToList();
+
+                return rentalDTOs;
             }
             catch (Exception ex)
             {

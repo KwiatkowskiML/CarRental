@@ -11,7 +11,7 @@ namespace CarRental.WebAPI.Data.Repositories.Interfaces
         Task<Car?> GetCarByIdAsync(int carId);
         Task<User?> GetUserByEmailAsync(string email);
         Task<Customer?> GetCustomerByUserId(int userId);
-        Task<List<Rental>> GetUserRentalsAsync(int userId);
+        Task<List<RentalDTO>> GetUserRentalsAsync(int userId);
         Task<bool> CreateRentalAsync(Rental rental);
         Task<bool> ProcessReturnAsync(Return carReturn);
 
