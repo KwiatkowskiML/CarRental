@@ -302,6 +302,10 @@ namespace CarRental.WebAPI.Data.Repositories
                 await _context.Offers.AddAsync(offer);
                 await _context.SaveChangesAsync();
 
+                await _context.Entry(offer)
+                    .Reference(o => o.Insurance)
+                    .LoadAsync();
+
                 // Commit the transaction
                 await transaction.CommitAsync();
             }

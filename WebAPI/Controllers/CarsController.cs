@@ -3,14 +3,13 @@ using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 using CarRental.WebAPI.Data.Models;
 using WebAPI.Data.Maps;
 
 namespace CarRental.WebAPI.Controllers
 {   
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CarsController : ControllerBase
@@ -64,9 +63,8 @@ namespace CarRental.WebAPI.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost("get-offer")]
-        public async Task<ActionResult<OfferDTO>> CalculateRental([FromBody] RentalCalculationRequest request)
+        public async Task<ActionResult<OfferDTO>> GetOffer([FromBody] GetOfferRequest request)
         {
             try
             {

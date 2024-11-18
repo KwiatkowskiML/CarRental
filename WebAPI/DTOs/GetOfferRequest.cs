@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace WebAPI.DTOs
 {
-    public class RentalCalculationRequest
+    public class GetOfferRequest
     {
         public int CarId { get; set; }
         public int UserId { get; set; }
