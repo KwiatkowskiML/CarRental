@@ -3,7 +3,8 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './auth/AuthContext';
 import { AuthGuard } from './auth/AuthGuard';
 import { LoginPage } from './auth/LoginPage';
-import { CarList } from './components/CarList';
+import { CarList } from './components/car/CarList';
+import { CarDetails } from './components/car/CarDetails';
 
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -22,6 +23,11 @@ function App() {
             <Route path="/" element={
               <AuthGuard>
                 <CarList />
+              </AuthGuard>
+            } />
+            <Route path="/cars/:carId" element={
+              <AuthGuard>
+                <CarDetails />
               </AuthGuard>
             } />
           </Routes>
