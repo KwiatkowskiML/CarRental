@@ -2,13 +2,14 @@
 using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Models;
 using WebAPI.DTOs;
+using WebAPI.filters;
 
 namespace CarRental.WebAPI.Data.Repositories.Interfaces
 {
     public interface ICarRentalRepository
     {
         Task<List<Car>> GetAllCarsAsync();
-        Task<OfferDTO?> GetOffer(GetOfferRequest request);
+        Task<OfferDTO?> GetOffer(OfferFilter request);
         Task<List<Car>> GetAvailableCarsAsync(CarFilter filter);
         Task<Car?> GetCarByIdAsync(int carId);
         Task<User?> GetUserByEmailAsync(string email);

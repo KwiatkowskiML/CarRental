@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using WebAPI.DTOs;
 using CarRental.WebAPI.Data.Models;
 using WebAPI.Data.Maps;
+using WebAPI.filters;
 
 namespace CarRental.WebAPI.Controllers
 {   
@@ -68,37 +69,39 @@ namespace CarRental.WebAPI.Controllers
         {
             try
             {
-                var existingOffer = await _repository.GetOffer(request);
+                var customer = await _repository.GetCustomerByUserId(request.UserId);
+
+                if (customer == null)
+                    return NotFound($"Customer with userId = {request.UserId} not found");
+
+                var offerFilter = new OfferFilter{
+                    CarId = request.CarId,
+                    CustomerId = customer.CustomerId,
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
+                    InsuranceId = request.InsuranceId,
+                    HasGps = request.HasGps,
+                    HasChildSeat = request.HasChildSeat
+                };
+
+                var existingOffer = await _repository.GetOffer(offerFilter);
                 if (existingOffer != null)
                     return Ok(existingOffer);
 
-                
                 var car = await _repository.GetCarByIdAsync(request.CarId);
                 if (car == null)
                     return NotFound("Car not found");
 
-                // checking car availability in the selected period
                 var filter = new CarFilter
                 {
                     StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
                     EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue)
                 };
-                
-                _logger.LogInformation("check1");
 
                 var availableCars = await _repository.GetAvailableCarsAsync(filter);
                 if (!availableCars.Any(c => c.CarId == request.CarId))
                 {
                     return BadRequest("Car is not available for the selected dates");
-                }
-
-                _logger.LogInformation("check3");
-
-                // fetching customer
-                var customer = await _repository.GetCustomerByUserId(request.UserId);
-                if (customer == null)
-                {
-                    return NotFound("Customer not found");
                 }
 
                 var insurance = await _repository.GetInsuranceByIdAsync(request.InsuranceId);
@@ -141,6 +144,34 @@ namespace CarRental.WebAPI.Controllers
             {
                 _logger.LogError(ex, "Error calculating rental price");
                 return StatusCode(500, "An error occurred while calculating the rental price");
+            }
+        }
+
+        [HttpPost("choose-offer")]
+        public async Task<ActionResult> ChooseOffer([FromBody] ChooseOfferRequest request)
+        {
+            try
+            {
+                var customer = await _repository.GetCustomerByUserId(request.UserId);
+
+                if (customer == null)
+                    return NotFound($"Customer with userId = {request.UserId} not found");
+
+                var offerFilter = new OfferFilter{
+                    OfferId = request.OfferId,
+                    CustomerId = customer.CustomerId
+                };
+
+                var offer = await _repository.GetOffer(offerFilter);
+                if (offer == null)
+                    return NotFound($"Offer with ID {request.OfferId} not found for this customer");
+
+                return Ok();
+            }
+            catch (DatabaseOperationException ex)
+            {
+                _logger.LogError(ex, "Error choosing offer");
+                return StatusCode(500, "An error occurred while choosing offer");
             }
         }
 
