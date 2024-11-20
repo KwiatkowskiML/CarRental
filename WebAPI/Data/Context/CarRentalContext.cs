@@ -76,6 +76,10 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.CarProvider).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.CarProviderId)
                 .HasConstraintName("cars_car_provider_id_fkey");
+            entity.HasMany(c => c.Offers)
+                .WithOne(o => o.Car)
+                .HasForeignKey(o => o.CarId)
+                .HasConstraintName("offers_car_id_fkey");
         });
 
         modelBuilder.Entity<CarProvider>(entity =>

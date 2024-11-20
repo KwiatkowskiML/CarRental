@@ -72,6 +72,7 @@ namespace CarRental.WebAPI.Controllers
                 if (existingOffer != null)
                     return Ok(existingOffer);
 
+                
                 var car = await _repository.GetCarByIdAsync(request.CarId);
                 if (car == null)
                     return NotFound("Car not found");
@@ -83,11 +84,15 @@ namespace CarRental.WebAPI.Controllers
                     EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue)
                 };
                 
+                _logger.LogInformation("check1");
+
                 var availableCars = await _repository.GetAvailableCarsAsync(filter);
                 if (!availableCars.Any(c => c.CarId == request.CarId))
                 {
                     return BadRequest("Car is not available for the selected dates");
                 }
+
+                _logger.LogInformation("check3");
 
                 // fetching customer
                 var customer = await _repository.GetCustomerByUserId(request.UserId);
@@ -127,7 +132,7 @@ namespace CarRental.WebAPI.Controllers
 
                 await _repository.CreateOfferAsync(offer);
 
-                var response = Mapper.OfferToOfferDto(offer);
+                var response = Mapper.OfferToDTO(offer);
 
                 return Ok(response);
 

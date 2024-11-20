@@ -69,10 +69,12 @@ namespace CarRental.WebAPI.Data.Repositories
                     var startDate = DateOnly.FromDateTime(filter.StartDate.Value);
                     var endDate = DateOnly.FromDateTime(filter.EndDate.Value);
                     
-                    query = query.Where(c => !c.Rentals.Any(r =>
-                        r.Status != "cancelled" &&
-                        ((r.StartDate <= endDate && r.EndDate >= startDate) ||
-                         (r.StartDate >= startDate && r.StartDate <= endDate))));
+                    query = query.Where(c => !c.Offers.Any(o => 
+                        o.Rental != null && 
+                        o.Rental.Status != "cancelled" &&
+                        ((o.StartDate <= endDate && o.EndDate >= startDate) ||
+                        (o.StartDate >= startDate && o.StartDate <= endDate))
+                    ));
                 }
 
                 return await query.AsNoTracking().ToListAsync();
@@ -110,7 +112,7 @@ namespace CarRental.WebAPI.Data.Repositories
                 if (offer == null)
                     return null;
                 else
-                    return Mapper.OfferToOfferDto(offer);
+                    return Mapper.OfferToDTO(offer);
             }
             catch (Exception ex)
             {
@@ -166,26 +168,20 @@ namespace CarRental.WebAPI.Data.Repositories
         {
             try
             {
-                var rentals = await _context.Rentals
-                    .Include(r => r.Insurance) // Optional: Include related Insurance details
-                    .Where(r => r.Customer != null && r.Customer.UserId == userId)
-                    .OrderByDescending(r => r.CreatedAt)
-                    .ToListAsync();
+                var query = _context.Rentals
+                    .Include(r => r.Offer)
+                        .ThenInclude(o => o.Customer)
+                    .Include(r => r.Offer)
+                        .ThenInclude(o => o.Car)
+                            .ThenInclude(c => c.CarProvider)
+                    .Where(r => r.Offer.Customer != null && r.Offer.Customer.UserId == userId)
+                    .OrderByDescending(r => r.CreatedAt);
 
-                var rentalDTOs = rentals.Select(r => new RentalDTO
-                {
-                    RentalId = r.RentalId,
-                    CustomerId = r.CustomerId,
-                    CarId = r.CarId,
-                    StartDate = r.StartDate,
-                    EndDate = r.EndDate,
-                    Status = r.Status,
-                    CreatedAt = r.CreatedAt,
-                    HasGps = r.HasGps,
-                    HasChildSeat = r.HasChildSeat,
-                    InsuranceId = r.InsuranceId,
-                    Insurance = r.Insurance
-                }).ToList();
+                var sql = query.ToQueryString();
+                _logger.LogInformation($"Generated SQL: {sql}");
+
+                var rentals = await query.ToListAsync();
+                var rentalDTOs = rentals.Select(r => Mapper.RentalToDTO(r)).ToList();
 
                 return rentalDTOs;
             }
@@ -198,70 +194,74 @@ namespace CarRental.WebAPI.Data.Repositories
 
         public async Task<bool> CreateRentalAsync(Rental rental)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                var car = await _context.Cars
-                    .FirstOrDefaultAsync(c => c.CarId == rental.CarId);
+            // using var transaction = await _context.Database.BeginTransactionAsync();
+            // try
+            // {
+            //     var car = await _context.Cars
+            //         .FirstOrDefaultAsync(c => c.CarId == rental.CarId);
 
-                if (car == null || car.Status != "available")
-                    return false;
+            //     if (car == null || car.Status != "available")
+            //         return false;
 
-                var hasOverlap = await _context.Rentals
-                    .AnyAsync(r => r.CarId == rental.CarId &&
-                                 r.Status != "cancelled" &&
-                                 ((r.StartDate <= rental.EndDate && r.EndDate >= rental.StartDate) ||
-                                  (r.StartDate >= rental.StartDate && r.StartDate <= rental.EndDate)));
+            //     var hasOverlap = await _context.Rentals
+            //         .AnyAsync(r => r.CarId == rental.CarId &&
+            //                      r.Status != "cancelled" &&
+            //                      ((r.StartDate <= rental.EndDate && r.EndDate >= rental.StartDate) ||
+            //                       (r.StartDate >= rental.StartDate && r.StartDate <= rental.EndDate)));
 
-                if (hasOverlap)
-                    return false;
+            //     if (hasOverlap)
+            //         return false;
 
-                _context.Rentals.Add(rental);
-                car.Status = "rented";
+            //     _context.Rentals.Add(rental);
+            //     car.Status = "rented";
                 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+            //     await _context.SaveChangesAsync();
+            //     await transaction.CommitAsync();
                 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error creating rental");
-                throw new DatabaseOperationException("Failed to create rental", ex);
-            }
+            //     return true;
+            // }
+            // catch (Exception ex)
+            // {
+            //     await transaction.RollbackAsync();
+            //     _logger.LogError(ex, "Error creating rental");
+            //     throw new DatabaseOperationException("Failed to create rental", ex);
+            // }
+
+            return false;
         }
 
         public async Task<bool> ProcessReturnAsync(Return carReturn)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                var rental = await _context.Rentals
-                    .Include(r => r.Car)
-                    .FirstOrDefaultAsync(r => r.RentalId == carReturn.RentalId);
+            // using var transaction = await _context.Database.BeginTransactionAsync();
+            // try
+            // {
+            //     var rental = await _context.Rentals
+            //         .Include(r => r.Car)
+            //         .FirstOrDefaultAsync(r => r.RentalId == carReturn.RentalId);
 
-                if (rental == null || rental.Status != "active")
-                    return false;
+            //     if (rental == null || rental.Status != "active")
+            //         return false;
 
-                _context.Returns.Add(carReturn);
-                rental.Status = "completed";
-                if (rental.Car != null)
-                {
-                    rental.Car.Status = "available";
-                }
+            //     _context.Returns.Add(carReturn);
+            //     rental.Status = "completed";
+            //     if (rental.Car != null)
+            //     {
+            //         rental.Car.Status = "available";
+            //     }
                 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+            //     await _context.SaveChangesAsync();
+            //     await transaction.CommitAsync();
                 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error processing return");
-                throw new DatabaseOperationException("Failed to process return", ex);
-            }
+            //     return true;
+            // }
+            // catch (Exception ex)
+            // {
+            //     await transaction.RollbackAsync();
+            //     _logger.LogError(ex, "Error processing return");
+            //     throw new DatabaseOperationException("Failed to process return", ex);
+            // }
+
+            throw new NotImplementedException("Processing a retun not implemented yet");
         }
 
         public async Task<User?> GetUserByEmail(string email)
@@ -304,32 +304,27 @@ namespace CarRental.WebAPI.Data.Repositories
                     throw new InvalidOperationException($"Car with ID {offer.CarId} not found");
 
                 var hasConflict = await _context.Rentals
-                    .AnyAsync(r => r.CarId == offer.CarId &&
+                    .AnyAsync(r => r.Offer.CarId == offer.CarId &&
                                 r.Status != "cancelled" &&
-                                ((r.StartDate <= offer.EndDate && r.EndDate >= offer.StartDate) ||
-                                (r.StartDate >= offer.StartDate && r.StartDate <= offer.EndDate)));
+                                ((r.Offer.StartDate <= offer.EndDate && r.Offer.EndDate >= offer.StartDate) ||
+                                (r.Offer.StartDate >= offer.StartDate && r.Offer.StartDate <= offer.EndDate)));
 
                 if (hasConflict)
                     throw new InvalidOperationException("Car is not available for the selected dates");
 
-                if (offer.CustomerId.HasValue)
-                {
-                    var customerExists = await _context.Customers
-                        .AnyAsync(c => c.CustomerId == offer.CustomerId);
 
-                    if (!customerExists)
-                        throw new InvalidOperationException($"Customer with ID {offer.CustomerId} not found");
-                }
+                var customerExists = await _context.Customers
+                    .AnyAsync(c => c.CustomerId == offer.CustomerId);
 
-                // Validate the insurance exists
-                if (offer.InsuranceId.HasValue)
-                {
-                    var insuranceExists = await _context.Insurances
-                        .AnyAsync(i => i.InsuranceId == offer.InsuranceId);
+                if (!customerExists)
+                    throw new InvalidOperationException($"Customer with ID {offer.CustomerId} not found");
 
-                    if (!insuranceExists)
-                        throw new InvalidOperationException($"Insurance with ID {offer.InsuranceId} not found");
-                }
+
+                var insuranceExists = await _context.Insurances
+                    .AnyAsync(i => i.InsuranceId == offer.InsuranceId);
+
+                if (!insuranceExists)
+                    throw new InvalidOperationException($"Insurance with ID {offer.InsuranceId} not found");
 
                 // Set creation timestamp if not already set
                 if (!offer.CreatedAt.HasValue)

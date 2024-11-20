@@ -8,7 +8,7 @@ namespace WebAPI.Data.Maps
 {
     public static class Mapper
     {
-        public static OfferDTO OfferToOfferDto(Offer offer)
+        public static OfferDTO OfferToDTO(Offer offer)
         {
             var offerDTO = new OfferDTO{
                 OfferId = offer.OfferId,
@@ -56,6 +56,17 @@ namespace WebAPI.Data.Maps
             };
 
             return carDTO;
+        }
+
+        public static RentalDTO RentalToDTO(Rental r)
+        {
+            return new RentalDTO{
+                RentalId = r.RentalId,
+                OfferId = r.OfferId,
+                Status = r.Status,
+                CreatedAt = r.CreatedAt,
+                Offer = OfferToDTO(r.Offer)
+            };
         }
     }
 }

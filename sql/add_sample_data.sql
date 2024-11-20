@@ -44,4 +44,4 @@ INSERT INTO rentals (offer_id, status, created_at) VALUES
 
 -- Insert returns
 INSERT INTO returns (rental_id, return_date, condition_description, photo_url, processed_by) VALUES
-(2, '2024-11-17', 'Excellent condition', 'https://storage.example.com/photos/return2.jpg', 2);
+(35, '2024-11-17', 'Excellent condition', 'https://storage.example.com/photos/return2.jpg', 2);

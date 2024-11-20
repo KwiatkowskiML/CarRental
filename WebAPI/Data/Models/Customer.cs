@@ -11,5 +11,5 @@ public partial class Customer
 
     public int DrivingLicenseYears { get; set; }
 
-    public virtual ICollection<Rental> Rentals { get; set; } = new List<Rental>();
+    public virtual ICollection<Offer> Offers { get; set; } = new List<Offer>();
 }

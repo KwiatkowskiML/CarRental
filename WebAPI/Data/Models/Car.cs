@@ -20,8 +20,6 @@ public partial class Car
     public DateTime? CreatedAt { get; set; }
     public decimal BasePrice { get; set; }
 
-    // why nullable
     public virtual CarProvider? CarProvider { get; set; }
-
-    public virtual ICollection<Rental> Rentals { get; set; } = new List<Rental>();
+    public virtual ICollection<Offer> Offers { get; set; } = new List<Offer>();
 }
