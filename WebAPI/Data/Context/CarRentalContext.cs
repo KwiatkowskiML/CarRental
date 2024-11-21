@@ -76,6 +76,10 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.CarProvider).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.CarProviderId)
                 .HasConstraintName("cars_car_provider_id_fkey");
+            entity.HasMany(c => c.Offers)
+                .WithOne(o => o.Car)
+                .HasForeignKey(o => o.CarId)
+                .HasConstraintName("offers_car_id_fkey");
         });
 
         modelBuilder.Entity<CarProvider>(entity =>
@@ -140,32 +144,20 @@ public partial class CarRentalContext : DbContext
             entity.ToTable("rentals");
 
             entity.Property(e => e.RentalId).HasColumnName("rental_id");
-            entity.Property(e => e.CarId).HasColumnName("car_id");
-            entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
+            entity.Property(e => e.OfferId).HasColumnName("offer_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
-            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
-            entity.Property(e => e.EndDate).HasColumnName("end_date");
-            entity.Property(e => e.HasChildSeat).HasColumnName("has_child_seat");
-            entity.Property(e => e.HasGps).HasColumnName("has_gps");
-            entity.Property(e => e.StartDate).HasColumnName("start_date");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .HasColumnName("status");
 
-            entity.HasOne(d => d.Car).WithMany(p => p.Rentals)
-                .HasForeignKey(d => d.CarId)
-                .HasConstraintName("rentals_car_id_fkey");
-
-            entity.HasOne(d => d.Customer).WithMany(p => p.Rentals)
-                .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("rentals_customer_id_fkey");
-
-            entity.HasOne(d => d.Insurance).WithMany()
-                .HasForeignKey(d => d.InsuranceId)
-                .HasConstraintName("rentals_insurance_id_fkey");
+            entity.HasOne(d => d.Offer)
+                .WithOne(p => p.Rental)
+                .HasForeignKey<Rental>(d => d.OfferId)
+                .HasConstraintName("rentals_offer_id_fkey")
+                .IsRequired(true);
         });
 
         modelBuilder.Entity<Return>(entity =>
@@ -245,6 +237,11 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.Insurance).WithMany()
                 .HasForeignKey(d => d.InsuranceId)
                 .HasConstraintName("offers_insurance_id_fkey");
+
+            entity.HasOne(d => d.Rental)
+                .WithOne(p => p.Offer)
+                .HasForeignKey<Rental>(d => d.OfferId)
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<Insurance>(entity =>

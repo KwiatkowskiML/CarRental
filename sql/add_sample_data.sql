@@ -32,18 +32,16 @@ VALUES
     (50.00, 'Standard Insurance'),
     (100.00, 'Full Insurance');
 
+INSERT INTO offers (insurance_id, customer_id, car_id, total_price, start_date, end_date, created_at, has_gps, has_child_seat)
+VALUES 
+    (1, 1, 1, 1000, '2024-11-19', '2024-11-25', CURRENT_TIMESTAMP, TRUE, FALSE),
+    (2, 2, 2, 2000, '2024-11-10', '2024-11-17', CURRENT_TIMESTAMP, FALSE, TRUE);
+
 -- Insert rentals
-INSERT INTO rentals (customer_id, car_id, insurance_id, start_date, end_date, status, has_gps, has_child_seat) VALUES
-(1, 1, 1, '2024-01-01', '2024-01-07', 'completed', true, false),
-(2, 2, 2, '2024-02-01', '2024-02-05', 'completed', true, true),
-(3, 3, 1, '2024-03-01', '2024-03-10', 'active', false, false);
+INSERT INTO rentals (offer_id, status, created_at) VALUES
+(1, 'active', CURRENT_TIMESTAMP),
+(2, 'completed', CURRENT_TIMESTAMP);
 
 -- Insert returns
 INSERT INTO returns (rental_id, return_date, condition_description, photo_url, processed_by) VALUES
-(1, '2024-01-07', 'Good condition, minor scratches', 'https://storage.example.com/photos/return1.jpg', 1),
-(2, '2024-02-05', 'Excellent condition', 'https://storage.example.com/photos/return2.jpg', 2);
-
-INSERT INTO offers (insurance_id, customer_id, car_id, total_price, start_date, end_date, created_at, has_gps, has_child_seat)
-VALUES 
-    (1, 1, 1, 1000, '2024-11-20', '2024-11-25', CURRENT_TIMESTAMP, TRUE, FALSE),
-    (2, 2, 2, 2000, '2024-11-22', '2024-11-27', CURRENT_TIMESTAMP, FALSE, TRUE);
+(35, '2024-11-17', 'Excellent condition', 'https://storage.example.com/photos/return2.jpg', 2);
