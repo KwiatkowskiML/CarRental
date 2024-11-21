@@ -376,5 +376,65 @@ namespace CarRental.WebAPI.Data.Repositories
                 throw new DatabaseOperationException("Failed to create offer", ex);
             }
         }
+
+        public async Task<RentalDTO?> CreateRentalFromOfferAsync(int offerId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var offer = await _context.Offers
+                    .Include(o => o.Car)
+                    .Include(o => o.Customer)
+                    .FirstOrDefaultAsync(o => o.OfferId == offerId);
+
+                if (offer == null)
+                    return null;
+
+                if (offer.Car.Status != "available")
+                    throw new InvalidOperationException("Car is not available for rental");
+
+                var hasOverlap = await _context.Rentals
+                    .AnyAsync(r => r.Offer.CarId == offer.CarId &&
+                                r.Status != "cancelled" &&
+                                ((r.Offer.StartDate <= offer.EndDate && r.Offer.EndDate >= offer.StartDate) ||
+                                (r.Offer.StartDate >= offer.StartDate && r.Offer.StartDate <= offer.EndDate)));
+
+                if (hasOverlap)
+                    throw new InvalidOperationException("Car is already booked for these dates");
+
+                // Create new rental
+                var rental = new Rental
+                {
+                    OfferId = offerId,
+                    Status = "active",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // Add rental and update car status
+                _context.Rentals.Add(rental);
+                offer.Car.Status = "rented";
+                
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Load necessary navigation properties for the DTO
+                await _context.Entry(rental)
+                    .Reference(r => r.Offer)
+                    .Query()
+                    .Include(o => o.Car)
+                        .ThenInclude(c => c.CarProvider)
+                    .Include(o => o.Customer)
+                    .Include(o => o.Insurance)
+                    .LoadAsync();
+
+                return Mapper.RentalToDTO(rental);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error creating rental for offer {OfferId}", offerId);
+                throw new DatabaseOperationException("Failed to create rental", ex);
+            }
+        }
     }
 }

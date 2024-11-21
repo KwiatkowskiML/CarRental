@@ -17,11 +17,10 @@ namespace CarRental.WebAPI.Data.Repositories.Interfaces
         Task<List<RentalDTO>> GetUserRentalsAsync(int userId);
         Task<bool> CreateRentalAsync(Rental rental);
         Task<bool> ProcessReturnAsync(Return carReturn);
-
         Task<Insurance?> GetInsuranceByIdAsync(int insuranceId);
         Task CreateOfferAsync(Offer offer);
-
         Task<User?> GetUserByEmail(string email);
         Task<User> CreateUser(User user);
+        Task<RentalDTO?> CreateRentalFromOfferAsync(int offerId);
     }
 }

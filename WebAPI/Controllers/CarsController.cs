@@ -175,6 +175,44 @@ namespace CarRental.WebAPI.Controllers
             }
         }
 
+        [HttpPost("create-rental/{offerId:int}/{userId:int}")]
+        public async Task<ActionResult<RentalDTO>> CreateRental(int offerId, int userId)
+        {
+            try
+            {
+                // First verify if the user exists and is authorized to create this rental
+                var customer = await _repository.GetCustomerByUserId(userId);
+                if (customer == null)
+                    return NotFound($"Customer with userId = {userId} not found");
+
+                // Get the offer to verify it belongs to this user
+                var offerFilter = new OfferFilter
+                {
+                    OfferId = offerId,
+                    CustomerId = customer.CustomerId
+                };
+
+                var offer = await _repository.GetOffer(offerFilter);
+                if (offer == null)
+                    return NotFound($"Offer with ID {offerId} and CustomerID related to UserID {userId} not found for this customer");
+
+                var rental = await _repository.CreateRentalFromOfferAsync(offerId);
+                if (rental == null)
+                    return NotFound($"Failed to create rental for offer {offerId}");
+
+                return Ok(rental);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DatabaseOperationException ex)
+            {
+                _logger.LogError(ex, "Error creating rental");
+                return StatusCode(500, "An error occurred while creating the rental");
+            }
+        }
+
         private decimal CalculateTotalPrice(
             decimal basePrice,
             DateOnly startDate,
