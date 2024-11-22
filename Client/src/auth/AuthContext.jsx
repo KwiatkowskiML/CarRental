@@ -26,19 +26,26 @@ export const AuthProvider = ({ children }) => {
         },
         body: JSON.stringify({ token: googleToken })
       });
-
+  
+      const data = await response.json();
+  
+      if (response.status === 404 && data.needsRegistration) {
+        return { 
+          needsRegistration: true, 
+          userData: data.userData 
+        };
+      }
+  
       if (!response.ok) {
         throw new Error('Login failed');
       }
-
-      const { token } = await response.json();
-      localStorage.setItem('token', token);
-      setUser({ token });
-      navigate('/');
-      return true;
+  
+      localStorage.setItem('token', data.token);
+      setUser({ token: data.token });
+      return { token: data.token };
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { error: true };
     }
   };
 

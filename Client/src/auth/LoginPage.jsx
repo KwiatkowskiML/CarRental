@@ -1,11 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from './AuthContext';
+import { RegistrationForm } from './RegistrationForm';
 
 export const LoginPage = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
+  const [googleData, setGoogleData] = useState(null);
+  const [showRegistration, setShowRegistration] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -14,11 +17,35 @@ export const LoginPage = () => {
   }, [user, navigate]);
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    const success = await login(credentialResponse.credential);
+    try {
+      const result = await login(credentialResponse.credential);
+      if (result.needsRegistration) {
+        setGoogleData({
+          ...result.userData,
+          token: credentialResponse.credential
+        });
+        setShowRegistration(true);
+      } else if (result.token) {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
+
+  const handleRegistrationComplete = async () => {
+    const success = await login(googleData.token);
     if (success) {
       navigate('/');
     }
   };
+
+  if (showRegistration) {
+    return <RegistrationForm 
+      googleData={googleData} 
+      onRegistrationComplete={handleRegistrationComplete}
+    />;
+  }
 
   return (
     <div style={{ 

@@ -56,7 +56,7 @@ public class RentalConfirmationService : IRentalConfirmationService
     {
         try 
         {
-            var timestamp = DateTime.UtcNow.AddHours(24).ToString("u");
+            var timestamp = DateTime.UtcNow.AddMinutes(10).ToString("u");
             var tokenData = $"{offerId}_{userId}_{timestamp}";
             _logger.LogInformation("Token data before hashing: {TokenData}", tokenData);
 
