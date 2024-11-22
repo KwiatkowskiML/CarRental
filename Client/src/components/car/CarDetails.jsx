@@ -8,10 +8,37 @@ export function CarDetails() {
   const { carId } = useParams();
   const { user } = useAuth();
   const [car, setCar] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [totalPrice, setTotalPrice] = useState(null);
+  const [offerDetails, setOfferDetails] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // Fetch current user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/api/user/current', {
+          headers: {
+            'Authorization': `Bearer ${user.token}`
+          }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (user?.token) {
+      fetchUserData();
+    }
+  }, [user]);
 
   useEffect(() => {
     fetch('/api/cars', {
@@ -40,8 +67,8 @@ export function CarDetails() {
           'Authorization': `Bearer ${user.token}`
         },
         body: JSON.stringify({
-          carId: car.carId,
-          userId: 1, // TO DO
+          carId: parseInt(carId),
+          userId: options.userId,
           startDate: options.startDate,
           endDate: options.endDate,
           insuranceId: options.insuranceId,
@@ -49,12 +76,61 @@ export function CarDetails() {
           hasChildSeat: options.hasChildSeat
         })
       });
-
+  
+      if (!response.ok) {
+        throw new Error('Failed to get offer');
+      }
+  
       const data = await response.json();
-      setTotalPrice(data.totalPrice);
+      console.log('Offer response data:', data); // Debug log
+      setTotalPrice(data.totalPrice)
+      setOfferDetails(data);
       setIsDialogOpen(false);
     } catch (error) {
       console.error('Error getting offer:', error);
+      setError('Failed to get offer. Please try again.');
+    }
+  };
+
+  const handleRentMe = async () => {
+    if (!offerDetails || !currentUser) return;
+  
+    setIsSubmitting(true);
+    setError(null);
+  
+    try {
+      const requestData = {
+        offerId: offerDetails.offerId,
+        userId: currentUser.userId
+      };
+      
+      console.log('Offer object:', offerDetails); // Debug log
+      console.log('Current user object:', currentUser); // Debug log
+      console.log('Sending rental confirmation request:', requestData);
+  
+      const response = await fetch('/api/RentalConfirmation/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify(requestData)
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response from server:', errorText);
+        throw new Error(`Failed to initiate rental process: ${errorText}`);
+      }
+  
+      // Show success message
+      alert('Please check your email to confirm the rental.');
+      navigate('/');
+    } catch (error) {
+      console.error('Error initiating rental:', error);
+      setError('Failed to initiate rental. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -161,7 +237,7 @@ export function CarDetails() {
                 </div>
                 <Button 
                   variant="primary"
-                  onClick={() => {}}  // TO DO
+                  onClick={handleRentMe}
                 >
                   Rent Me
                 </Button>
@@ -186,7 +262,6 @@ export function CarDetails() {
     </div>
   );
 }
-
 function DetailRow({ label, value }) {
   return (
     <div style={{ 

@@ -436,5 +436,20 @@ namespace CarRental.WebAPI.Data.Repositories
                 throw new DatabaseOperationException("Failed to create rental", ex);
             }
         }
+
+        public async Task<Customer> CreateCustomer(Customer customer)
+        {
+            try
+            {
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating customer");
+                throw new DatabaseOperationException("Failed to create customer", ex);
+            }
+        }
     }
 }
