@@ -450,5 +450,34 @@ namespace CarRental.WebAPI.Data.Repositories
                 throw new DatabaseOperationException("Failed to create customer", ex);
             }
         }
+        public async Task<RentalDTO?> GetRentalByOfferId(int offerId)
+        {
+            try
+            {
+                var rental = await _context.Rentals
+                    .Include(r => r.Offer)
+                        .ThenInclude(o => o.Car)
+                            .ThenInclude(c => c.CarProvider)
+                    .Include(r => r.Offer)
+                        .ThenInclude(o => o.Customer)
+                    .Include(r => r.Offer)
+                        .ThenInclude(o => o.Insurance)
+                    .FirstOrDefaultAsync(r => r.OfferId == offerId);
+
+                if (rental == null)
+                {
+                    return null;
+                }
+
+                _logger.LogInformation("Found rental for offerId {OfferId}: {@Rental}", offerId, rental);
+                return Mapper.RentalToDTO(rental);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting rental by offerId {OfferId}", offerId);
+                throw new DatabaseOperationException($"Failed to get rental for offer {offerId}", ex);
+            }
+        }
+
     }
 }

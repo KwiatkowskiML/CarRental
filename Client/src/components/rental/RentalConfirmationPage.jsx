@@ -20,78 +20,61 @@ export function RentalConfirmationPage() {
       return;
     }
 
-    validateToken(token);
-    confirmRental()
+    validateAndConfirm(token);
   }, [searchParams, user]);
 
-  const validateToken = async (token) => {
+  const validateAndConfirm = async (token) => {
     try {
-      console.log('Starting token validation');
-      console.log('Raw token from URL:', token);
-      console.log('Encoded token:', encodeURIComponent(token));
-  
-      // Try to decode the token first to see what we're working with
-      const decodedToken = decodeURIComponent(token);
-      console.log('Decoded token:', decodedToken);
-  
-      // Split and examine token parts
-      const parts = decodedToken.split('_');
-      console.log('Token parts:', parts);
-      console.log('Number of parts:', parts.length);
-  
-      const response = await fetch(`/api/RentalConfirmation/validate?token=${encodeURIComponent(token)}`, {
-        headers: {
-          'Authorization': `Bearer ${user.token}`
-        }
-      });
-  
-      console.log('Response status:', response.status);
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-  
-      if (!response.ok) {
-        throw new Error(responseText);
-      }
-  
-      const data = JSON.parse(responseText);
-      console.log('Parsed response data:', data);
-  
-      setRentalDetails(data);
-      setStatus('success');
-    } catch (error) {
-      console.error('Validation error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-      setError(error.message);
-      setStatus('error');
-    }
-  };
-
-  const confirmRental = async () => {
-    try {
-      setStatus('loading');
-      const token = searchParams.get('token');
-      
-      const response = await fetch(`/api/RentalConfirmation/confirm?token=${encodeURIComponent(token)}`, {
-        method: 'POST',
+      // First just validate the token
+      const validateResponse = await fetch(`/api/RentalConfirmation/validate?token=${encodeURIComponent(token)}`, {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
+      if (!validateResponse.ok) {
+        const errorText = await validateResponse.text();
         throw new Error(errorText);
       }
 
-      const data = await response.json();
-      setRentalDetails(data);
-      setStatus('success');
+      const validationData = await validateResponse.json();
+
+      // If validation successful and rental doesn't exist yet, try to confirm
+      try {
+        const confirmResponse = await fetch(`/api/RentalConfirmation/confirm?token=${encodeURIComponent(token)}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${user.token}`
+          }
+        });
+
+        // If we get a 409, it means the rental was already confirmed
+        if (confirmResponse.status === 409) {
+          setRentalDetails(validationData);
+          setStatus('success');
+          return;
+        }
+
+        if (!confirmResponse.ok) {
+          const errorText = await confirmResponse.text();
+          throw new Error(errorText);
+        }
+
+        const data = await confirmResponse.json();
+        setRentalDetails(data);
+        setStatus('success');
+      } catch (confirmError) {
+        // If we get here with a 409, it's not really an error
+        if (confirmError.message?.includes('already confirmed')) {
+          setRentalDetails(validationData);
+          setStatus('success');
+          return;
+        }
+        throw confirmError;
+      }
     } catch (error) {
-      console.error('Confirmation error:', error);
-      setError(error.message);
+      console.error('Error processing rental:', error);
+      setError(error.message || 'An unexpected error occurred');
       setStatus('error');
     }
   };
@@ -106,7 +89,7 @@ export function RentalConfirmationPage() {
       gap: '20px'
     }}>
       <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>
-        Verifying your rental confirmation...
+        Processing your rental confirmation...
       </h2>
       <div style={{
         width: '48px',
@@ -124,31 +107,6 @@ export function RentalConfirmationPage() {
           }
         `}
       </style>
-    </div>
-  );
-
-  const renderErrorState = () => (
-    <div style={{ 
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '60vh',
-      gap: '20px'
-    }}>
-      <h2 style={{ 
-        fontSize: '24px', 
-        fontWeight: 'bold',
-        color: '#dc2626' 
-      }}>
-        Confirmation Error
-      </h2>
-      <p style={{ marginBottom: '20px', color: '#666' }}>
-        {error}
-      </p>
-      <Button variant="primary" onClick={() => navigate('/')}>
-        Return to Home
-      </Button>
     </div>
   );
 
@@ -201,8 +159,33 @@ export function RentalConfirmationPage() {
       }}>
         Your rental has been successfully confirmed. You can view all the details in your rentals section.
       </p>
-      <Button variant="primary" onClick={() => {}}>   {/*TODO*/}
-        View My Rentals
+      <Button variant="primary" onClick={() => navigate('/')}>
+        Return to Home
+      </Button>
+    </div>
+  );
+
+  const renderErrorState = () => (
+    <div style={{ 
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      gap: '20px'
+    }}>
+      <h2 style={{ 
+        fontSize: '24px', 
+        fontWeight: 'bold',
+        color: '#dc2626' 
+      }}>
+        Confirmation Error
+      </h2>
+      <p style={{ marginBottom: '20px', color: '#666' }}>
+        {error}
+      </p>
+      <Button variant="primary" onClick={() => navigate('/')}>
+        Return to Home
       </Button>
     </div>
   );
@@ -214,34 +197,4 @@ export function RentalConfirmationPage() {
       {status === 'success' && renderSuccessState()}
     </Page>
   );
-}
-
-function DetailRow({ label, value }) {
-  return (
-    <div style={{ 
-      display: 'flex',
-      padding: '12px 16px',
-      backgroundColor: '#f8f9fa',
-      borderRadius: '4px',
-      alignItems: 'center'
-    }}>
-      <span style={{ 
-        fontWeight: 'bold',
-        minWidth: '120px',
-        color: '#4b5563'
-      }}>
-        {label}:
-      </span>
-      <span style={{ color: '#1f2937' }}>{value}</span>
-    </div>
-  );
-}
-
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 }

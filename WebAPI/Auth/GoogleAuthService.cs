@@ -28,12 +28,10 @@ public class GoogleAuthService
         _logger = logger;
     }
 
-    public async Task<string> ValidateGoogleTokenAndGenerateJwt(string googleToken)
+    public async Task<AuthResult> ValidateGoogleTokenAndGenerateJwt(string googleToken)
     {
         try 
         {
-            _logger.LogInformation("Validating Google token with Client ID: {ClientId}", _googleOptions.ClientId);
-            
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
                 Audience = new[] { _googleOptions.ClientId },
@@ -42,44 +40,48 @@ public class GoogleAuthService
             };
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
-            _logger.LogInformation("Successfully validated Google token for email: {Email}", payload.Email);
-
-            // Check if user exists, if not create new user
             var user = await _repository.GetUserByEmail(payload.Email);
+
             if (user == null)
             {
-                _logger.LogInformation("Creating new user for email: {Email}", payload.Email);
-                user = new User
-                {
-                    Email = payload.Email,
-                    FirstName = payload.GivenName ?? "Unknown",
-                    LastName = payload.FamilyName ?? "Unknown",
-                    Age = 0, // Default value
-                    CreatedAt = DateTime.UtcNow.ToUniversalTime() // Ensure UTC
+                return new AuthResult 
+                { 
+                    NeedsRegistration = true,
+                    UserData = new UserData 
+                    {
+                        Email = payload.Email,
+                        FirstName = payload.GivenName,
+                        LastName = payload.FamilyName,
+                        Token = googleToken
+                    }
                 };
-                user = await _repository.CreateUser(user);
-
-                // Create corresponding customer record with default values
-                var customer = new Customer
-                {
-                    UserId = user.UserId,
-                    DrivingLicenseYears = 2 // Default value
-                };
-                await _repository.CreateCustomer(customer);
             }
 
-            return GenerateJwt(user);
-        }
-        catch (InvalidJwtException ex)
-        {
-            _logger.LogError(ex, "Invalid JWT token. ClientID: {ClientId}", _googleOptions.ClientId);
-            throw new AuthenticationException("Failed to validate Google token", ex);
+            return new AuthResult 
+            { 
+                Token = GenerateJwt(user)
+            };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error during Google token validation");
+            _logger.LogError(ex, "Authentication failed");
             throw new AuthenticationException("Authentication failed", ex);
         }
+    }
+
+    public class AuthResult
+    {
+        public string? Token { get; set; }
+        public bool NeedsRegistration { get; set; }
+        public UserData? UserData { get; set; }
+    }
+
+    public class UserData
+    {
+        public string Email { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string Token { get; set; } = string.Empty;
     }
 
     private string GenerateJwt(User user)

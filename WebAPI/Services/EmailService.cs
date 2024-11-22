@@ -36,7 +36,7 @@ Thank you for choosing our car rental service. Please confirm your rental by cli
 
 {confirmationLink}
 
-This link will expire in 24 hours and can only be used with your account.
+This link will expire in 10 minutes and can only be used with your account.
 
 If you did not request this rental, please ignore this email.
 
@@ -105,7 +105,7 @@ Car Rental Team",
         <div class='note'>
             <p><strong>Important:</strong></p>
             <ul>
-                <li>This link will expire in 24 hours</li>
+                <li>This link will expire in 10 minutes</li>
                 <li>This link can only be used with your account</li>
                 <li>If you cannot click the button, copy and paste this link into your browser:</li>
             </ul>
