@@ -149,19 +149,16 @@ public class RentalConfirmationController : ControllerBase
         try
         {
             var (isValid, offerId, userId) = _confirmationService.ValidateConfirmationToken(token);
-            
+
             if (!isValid)
                 return BadRequest("Invalid or expired confirmation link");
 
-            //TODO: true for only one user
-            // Verify the current user matches the token's user
-            // var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            // var user = await _repository.GetUserByEmailAsync(currentUserEmail);
-            
-            // if (user == null || user.UserId != userId)
-            // {
-            //     return Unauthorized("This confirmation link is for a different user");
-            // }
+            // Check if rental already exists for this offer
+            var existingRental = await _repository.GetRentalByOfferId(offerId);
+            if (existingRental != null)
+            {
+                return StatusCode(409, "Rental has already been confirmed");
+            }
 
             // Create the rental
             var rental = await _repository.CreateRentalFromOfferAsync(offerId);

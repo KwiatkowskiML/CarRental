@@ -23,6 +23,8 @@ namespace CarRental.WebAPI.Data.Repositories.Interfaces
         Task<User> CreateUser(User user);
         Task<RentalDTO?> CreateRentalFromOfferAsync(int offerId);
         Task<Customer> CreateCustomer(Customer customer);
+        Task<RentalDTO?> GetRentalByOfferId(int offerId);
+
 
     }
 }
