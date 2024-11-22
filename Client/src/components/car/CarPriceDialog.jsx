@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
+import { useAuth } from '../../auth/AuthContext';
 
 const INSURANCE_TYPES = [
   { insurance_id: 1, name: 'Standard Insurance', price: 50.00 },
@@ -7,21 +8,51 @@ const INSURANCE_TYPES = [
 ];
 
 export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
+  const { user } = useAuth();
   const [insuranceId, setInsuranceId] = useState('');
   const [hasGps, setHasGps] = useState(false);
   const [hasChildSeat, setHasChildSeat] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({
-      insuranceId: parseInt(insuranceId),
-      hasGps,
-      hasChildSeat,
-      startDate,
-      endDate
-    });
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Get user ID from backend using the token
+      const userResponse = await fetch('/api/user/current', {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to get user information');
+      }
+
+      const userData = await userResponse.json();
+
+      const formData = {
+        insuranceId: parseInt(insuranceId),
+        hasGps,
+        hasChildSeat,
+        startDate,
+        endDate,
+        userId: userData.userId
+      };
+
+      await onSubmit(formData);
+      onClose();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setError('Failed to submit form. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;

@@ -22,5 +22,7 @@ namespace CarRental.WebAPI.Data.Repositories.Interfaces
         Task<User?> GetUserByEmail(string email);
         Task<User> CreateUser(User user);
         Task<RentalDTO?> CreateRentalFromOfferAsync(int offerId);
+        Task<Customer> CreateCustomer(Customer customer);
+
     }
 }

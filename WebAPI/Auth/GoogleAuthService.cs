@@ -54,10 +54,18 @@ public class GoogleAuthService
                     Email = payload.Email,
                     FirstName = payload.GivenName ?? "Unknown",
                     LastName = payload.FamilyName ?? "Unknown",
-                    Age = 0, // Set a default value or make it nullable in the model
+                    Age = 0, // Default value
                     CreatedAt = DateTime.UtcNow.ToUniversalTime() // Ensure UTC
                 };
-                await _repository.CreateUser(user);
+                user = await _repository.CreateUser(user);
+
+                // Create corresponding customer record with default values
+                var customer = new Customer
+                {
+                    UserId = user.UserId,
+                    DrivingLicenseYears = 2 // Default value
+                };
+                await _repository.CreateCustomer(customer);
             }
 
             return GenerateJwt(user);
@@ -99,7 +107,6 @@ public class GoogleAuthService
     }
 }
 
-// Add this class for custom exception
 public class AuthenticationException : Exception
 {
     public AuthenticationException(string message) : base(message)

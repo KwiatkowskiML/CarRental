@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace CarRental.WebAPI.Controllers
 {   
@@ -61,5 +62,39 @@ namespace CarRental.WebAPI.Controllers
                 return StatusCode(500, "An error occurred while fetching user ID");
             }
         }
+
+
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var email = User.FindFirst(ClaimTypes.Email)?.Value;
+                if (string.IsNullOrEmpty(email))
+                {
+                    return Unauthorized();
+                }
+
+                var user = await _repository.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                return Ok(new { 
+                    userId = user.UserId,
+                    email = user.Email,
+                    firstName = user.FirstName,
+                    lastName = user.LastName
+                });
+            }
+            catch (DatabaseOperationException ex)
+            {
+                _logger.LogError(ex, "Error fetching current user");
+                return StatusCode(500, "An error occurred while fetching user information");
+            }
+        }
     }
+
+    
 }

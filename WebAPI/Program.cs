@@ -6,6 +6,9 @@ using CarRental.WebAPI.Data.Context;
 using CarRental.WebAPI.Data.Repositories;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Auth;
+using CarRental.WebAPI.Services;
+using CarRental.WebAPI.Services.Interfaces;
+using CarRental.WebAPI.Services.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,9 +27,29 @@ builder.Services.Configure<GoogleAuthOptions>(
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("Jwt"));
 
+// Configure Email
+builder.Services.Configure<EmailOptions>(
+    builder.Configuration.GetSection("Email"));
+
 // Register Repositories and Services
 builder.Services.AddScoped<ICarRentalRepository, CarRentalRepository>();
 builder.Services.AddScoped<GoogleAuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();
+
+// Register HttpClient for SendGrid
+builder.Services.AddHttpClient();
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -40,7 +63,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret is not configured")))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? 
+                    throw new InvalidOperationException("Jwt:Secret is not configured")))
         };
     });
 
@@ -54,6 +78,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add CORS middleware
+app.UseCors();
 
 // Add authentication middleware before authorization
 app.UseAuthentication();

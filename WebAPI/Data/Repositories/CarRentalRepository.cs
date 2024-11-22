@@ -412,7 +412,6 @@ namespace CarRental.WebAPI.Data.Repositories
 
                 // Add rental and update car status
                 _context.Rentals.Add(rental);
-                offer.Car.Status = "rented";
                 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -434,6 +433,21 @@ namespace CarRental.WebAPI.Data.Repositories
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "Error creating rental for offer {OfferId}", offerId);
                 throw new DatabaseOperationException("Failed to create rental", ex);
+            }
+        }
+
+        public async Task<Customer> CreateCustomer(Customer customer)
+        {
+            try
+            {
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating customer");
+                throw new DatabaseOperationException("Failed to create customer", ex);
             }
         }
     }

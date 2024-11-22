@@ -5,6 +5,7 @@ import { AuthGuard } from './auth/AuthGuard';
 import { LoginPage } from './auth/LoginPage';
 import { CarList } from './components/car/CarList';
 import { CarDetails } from './components/car/CarDetails';
+import { RentalConfirmationPage } from './components/rental/RentalConfirmationPage';
 
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -28,6 +29,11 @@ function App() {
             <Route path="/cars/:carId" element={
               <AuthGuard>
                 <CarDetails />
+              </AuthGuard>
+            } />
+            <Route path="/rental-confirm" element={
+              <AuthGuard>
+                <RentalConfirmationPage />
               </AuthGuard>
             } />
           </Routes>
