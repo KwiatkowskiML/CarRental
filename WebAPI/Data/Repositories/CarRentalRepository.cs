@@ -412,7 +412,6 @@ namespace CarRental.WebAPI.Data.Repositories
 
                 // Add rental and update car status
                 _context.Rentals.Add(rental);
-                offer.Car.Status = "rented";
                 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

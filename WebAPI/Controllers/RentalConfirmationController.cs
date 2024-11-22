@@ -89,7 +89,96 @@ public class RentalConfirmationController : ControllerBase
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
+
+    [HttpGet("validate")]
+    public async Task<IActionResult> ValidateToken([FromQuery] string token)
+    {
+        _logger.LogInformation("Validate endpoint called");
+        _logger.LogInformation("Received token: {Token}", token);
+
+        try
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("Received null or empty token");
+                return BadRequest("Token is required");
+            }
+
+            // Try to decode the token
+            var decodedToken = Uri.UnescapeDataString(token);
+            _logger.LogInformation("Decoded token: {DecodedToken}", decodedToken);
+
+            var (isValid, offerId, userId) = _confirmationService.ValidateConfirmationToken(decodedToken);
+            _logger.LogInformation("Validation result - IsValid: {IsValid}, OfferId: {OfferId}, UserId: {UserId}",
+                isValid, offerId, userId);
+            
+            if (!isValid)
+                return BadRequest("Invalid or expired confirmation link");
+
+            // TODO: block unautorized users
+
+            // Verify the current user matches the token's user
+            // var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            // var user = await _repository.GetUserByEmailAsync(currentUserEmail);
+            
+            // if (user == null || user.UserId != userId)
+            // {
+            //     return Unauthorized("This confirmation link is for a different user");
+            // }
+
+            // Get the offer details
+            var filter = new OfferFilter { OfferId = offerId };
+            var offer = await _repository.GetOffer(filter);
+            
+            if (offer == null)
+                return NotFound("Offer not found");
+
+            // Return offer details for confirmation page
+            return Ok(offer);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating token");
+            return StatusCode(500, "An error occurred while validating the token");
+        }
+    }
+
+    [HttpPost("confirm")]
+    public async Task<IActionResult> ConfirmRental([FromQuery] string token)
+    {
+        try
+        {
+            var (isValid, offerId, userId) = _confirmationService.ValidateConfirmationToken(token);
+            
+            if (!isValid)
+                return BadRequest("Invalid or expired confirmation link");
+
+            //TODO: true for only one user
+            // Verify the current user matches the token's user
+            // var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            // var user = await _repository.GetUserByEmailAsync(currentUserEmail);
+            
+            // if (user == null || user.UserId != userId)
+            // {
+            //     return Unauthorized("This confirmation link is for a different user");
+            // }
+
+            // Create the rental
+            var rental = await _repository.CreateRentalFromOfferAsync(offerId);
+            if (rental == null)
+                return BadRequest("Failed to create rental");
+
+            return Ok(rental);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error confirming rental");
+            return StatusCode(500, "An error occurred while confirming the rental");
+        }
+    }
 }
+
+
 
 public class SendConfirmationEmailRequest
 {
