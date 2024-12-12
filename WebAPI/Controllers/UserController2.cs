@@ -14,12 +14,9 @@ namespace WebAPI.Controllers
     public class UserController2 : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper<Rental, RentalDTO> _rentalMapper;
-
-        public UserController2(IUnitOfWork unitOfWork, IMapper<Rental, RentalDTO> rentalMapper)
+        public UserController2(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _rentalMapper = rentalMapper;
         }
 
         [HttpGet("/{customerId}/rentals2")]
@@ -28,7 +25,7 @@ namespace WebAPI.Controllers
             try
             {
                 var rentals = await _unitOfWork.RentalsRepository.GetUserRentalsAsync(customerId);
-                var rentalDtos = rentals.Select(_rentalMapper.ToDto).ToList();
+                var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
                 return Ok(rentalDtos);
             }
             catch (DatabaseOperationException ex)

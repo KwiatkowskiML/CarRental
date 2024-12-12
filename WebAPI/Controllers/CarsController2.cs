@@ -9,7 +9,7 @@ namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CarsController2(IUnitOfWork unitOfWork, IMapper<Car, CarDTO> carMapper) : ControllerBase
+public class CarsController2(IUnitOfWork unitOfWork) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetCars([FromQuery] CarFilter filter)
@@ -17,7 +17,7 @@ public class CarsController2(IUnitOfWork unitOfWork, IMapper<Car, CarDTO> carMap
         try
         {
             var cars = await unitOfWork.CarsRepository.GetCarsAsync(filter);
-            var carDtos = cars.Select(carMapper.ToDto).ToList();
+            var carDtos = cars.Select(CarMapper.ToDto).ToList();
             return Ok(carDtos);
         }
         catch (DatabaseOperationException ex)

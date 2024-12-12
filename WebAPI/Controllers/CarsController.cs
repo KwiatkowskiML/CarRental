@@ -136,8 +136,7 @@ namespace CarRental.WebAPI.Controllers
 
                 await _repository.CreateOfferAsync(offer);
 
-                var offerMapper = new OfferMapper();
-                var response = offerMapper.ToDto(offer);
+                var response = OfferMapper.ToDto(offer);
 
                 return Ok(response);
 

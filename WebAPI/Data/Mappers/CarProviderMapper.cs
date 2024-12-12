@@ -2,9 +2,9 @@ using CarRental.WebAPI.Data.Models;
 
 namespace WebAPI.Data.Mappers
 {
-    public class CarProviderMapper: IMapper<CarProvider, CarProviderDTO>
+    public static class CarProviderMapper
     {
-        public CarProviderDTO ToDto(CarProvider carProvider)
+        public static CarProviderDTO ToDto(CarProvider carProvider)
         {
             var carProviderDto = new CarProviderDTO{
                 CarProviderId = carProvider.CarProviderId,

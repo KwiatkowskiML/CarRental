@@ -17,12 +17,10 @@ namespace WebAPI.Controllers
     public class OffersController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper<Offer, OfferDTO> _offerMapper;
 
-        public OffersController(IUnitOfWork unitOfWork, IMapper<Offer, OfferDTO> offerMapper)
+        public OffersController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _offerMapper = offerMapper;
         }
 
         [HttpPost("get-offer")]
@@ -95,7 +93,7 @@ namespace WebAPI.Controllers
                 };
 
                 await _unitOfWork.OffersRepository.CreateOfferAsync(offer);
-                var response = _offerMapper.ToDto(offer);
+                var response = OfferMapper.ToDto(offer);
                 return Ok(response);
             }
             catch (DatabaseOperationException ex)

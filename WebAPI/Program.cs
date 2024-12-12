@@ -41,12 +41,6 @@ builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();
 
-// Register mappings
-builder.Services.AddScoped<IMapper<Offer, OfferDTO>, OfferMapper>();
-builder.Services.AddScoped<IMapper<Car, CarDTO>, CarMapper>();
-builder.Services.AddScoped<IMapper<CarProvider, CarProviderDTO>, CarProviderMapper>();
-builder.Services.AddScoped<IMapper<Rental, RentalDTO>, RentalMapper>();
-
 // Register Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
