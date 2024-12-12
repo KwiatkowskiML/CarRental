@@ -9,6 +9,7 @@ using CarRental.WebAPI.Auth;
 using CarRental.WebAPI.Services;
 using CarRental.WebAPI.Services.Interfaces;
 using CarRental.WebAPI.Services.Options;
+using WebAPI.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,9 @@ builder.Services.AddScoped<ICarRentalRepository, CarRentalRepository>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();
+
+// Register Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register HttpClient for SendGrid
 builder.Services.AddHttpClient();
