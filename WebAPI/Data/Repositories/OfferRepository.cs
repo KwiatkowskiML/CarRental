@@ -8,9 +8,9 @@ using WebAPI.filters;
 
 namespace WebAPI.Data.Repositories;
 
-public class OfferRepository(CarRentalContext context, ILogger<OfferRepository> logger) : BaseRepository<Offer>(context, logger), IOfferRepository
+public class OfferRepository(CarRentalContext context, ILogger logger) : BaseRepository<Offer>(context, logger), IOfferRepository
 {
-    public async Task<OfferDTO?> GetOffersAsync(OfferFilter filter)
+    public async Task<OfferDTO?> GetOfferAsync(OfferFilter filter)
     {
         try
         {
@@ -74,4 +74,75 @@ public class OfferRepository(CarRentalContext context, ILogger<OfferRepository> 
             throw new DatabaseOperationException("Failed to fetch offer with specified filter", ex);
         }
     }
+    
+    public async Task<Insurance?> GetInsuranceByIdAsync(int insuranceId)
+    {
+        try
+        {
+            return await Context.Insurances
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.InsuranceId == insuranceId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching insurance by id {InsuranceId}", insuranceId);
+            throw new DatabaseOperationException($"Failed to fetch insurance with ID {insuranceId}", ex);
+        }
+    }
+    
+    public async Task CreateOfferAsync(Offer offer)
+        {
+            await using var transaction = await Context.Database.BeginTransactionAsync();
+            try
+            {
+                var car = await Context.Cars
+                    .FirstOrDefaultAsync(c => c.CarId == offer.CarId);
+
+                if (car == null)
+                    throw new InvalidOperationException($"Car with ID {offer.CarId} not found");
+
+                var hasConflict = await Context.Rentals
+                    .AnyAsync(r => r.Offer.CarId == offer.CarId &&
+                                r.Status != "cancelled" &&
+                                ((r.Offer.StartDate <= offer.EndDate && r.Offer.EndDate >= offer.StartDate) ||
+                                (r.Offer.StartDate >= offer.StartDate && r.Offer.StartDate <= offer.EndDate)));
+
+                if (hasConflict)
+                    throw new InvalidOperationException("Car is not available for the selected dates");
+
+
+                var customerExists = await Context.Customers
+                    .AnyAsync(c => c.CustomerId == offer.CustomerId);
+
+                if (!customerExists)
+                    throw new InvalidOperationException($"Customer with ID {offer.CustomerId} not found");
+
+
+                var insuranceExists = await Context.Insurances
+                    .AnyAsync(i => i.InsuranceId == offer.InsuranceId);
+
+                if (!insuranceExists)
+                    throw new InvalidOperationException($"Insurance with ID {offer.InsuranceId} not found");
+
+                // Set creation timestamp if not already set
+                offer.CreatedAt ??= DateTime.UtcNow;
+
+                // Add the offer to the context
+                await Context.Offers.AddAsync(offer);
+                await Context.SaveChangesAsync();
+
+                await Context.Entry(offer)
+                    .Reference(o => o.Insurance)
+                    .LoadAsync();
+
+                // Commit the transaction
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Logger.LogError(ex, "Error creating offer for car {CarId}", offer.CarId);
+                throw new DatabaseOperationException("Failed to create offer", ex);
+            }
+        }
 }

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Services.Interfaces;
-using Microsoft.Extensions.Logging;
 using WebAPI.filters;
 
 namespace CarRental.WebAPI.Controllers;  // Make sure this matches your other controllers

@@ -11,6 +11,8 @@ public class UnitOfWork(CarRentalContext context, ILogger<UnitOfWork> logger) : 
     public ICarRepository CarsRepository { get; } = new CarRepository(context, logger);
     public IUserRepository UsersRepository { get; } = new UserRepository(context, logger);
     public IRentalRepository RentalsRepository { get; } = new RentalRepository(context, logger);
+    
+    public IOfferRepository OffersRepository { get; } = new OfferRepository(context, logger);
 
     public void LogError(Exception ex, string message)
     {

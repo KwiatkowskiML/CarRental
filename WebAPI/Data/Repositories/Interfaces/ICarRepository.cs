@@ -7,4 +7,5 @@ public interface ICarRepository
 {
     // consider car or carDto
     Task<List<Car>> GetCarsAsync(CarFilter filter);
+    Task<Car?> GetCarByIdAsync(int carId);
 }

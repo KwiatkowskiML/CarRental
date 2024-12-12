@@ -56,4 +56,19 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
             throw new DatabaseOperationException("Failed to fetch available cars", ex);
         }
     }
+    
+    public async Task<Car?> GetCarByIdAsync(int carId)
+    {
+        try
+        {
+            return await Context.Cars
+                .Include(c => c.CarProvider)
+                .FirstOrDefaultAsync(c => c.CarId == carId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching car by id");
+            throw new DatabaseOperationException($"Failed to fetch car with ID {carId}", ex);
+        }
+    }
 }

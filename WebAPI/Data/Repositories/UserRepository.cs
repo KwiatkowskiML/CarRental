@@ -1,5 +1,6 @@
 using CarRental.WebAPI.Data.Context;
 using CarRental.WebAPI.Data.Models;
+using CarRental.WebAPI.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Data.Repositories.Interfaces;
 
@@ -15,7 +16,16 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
 
     public async Task<Customer?> GetCustomerByUserIdAsync(int userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            return await Context.Customers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching customer by userId");
+            throw new DatabaseOperationException($"Failed to fetch customer with userId {userId}", ex);
+        }
     }
 
     public async Task<Customer> CreateCustomerAsync(Customer customer)
