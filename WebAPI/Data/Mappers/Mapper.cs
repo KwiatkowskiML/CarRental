@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CarRental.WebAPI.Data.Models;
 
 namespace WebAPI.Data.Maps

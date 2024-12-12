@@ -5,6 +5,7 @@ using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using WebAPI.DTOs;
 using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.Mappers;
 using WebAPI.Data.Maps;
 using WebAPI.filters;
 
@@ -135,7 +136,8 @@ namespace CarRental.WebAPI.Controllers
 
                 await _repository.CreateOfferAsync(offer);
 
-                var response = Mapper.OfferToDTO(offer);
+                var offerMapper = new OfferMapper();
+                var response = offerMapper.ToDto(offer);
 
                 return Ok(response);
 
