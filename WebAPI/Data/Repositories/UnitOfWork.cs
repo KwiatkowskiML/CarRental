@@ -6,9 +6,11 @@ namespace WebAPI.Data.Repositories;
 public class UnitOfWork(CarRentalContext context, ILogger<UnitOfWork> logger) : IUnitOfWork
 {
     private readonly CarRentalContext _context = context;
-    public ILogger Logger { get; } = logger;
+    private ILogger Logger { get; } = logger;
 
     public ICarRepository CarsRepository { get; } = new CarRepository(context, logger);
+    public IUserRepository UsersRepository { get; } = new UserRepository(context, logger);
+    public IRentalRepository RentalsRepository { get; } = new RentalRepository(context, logger);
 
     public void LogError(Exception ex, string message)
     {
@@ -19,6 +21,4 @@ public class UnitOfWork(CarRentalContext context, ILogger<UnitOfWork> logger) : 
     {
         // Commit database changes
     }
-    
-    
 }

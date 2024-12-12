@@ -4,7 +4,7 @@ namespace WebAPI.Data.Repositories.Interfaces;
 
 public interface IRentalRepository
 {
-    Task<List<RentalDTO>> GetUserRentalsAsync(int userId);
-    Task<RentalDTO?> CreateRentalFromOfferAsync(int offerId);
-    Task<RentalDTO?> GetRentalByOfferIdAsync(int offerId);
+    Task<List<Rental>> GetUserRentalsAsync(int userId);
+    Task<Rental?> CreateRentalFromOfferAsync(int offerId);
+    Task<Rental?> GetRentalByOfferIdAsync(int offerId);
 }

@@ -6,10 +6,13 @@ using CarRental.WebAPI.Data.Context;
 using CarRental.WebAPI.Data.Repositories;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Auth;
+using CarRental.WebAPI.Data.Models;
 using CarRental.WebAPI.Services;
 using CarRental.WebAPI.Services.Interfaces;
 using CarRental.WebAPI.Services.Options;
+using WebAPI.Data.Mappers;
 using WebAPI.Data.Repositories;
+using WebAPI.Data.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +40,12 @@ builder.Services.AddScoped<ICarRentalRepository, CarRentalRepository>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();
+
+// Register mappings
+builder.Services.AddScoped<IMapper<Offer, OfferDTO>, OfferMapper>();
+builder.Services.AddScoped<IMapper<Car, CarDTO>, CarMapper>();
+builder.Services.AddScoped<IMapper<CarProvider, CarProviderDTO>, CarProviderMapper>();
+builder.Services.AddScoped<IMapper<Rental, RentalDTO>, RentalMapper>();
 
 // Register Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
