@@ -2,7 +2,7 @@ using CarRental.WebAPI.Data.Models;
 
 namespace WebAPI.Data.Mappers;
 
-public class RentalMapper
+public static class RentalMapper
 {
     public static RentalDTO ToDto(Rental r)
     {
