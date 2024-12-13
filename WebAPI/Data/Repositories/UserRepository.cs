@@ -27,9 +27,26 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
             throw new DatabaseOperationException($"Failed to fetch customer with userId {userId}", ex);
         }
     }
+    
+    public async Task<User> CreateUserAsync(User user)
+    {
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
+        return user;
+    }
 
     public async Task<Customer> CreateCustomerAsync(Customer customer)
     {
-        throw new NotImplementedException();
+        try
+        {
+            Context.Customers.Add(customer);
+            await Context.SaveChangesAsync();
+            return customer;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating customer");
+            throw new DatabaseOperationException("Failed to create customer", ex);
+        }
     }
 }
