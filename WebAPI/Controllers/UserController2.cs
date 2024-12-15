@@ -7,13 +7,14 @@ using WebAPI.Data.Mappers;
 using WebAPI.Data.Repositories.Interfaces;
 
 namespace WebAPI.Controllers
-{   
+{
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController2 : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+
         public UserController2(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -24,7 +25,7 @@ namespace WebAPI.Controllers
         {
             try
             {
-                var rentals = await _unitOfWork.RentalsRepository.GetUserRentalsAsync(customerId);
+                var rentals = await _unitOfWork.RentalsRepository.GetCustomerRentalsAsync(customerId);
                 var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
                 return Ok(rentalDtos);
             }
@@ -46,7 +47,7 @@ namespace WebAPI.Controllers
                 }
 
                 var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(email);
-                
+
                 if (user == null)
                 {
                     return NotFound($"User with email {email} not found");
@@ -79,7 +80,9 @@ namespace WebAPI.Controllers
                     return NotFound("User not found");
                 }
 
-                return Ok(new { 
+                // TODO: return dto instead
+                return Ok(new
+                {
                     userId = user.UserId,
                     email = user.Email,
                     firstName = user.FirstName,
@@ -93,6 +96,4 @@ namespace WebAPI.Controllers
             }
         }
     }
-
-    
 }

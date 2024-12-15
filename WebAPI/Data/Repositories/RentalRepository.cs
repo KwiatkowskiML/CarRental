@@ -7,9 +7,10 @@ using WebAPI.Data.Repositories.Interfaces;
 
 namespace WebAPI.Data.Repositories;
 
-public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRepository<Rental>(context, logger), IRentalRepository
+public class RentalRepository(CarRentalContext context, ILogger logger)
+    : BaseRepository<Rental>(context, logger), IRentalRepository
 {
-    public async Task<List<Rental>> GetUserRentalsAsync(int userId)
+    public async Task<List<Rental>> GetCustomerRentalsAsync(int customerId)
     {
         try
         {
@@ -19,15 +20,15 @@ public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRe
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Car)
                 .ThenInclude(c => c!.CarProvider)
-                .Where(r => r.Offer.Customer != null && r.Offer.Customer.UserId == userId)
+                .Where(r => r.Offer.Customer != null && r.Offer.Customer.CustomerId == customerId)
                 .OrderByDescending(r => r.CreatedAt);
-            
+
             return await query.ToListAsync();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching user rentals");
-            throw new DatabaseOperationException($"Failed to fetch rentals for user {userId}", ex);
+            Logger.LogError(ex, "Error fetching customer's rentals");
+            throw new DatabaseOperationException($"Failed to fetch rentals for customer {customerId}", ex);
         }
     }
 
@@ -50,9 +51,9 @@ public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRe
 
             var hasOverlap = await Context.Rentals
                 .AnyAsync(r => r.Offer.CarId == offer.CarId &&
-                            r.Status != "cancelled" &&
-                            ((r.Offer.StartDate <= offer.EndDate && r.Offer.EndDate >= offer.StartDate) ||
-                            (r.Offer.StartDate >= offer.StartDate && r.Offer.StartDate <= offer.EndDate)));
+                               r.Status != "cancelled" &&
+                               ((r.Offer.StartDate <= offer.EndDate && r.Offer.EndDate >= offer.StartDate) ||
+                                (r.Offer.StartDate >= offer.StartDate && r.Offer.StartDate <= offer.EndDate)));
 
             if (hasOverlap)
                 throw new InvalidOperationException("Car is already booked for these dates");
@@ -67,7 +68,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRe
 
             // Add rental and update car status
             Context.Rentals.Add(rental);
-            
+
             await Context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -76,7 +77,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRe
                 .Reference(r => r.Offer)
                 .Query()
                 .Include(o => o.Car)
-                    .ThenInclude(c => c!.CarProvider)
+                .ThenInclude(c => c!.CarProvider)
                 .Include(o => o.Customer)
                 .Include(o => o.Insurance)
                 .LoadAsync();

@@ -10,8 +10,16 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
 {
     public async Task<User?> GetUserByEmailAsync(string email)
     {
-        return await Context.Users
-            .FirstOrDefaultAsync(u => u.Email == email);
+        try
+        {
+            return await Context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching user by email");
+            throw new DatabaseOperationException($"Failed to fetch user with email {email}", ex);
+        }
     }
 
     public async Task<Customer?> GetCustomerByUserIdAsync(int userId)
@@ -30,9 +38,17 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
     
     public async Task<User> CreateUserAsync(User user)
     {
-        Context.Users.Add(user);
-        await Context.SaveChangesAsync();
-        return user;
+        try
+        {
+            Context.Users.Add(user);
+            await Context.SaveChangesAsync();
+            return user;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating user");
+            throw new DatabaseOperationException("Failed to create user", ex);
+        }
     }
 
     public async Task<Customer> CreateCustomerAsync(Customer customer)
