@@ -19,7 +19,7 @@ public class OfferRepository(CarRentalContext context, ILogger logger) : BaseRep
             var query = Context.Offers
                 .Include(o => o.Customer)
                 .Include(o => o.Car)
-                    .ThenInclude(c => c.CarProvider)
+                    .ThenInclude(c => c!.CarProvider)
                 .Include(o => o.Insurance)
                 .AsQueryable();
 

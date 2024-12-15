@@ -16,7 +16,7 @@ namespace WebAPI.Data.Mappers
                 HasGps = offer.HasGps,
                 HasChildSeat = offer.HasChildSeat,
                 Insurance = offer.Insurance,
-                Car = CarMapper.ToDto(offer.Car)
+                Car = CarMapper.ToDto(offer.Car!) // get rid of nullable fields
             };
 
             return offerDto;

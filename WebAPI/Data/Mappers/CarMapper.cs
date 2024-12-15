@@ -18,7 +18,7 @@ namespace WebAPI.Data.Mappers
                 Power = c.Power,
                 FuelType = c.FuelType,
                 Description = c.Description,
-                CarProvider = CarProviderMapper.ToDto(c.CarProvider)
+                CarProvider = CarProviderMapper.ToDto(c.CarProvider!) // get rid of nullable fields
             };
 
             return carDto;

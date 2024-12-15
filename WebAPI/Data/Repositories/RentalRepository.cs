@@ -18,7 +18,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRe
                 .ThenInclude(o => o.Customer)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Car)
-                .ThenInclude(c => c.CarProvider)
+                .ThenInclude(c => c!.CarProvider)
                 .Where(r => r.Offer.Customer != null && r.Offer.Customer.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt);
             
@@ -45,7 +45,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRe
             if (offer == null)
                 return null;
 
-            if (offer.Car.Status != "available")
+            if (offer.Car!.Status != "available")
                 throw new InvalidOperationException("Car is not available for rental");
 
             var hasOverlap = await Context.Rentals
@@ -76,7 +76,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger) : BaseRe
                 .Reference(r => r.Offer)
                 .Query()
                 .Include(o => o.Car)
-                    .ThenInclude(c => c.CarProvider)
+                    .ThenInclude(c => c!.CarProvider)
                 .Include(o => o.Customer)
                 .Include(o => o.Insurance)
                 .LoadAsync();
