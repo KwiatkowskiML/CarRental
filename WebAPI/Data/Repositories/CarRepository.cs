@@ -43,8 +43,7 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
                 query = query.Where(c => !c.Offers.Any(o => 
                     o.Rental != null && 
                     o.Rental.Status != "cancelled" &&
-                    ((o.StartDate <= endDate && o.EndDate >= startDate) ||
-                     (o.StartDate >= startDate && o.StartDate <= endDate))
+                    o.StartDate <= endDate && o.EndDate >= startDate
                 ));
             }
 
