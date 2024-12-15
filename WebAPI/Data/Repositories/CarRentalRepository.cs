@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using CarRental.WebAPI.Data.Context;
 using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using WebAPI.DTOs;

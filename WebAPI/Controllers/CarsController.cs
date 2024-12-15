@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Authorization;

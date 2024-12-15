@@ -1,16 +1,17 @@
 using System.Security.Claims;
-using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Models;
 using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using WebAPI.Data.Mappers;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.DTOs;
 using WebAPI.filters;
+using WebAPI.HelperClasses;
 
 namespace WebAPI.Controllers
-{   
+{
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -33,7 +34,9 @@ namespace WebAPI.Controllers
                 if (customer == null)
                     return NotFound($"Customer with userId = {request.UserId} not found");
 
-                var offerFilter = new OfferFilter{
+                // TODO: consider filtering by dto
+                var offerFilter = new OfferFilter
+                {
                     CarId = request.CarId,
                     CustomerId = customer.CustomerId,
                     StartDate = request.StartDate,
@@ -43,40 +46,35 @@ namespace WebAPI.Controllers
                     HasChildSeat = request.HasChildSeat
                 };
 
-                var existingOffer = await _unitOfWork.OffersRepository.GetOfferAsync(offerFilter);
+                // Checking if offer has been already created
+                Offer? existingOffer = await _unitOfWork.OffersRepository.GetOfferAsync(offerFilter);
                 if (existingOffer != null)
-                    return Ok(existingOffer);
+                    return Ok(OfferMapper.ToDto(existingOffer));
 
+                // Checking car's accessibility for specified period
                 var car = await _unitOfWork.CarsRepository.GetCarByIdAsync(request.CarId);
                 if (car == null)
                     return NotFound("Car not found");
 
                 var filter = new CarFilter
                 {
+                    CarId = car.CarId,
                     StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
                     EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue)
                 };
-
                 var availableCars = await _unitOfWork.CarsRepository.GetCarsAsync(filter);
-                if (availableCars.All(c => c.CarId != request.CarId))
+                if (availableCars.IsNullOrEmpty())
                 {
                     return BadRequest("Car is not available for the selected dates");
                 }
 
+                // Checking insurance type
                 var insurance = await _unitOfWork.OffersRepository.GetInsuranceByIdAsync(request.InsuranceId);
                 if (insurance == null)
                     return NotFound("Insurance package not found");
 
-                // calculate total price
-                decimal totalPrice = CalculateTotalPrice(
-                    car.BasePrice,
-                    request.StartDate,
-                    request.EndDate,
-                    insurance.Price,
-                    request.HasGps,
-                    request.HasChildSeat,
-                    customer.DrivingLicenseYears
-                );
+                decimal totalPrice = PriceCalculator.GetPrice(car.BasePrice, insurance.Price,
+                    customer.DrivingLicenseYears, request);
 
                 // create new offer
                 var offer = new Offer
@@ -93,8 +91,7 @@ namespace WebAPI.Controllers
                 };
 
                 await _unitOfWork.OffersRepository.CreateOfferAsync(offer);
-                var response = OfferMapper.ToDto(offer);
-                return Ok(response);
+                return Ok(OfferMapper.ToDto(offer));
             }
             catch (DatabaseOperationException ex)
             {
@@ -102,7 +99,8 @@ namespace WebAPI.Controllers
                 return StatusCode(500, "An error occurred while calculating the rental price");
             }
         }
-        
+
+        // TODO: look into it
         [HttpPost("choose-offer")]
         public async Task<ActionResult> ChooseOffer([FromBody] ChooseOfferRequest request)
         {
@@ -113,7 +111,8 @@ namespace WebAPI.Controllers
                 if (customer == null)
                     return NotFound($"Customer with userId = {request.UserId} not found");
 
-                var offerFilter = new OfferFilter{
+                var offerFilter = new OfferFilter
+                {
                     OfferId = request.OfferId,
                     CustomerId = customer.CustomerId
                 };
@@ -129,30 +128,6 @@ namespace WebAPI.Controllers
                 _unitOfWork.LogError(ex, "Error choosing offer");
                 return StatusCode(500, "An error occurred while choosing offer");
             }
-        }
-        
-        // TODO: relocate it
-        private decimal CalculateTotalPrice(
-            decimal basePrice,
-            DateOnly startDate,
-            DateOnly endDate,
-            decimal insurancePrice,
-            bool hasGps,
-            bool hasChildSeat,
-            int yearsOfExperience)
-        {
-            int numberOfDays = endDate.DayNumber - startDate.DayNumber + 1;
-            decimal totalPrice = basePrice * numberOfDays;
-            totalPrice += totalPrice / yearsOfExperience;
-
-            totalPrice += insurancePrice * numberOfDays;
-
-            if (hasGps)
-                totalPrice += 10.00m * numberOfDays;
-            if (hasChildSeat)
-                totalPrice += 15.00m * numberOfDays;
-
-            return totalPrice;
         }
     }
 }

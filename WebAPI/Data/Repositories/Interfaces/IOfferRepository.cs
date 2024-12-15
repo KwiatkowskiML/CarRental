@@ -5,7 +5,7 @@ namespace WebAPI.Data.Repositories.Interfaces;
 
 public interface IOfferRepository
 {
-    Task<OfferDTO?> GetOfferAsync(OfferFilter filter);
+    Task<Offer?> GetOfferAsync(OfferFilter filter);
     Task<Insurance?> GetInsuranceByIdAsync(int insuranceId);
     Task CreateOfferAsync(Offer offer);
 }

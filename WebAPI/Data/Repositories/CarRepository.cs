@@ -1,9 +1,10 @@
 using CarRental.WebAPI.Data.Context;
-using CarRental.WebAPI.Data.DTOs;
 using CarRental.WebAPI.Data.Models;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.DTOs;
+using WebAPI.filters;
 
 namespace WebAPI.Data.Repositories;
 
@@ -16,6 +17,9 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
             IQueryable<Car> query = Context.Cars
                 .Include(c => c.CarProvider)
                 .Where(c => c.Status == "available");
+            
+            if (filter.CarId.HasValue)
+                query = query.Where(c => c.CarId == filter.CarId.Value);
 
             if (!string.IsNullOrEmpty(filter.Location))
                 query = query.Where(c => c.Location == filter.Location);

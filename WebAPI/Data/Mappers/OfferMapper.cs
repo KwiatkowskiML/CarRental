@@ -1,4 +1,6 @@
 using CarRental.WebAPI.Data.Models;
+using WebAPI.DTOs;
+using WebAPI.filters;
 
 namespace WebAPI.Data.Mappers
 {

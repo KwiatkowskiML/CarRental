@@ -1,7 +1,8 @@
-namespace CarRental.WebAPI.Data.DTOs
+namespace WebAPI.filters
 {
     public class CarFilter
     {
+        public int? CarId { get; set; }
         public string? Location { get; set; }
         public string? Brand { get; set; }
         public string? Model { get; set; }
