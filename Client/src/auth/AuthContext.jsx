@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (googleToken) => {
     try {
-      const response = await fetch('/api/auth/google', {
+      const response = await fetch('/api/AuthController2/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
