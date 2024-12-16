@@ -14,7 +14,7 @@ export function CarList() {
   const { user } = useAuth();
 
   useEffect(() => {
-    fetch('/api/cars', {
+    fetch('/api/CarsController2', {
       headers: {
         'Authorization': `Bearer ${user.token}`
       }

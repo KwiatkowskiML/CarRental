@@ -21,7 +21,7 @@ export function CarDetails() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/user/current', {
+        const response = await fetch('/api/UserController2/current2', {
           headers: {
             'Authorization': `Bearer ${user.token}`
           }
@@ -41,7 +41,7 @@ export function CarDetails() {
   }, [user]);
 
   useEffect(() => {
-    fetch('/api/cars', {
+    fetch('/api/CarsController2', {
       headers: {
         'Authorization': `Bearer ${user.token}`
       }
@@ -60,7 +60,11 @@ export function CarDetails() {
 
   const handleGetOffer = async (options) => {
     try {
-      const response = await fetch('/api/cars/get-offer', {
+
+      console.log('Options:', options);
+      console.log('Car ID:', carId);
+
+      const response = await fetch('/api/Offers/get-offer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,7 +112,7 @@ export function CarDetails() {
       console.log('Current user object:', currentUser); // Debug log
       console.log('Sending rental confirmation request:', requestData);
   
-      const response = await fetch('/api/RentalConfirmation/send', {
+      const response = await fetch('/api/Rentals/send-confirmation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

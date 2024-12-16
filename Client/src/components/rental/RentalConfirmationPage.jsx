@@ -26,7 +26,7 @@ export function RentalConfirmationPage() {
   const validateAndConfirm = async (token) => {
     try {
       // First just validate the token
-      const validateResponse = await fetch(`/api/RentalConfirmation/validate?token=${encodeURIComponent(token)}`, {
+      const validateResponse = await fetch(`/api/Rentals/validate-token?token=${encodeURIComponent(token)}`, {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
@@ -41,7 +41,7 @@ export function RentalConfirmationPage() {
 
       // If validation successful and rental doesn't exist yet, try to confirm
       try {
-        const confirmResponse = await fetch(`/api/RentalConfirmation/confirm?token=${encodeURIComponent(token)}`, {
+        const confirmResponse = await fetch(`/api/Rentals/confirm?token=${encodeURIComponent(token)}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${user.token}`
