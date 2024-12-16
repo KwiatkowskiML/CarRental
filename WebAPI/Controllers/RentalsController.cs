@@ -15,12 +15,12 @@ public class RentalsController : ControllerBase
 {
     private readonly IRentalConfirmationService _confirmationService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<RentalConfirmationController> _logger;
+    private readonly ILogger<RentalsController> _logger;
 
     public RentalsController(
         IRentalConfirmationService confirmationService,
         IUnitOfWork unitOfWork,
-        ILogger<RentalConfirmationController> logger)
+        ILogger<RentalsController> logger)
     {
         _confirmationService = confirmationService;
         _unitOfWork = unitOfWork;
@@ -176,4 +176,9 @@ public class RentalsController : ControllerBase
             return StatusCode(500, "An error occurred while confirming the rental");
         }
     }
+}
+
+public class SendConfirmationEmailRequest
+{
+    public int OfferId { get; set; }
 }
