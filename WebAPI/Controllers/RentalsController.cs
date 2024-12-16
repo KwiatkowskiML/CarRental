@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using CarRental.WebAPI.Controllers;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Data.Mappers;

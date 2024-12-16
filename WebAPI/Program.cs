@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CarRental.WebAPI.Data.Context;
-using CarRental.WebAPI.Data.Repositories;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Auth;
 using CarRental.WebAPI.Data.Models;
 using CarRental.WebAPI.Services;
@@ -36,7 +34,6 @@ builder.Services.Configure<EmailOptions>(
     builder.Configuration.GetSection("Email"));
 
 // Register Repositories and Services
-builder.Services.AddScoped<ICarRentalRepository, CarRentalRepository>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();

@@ -10,7 +10,7 @@ namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CarsController2(IUnitOfWork unitOfWork) : ControllerBase
+public class CarsController(IUnitOfWork unitOfWork) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetCars([FromQuery] CarFilter filter)

@@ -1,10 +1,10 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using WebAPI.Data.Repositories.Interfaces;
 
 namespace CarRental.WebAPI.Services;
 
@@ -12,18 +12,18 @@ public class RentalConfirmationService : IRentalConfirmationService
 {
     private readonly IConfiguration _configuration;
     private readonly IEmailService _emailService;
-    private readonly ICarRentalRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RentalConfirmationService> _logger;
 
     public RentalConfirmationService(
         IConfiguration configuration,
         IEmailService emailService,
-        ICarRentalRepository repository,
+        IUnitOfWork unitOfWork,
         ILogger<RentalConfirmationService> logger)
     {
         _configuration = configuration;
         _emailService = emailService;
-        _repository = repository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 

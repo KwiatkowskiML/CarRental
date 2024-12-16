@@ -5,7 +5,7 @@ using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Data.Repositories.Interfaces;
 
 namespace CarRental.WebAPI.Auth;
 
@@ -13,18 +13,18 @@ public class GoogleAuthService
 {
     private readonly GoogleAuthOptions _googleOptions;
     private readonly JwtOptions _jwtOptions;
-    private readonly ICarRentalRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GoogleAuthService> _logger;
 
     public GoogleAuthService(
         IOptions<GoogleAuthOptions> googleOptions,
         IOptions<JwtOptions> jwtOptions,
-        ICarRentalRepository repository,
+        IUnitOfWork unitOfWork,
         ILogger<GoogleAuthService> logger)
     {
         _googleOptions = googleOptions.Value;
         _jwtOptions = jwtOptions.Value;
-        _repository = repository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -40,7 +40,7 @@ public class GoogleAuthService
             };
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
-            var user = await _repository.GetUserByEmail(payload.Email);
+            var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(payload.Email);
 
             if (user == null)
             {

@@ -1,23 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
 using CarRental.WebAPI.Auth;
 using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Data.Repositories.Interfaces;
 
 namespace CarRental.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController2 : ControllerBase
+public class AuthController : ControllerBase
 {
     private readonly GoogleAuthService _authService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<AuthController2> _logger;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController2(
+    public AuthController(
         GoogleAuthService authService,
         IUnitOfWork unitOfWork,
-        ILogger<AuthController2> logger)
+        ILogger<AuthController> logger)
     {
         _authService = authService;
         _unitOfWork = unitOfWork;

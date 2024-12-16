@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Data.Mappers;
@@ -11,32 +10,25 @@ namespace WebAPI.Controllers
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController2 : ControllerBase
+    public class UserController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public UserController2(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
-        [HttpGet("/{customerId}/rentals2")]
+        [HttpGet("/{customerId}/rentals")]
         public async Task<IActionResult> GetUserRentals(int customerId)
         {
             try
             {
-                var rentals = await _unitOfWork.RentalsRepository.GetCustomerRentalsAsync(customerId);
+                var rentals = await unitOfWork.RentalsRepository.GetCustomerRentalsAsync(customerId);
                 var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
                 return Ok(rentalDtos);
             }
             catch (DatabaseOperationException ex)
             {
-                _unitOfWork.LogError(ex, "Error fetching user rentals");
+                unitOfWork.LogError(ex, "Error fetching user rentals");
                 return StatusCode(500, "An error occurred while fetching rentals");
             }
         }
 
-        [HttpGet("by-email2")]
+        [HttpGet("by-email")]
         public async Task<IActionResult> GetUserIdByEmail([FromQuery] string email)
         {
             try
@@ -46,7 +38,7 @@ namespace WebAPI.Controllers
                     return BadRequest("Email address is required");
                 }
 
-                var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(email);
+                var user = await unitOfWork.UsersRepository.GetUserByEmailAsync(email);
 
                 if (user == null)
                 {
@@ -57,13 +49,13 @@ namespace WebAPI.Controllers
             }
             catch (DatabaseOperationException ex)
             {
-                _unitOfWork.LogError(ex, $"Error fetching user ID for email: {email}");
+                unitOfWork.LogError(ex, $"Error fetching user ID for email: {email}");
                 return StatusCode(500, "An error occurred while fetching user ID");
             }
         }
 
 
-        [HttpGet("current2")]
+        [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUser()
         {
             try
@@ -74,7 +66,7 @@ namespace WebAPI.Controllers
                     return Unauthorized();
                 }
 
-                var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(email);
+                var user = await unitOfWork.UsersRepository.GetUserByEmailAsync(email);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -91,7 +83,7 @@ namespace WebAPI.Controllers
             }
             catch (DatabaseOperationException ex)
             {
-                _unitOfWork.LogError(ex, "Error fetching current user");
+                unitOfWork.LogError(ex, "Error fetching current user");
                 return StatusCode(500, "An error occurred while fetching user information");
             }
         }

@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
 using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;

@@ -24,7 +24,7 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
 
     try {
       // Get user ID from backend using the token
-      const userResponse = await fetch('/api/UserController2/current2', {
+      const userResponse = await fetch('/api/User/current', {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }

@@ -21,7 +21,7 @@ export function CarDetails() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/UserController2/current2', {
+        const response = await fetch('/api/User/current', {
           headers: {
             'Authorization': `Bearer ${user.token}`
           }
@@ -41,7 +41,7 @@ export function CarDetails() {
   }, [user]);
 
   useEffect(() => {
-    fetch('/api/CarsController2', {
+    fetch('/api/Cars', {
       headers: {
         'Authorization': `Bearer ${user.token}`
       }
