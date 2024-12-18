@@ -3,13 +3,14 @@ using WebAPI.Data.Context;
 using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
+using WebAPI.filters;
 
 namespace WebAPI.Data.Repositories;
 
 public class RentalRepository(CarRentalContext context, ILogger logger)
     : BaseRepository<Rental>(context, logger), IRentalRepository
 {
-    public async Task<List<Rental>> GetCustomerRentalsAsync(int customerId)
+    public async Task<List<Rental>> GetRentalsAsync(RentalFilter? filter)
     {
         try
         {
@@ -19,15 +20,19 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Car)
                 .ThenInclude(c => c!.CarProvider)
-                .Where(r => r.Offer.Customer != null && r.Offer.Customer.CustomerId == customerId)
-                .OrderByDescending(r => r.CreatedAt);
+                .AsQueryable();
+                
+            if (filter != null && filter.CustomerId.HasValue)
+                query = query.Where(r => r.Offer.Customer != null && r.Offer.Customer.CustomerId == filter.CustomerId);
+            
+            query = query.OrderByDescending(r => r.CreatedAt);
 
             return await query.ToListAsync();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching customer's rentals");
-            throw new DatabaseOperationException($"Failed to fetch rentals for customer {customerId}", ex);
+            Logger.LogError(ex, "Error fetching rentals");
+            throw new DatabaseOperationException($"Failed to fetch rentals", ex);
         }
     }
 

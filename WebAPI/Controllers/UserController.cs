@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
+using WebAPI.filters;
 using WebAPI.Mappers;
 
 namespace WebAPI.Controllers
@@ -16,7 +17,8 @@ namespace WebAPI.Controllers
         {
             try
             {
-                var rentals = await unitOfWork.RentalsRepository.GetCustomerRentalsAsync(customerId);
+                var rentalFilter = new RentalFilter() {CustomerId = customerId};
+                var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(rentalFilter);
                 var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
                 return Ok(rentalDtos);
             }
