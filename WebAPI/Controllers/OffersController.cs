@@ -1,34 +1,27 @@
-using System.Security.Claims;
-using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using WebAPI.Data.Mappers;
+using WebAPI.Data.DTOs;
+using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
-using WebAPI.DTOs;
+using WebAPI.Exceptions;
 using WebAPI.filters;
 using WebAPI.HelperClasses;
+using WebAPI.Mappers;
+using WebAPI.Requests;
 
 namespace WebAPI.Controllers
 {
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class OffersController : ControllerBase
+    public class OffersController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
-        public OffersController(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         [HttpPost("get-offer")]
-        public async Task<ActionResult<OfferDTO>> GetOffer([FromBody] GetOfferRequest request)
+        public async Task<ActionResult<OfferDto>> GetOffer([FromBody] GetOfferRequest request)
         {
             try
             {
-                var customer = await _unitOfWork.UsersRepository.GetCustomerByUserIdAsync(request.UserId);
+                var customer = await unitOfWork.UsersRepository.GetCustomerByUserIdAsync(request.UserId);
 
                 if (customer == null)
                     return NotFound($"Customer with userId = {request.UserId} not found");
@@ -46,12 +39,12 @@ namespace WebAPI.Controllers
                 };
 
                 // Checking if offer has been already created
-                Offer? existingOffer = await _unitOfWork.OffersRepository.GetOfferAsync(offerFilter);
+                Offer? existingOffer = await unitOfWork.OffersRepository.GetOfferAsync(offerFilter);
                 if (existingOffer != null)
                     return Ok(OfferMapper.ToDto(existingOffer));
 
                 // Checking car's accessibility for specified period
-                var car = await _unitOfWork.CarsRepository.GetCarByIdAsync(request.CarId);
+                var car = await unitOfWork.CarsRepository.GetCarByIdAsync(request.CarId);
                 if (car == null)
                     return NotFound("Car not found");
 
@@ -61,14 +54,14 @@ namespace WebAPI.Controllers
                     StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
                     EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue)
                 };
-                var availableCars = await _unitOfWork.CarsRepository.GetCarsAsync(filter);
+                var availableCars = await unitOfWork.CarsRepository.GetCarsAsync(filter);
                 if (availableCars.IsNullOrEmpty())
                 {
                     return BadRequest("Car is not available for the selected dates");
                 }
 
                 // Checking insurance type
-                var insurance = await _unitOfWork.OffersRepository.GetInsuranceByIdAsync(request.InsuranceId);
+                var insurance = await unitOfWork.OffersRepository.GetInsuranceByIdAsync(request.InsuranceId);
                 if (insurance == null)
                     return NotFound("Insurance package not found");
 
@@ -89,12 +82,12 @@ namespace WebAPI.Controllers
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _unitOfWork.OffersRepository.CreateOfferAsync(offer);
+                await unitOfWork.OffersRepository.CreateOfferAsync(offer);
                 return Ok(OfferMapper.ToDto(offer));
             }
             catch (DatabaseOperationException ex)
             {
-                _unitOfWork.LogError(ex, "Error calculating rental price");
+                unitOfWork.LogError(ex, "Error calculating rental price");
                 return StatusCode(500, "An error occurred while calculating the rental price");
             }
         }

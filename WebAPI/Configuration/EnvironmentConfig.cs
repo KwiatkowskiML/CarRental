@@ -1,4 +1,4 @@
-namespace CarRental.WebAPI.Configuration
+namespace WebAPI.Configuration
 {
     public class EnvironmentConfig
     {

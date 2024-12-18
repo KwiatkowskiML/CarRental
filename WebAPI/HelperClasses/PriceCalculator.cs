@@ -1,4 +1,4 @@
-using WebAPI.DTOs;
+using WebAPI.Requests;
 
 namespace WebAPI.HelperClasses;
 

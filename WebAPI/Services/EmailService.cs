@@ -1,10 +1,10 @@
+using CarRental.WebAPI.Services.Options;
+using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using Microsoft.Extensions.Options;
-using CarRental.WebAPI.Services.Interfaces;
-using CarRental.WebAPI.Services.Options;
+using WebAPI.Services.Interfaces;
 
-namespace CarRental.WebAPI.Services;
+namespace WebAPI.Services;
 
 public class EmailService : IEmailService
 {

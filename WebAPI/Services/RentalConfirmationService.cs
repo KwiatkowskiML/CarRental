@@ -1,12 +1,9 @@
-using System;
 using System.Security.Cryptography;
 using System.Text;
-using CarRental.WebAPI.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Services.Interfaces;
 
-namespace CarRental.WebAPI.Services;
+namespace WebAPI.Services;
 
 public class RentalConfirmationService : IRentalConfirmationService
 {

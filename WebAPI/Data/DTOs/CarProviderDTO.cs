@@ -1,4 +1,6 @@
-public class CarProviderDTO
+namespace WebAPI.Data.DTOs;
+
+public class CarProviderDto
 {
     public int CarProviderId { get; set; }
     public string Name { get; set; } = null!;

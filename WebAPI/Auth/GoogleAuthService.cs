@@ -4,10 +4,11 @@ using System.Text;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Exceptions;
 
-namespace CarRental.WebAPI.Auth;
+namespace WebAPI.Auth;
 
 public class GoogleAuthService
 {
@@ -34,7 +35,7 @@ public class GoogleAuthService
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
-                Audience = new[] { _googleOptions.ClientId },
+                Audience = [_googleOptions.ClientId],
                 IssuedAtClockTolerance = TimeSpan.FromMinutes(5),
                 ExpirationTimeClockTolerance = TimeSpan.FromMinutes(5)
             };
@@ -106,17 +107,5 @@ public class GoogleAuthService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-}
-
-public class AuthenticationException : Exception
-{
-    public AuthenticationException(string message) : base(message)
-    {
-    }
-
-    public AuthenticationException(string message, Exception innerException) 
-        : base(message, innerException)
-    {
     }
 }

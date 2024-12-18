@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace CarRental.WebAPI.Services.Interfaces;
+namespace WebAPI.Services.Interfaces;
 
 public interface IRentalConfirmationService
 {

@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
+namespace WebAPI.Data.Models;
 
-namespace CarRental.WebAPI.Data.Models;
-
-public partial class Insurance
+public class Insurance
 {
     public int InsuranceId { get; set; }
 

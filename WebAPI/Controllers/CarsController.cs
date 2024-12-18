@@ -1,10 +1,8 @@
-using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.Data.Mappers;
 using WebAPI.Data.Repositories.Interfaces;
-using WebAPI.DTOs;
+using WebAPI.Exceptions;
 using WebAPI.filters;
+using WebAPI.Mappers;
 
 namespace WebAPI.Controllers;
 

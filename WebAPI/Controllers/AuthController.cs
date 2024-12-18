@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using CarRental.WebAPI.Auth;
-using CarRental.WebAPI.Data.Models;
+using WebAPI.Auth;
+using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Requests;
 
-namespace CarRental.WebAPI.Controllers;
+namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -78,19 +79,4 @@ public class AuthController : ControllerBase
             return BadRequest("Registration failed");
         }
     }
-}
-
-public class UserRegistrationRequest
-{
-    public string Email { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string GoogleToken { get; set; } = string.Empty;
-    public int Age { get; set; }
-    public int DrivingLicenseYears { get; set; }
-}
-
-public class GoogleLoginRequest
-{
-    public string Token { get; set; } = string.Empty;
 }

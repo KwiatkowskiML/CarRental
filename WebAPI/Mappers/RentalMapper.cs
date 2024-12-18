@@ -1,12 +1,13 @@
-using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.DTOs;
+using WebAPI.Data.Models;
 
-namespace WebAPI.Data.Mappers;
+namespace WebAPI.Mappers;
 
 public static class RentalMapper
 {
-    public static RentalDTO ToDto(Rental r)
+    public static RentalDto ToDto(Rental r)
     {
-        return new RentalDTO{
+        return new RentalDto{
             RentalId = r.RentalId,
             OfferId = r.OfferId,
             Status = r.Status,

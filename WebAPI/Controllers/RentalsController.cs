@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using CarRental.WebAPI.Controllers;
-using CarRental.WebAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.Data.Mappers;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.filters;
+using WebAPI.Mappers;
+using WebAPI.Requests;
+using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Controllers;
 
@@ -147,7 +147,7 @@ public class RentalsController : ControllerBase
     {
         try
         {
-            var (isValid, offerId, userId) = _confirmationService.ValidateConfirmationToken(token);
+            var (isValid, offerId, _) = _confirmationService.ValidateConfirmationToken(token);
 
             if (!isValid)
                 return BadRequest("Invalid or expired confirmation link");
@@ -173,9 +173,4 @@ public class RentalsController : ControllerBase
             return StatusCode(500, "An error occurred while confirming the rental");
         }
     }
-}
-
-public class SendConfirmationEmailRequest
-{
-    public int OfferId { get; set; }
 }

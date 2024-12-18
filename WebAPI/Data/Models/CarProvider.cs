@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace WebAPI.Data.Models;
 
-namespace CarRental.WebAPI.Data.Models;
-
-public partial class CarProvider
+public class CarProvider
 {
     public int CarProviderId { get; set; }
 

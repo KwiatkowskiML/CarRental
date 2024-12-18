@@ -1,4 +1,4 @@
-namespace CarRental.WebAPI.Auth;
+namespace WebAPI.Auth;
 
 public class GoogleAuthOptions
 {

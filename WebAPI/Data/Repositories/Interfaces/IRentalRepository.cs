@@ -1,4 +1,4 @@
-using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.Models;
 
 namespace WebAPI.Data.Repositories.Interfaces;
 

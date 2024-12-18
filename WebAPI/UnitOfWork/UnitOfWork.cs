@@ -1,7 +1,8 @@
-using CarRental.WebAPI.Data.Context;
+using WebAPI.Data.Context;
+using WebAPI.Data.Repositories;
 using WebAPI.Data.Repositories.Interfaces;
 
-namespace WebAPI.Data.Repositories;
+namespace WebAPI.UnitOfWork;
 
 public class UnitOfWork(CarRentalContext context, ILogger<UnitOfWork> logger) : IUnitOfWork
 {

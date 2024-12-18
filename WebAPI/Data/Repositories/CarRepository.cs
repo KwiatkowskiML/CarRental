@@ -1,9 +1,8 @@
-using CarRental.WebAPI.Data.Context;
-using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using WebAPI.Data.Context;
+using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
-using WebAPI.DTOs;
+using WebAPI.Exceptions;
 using WebAPI.filters;
 
 namespace WebAPI.Data.Repositories;
@@ -39,7 +38,7 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
             if (!string.IsNullOrEmpty(filter.FuelType))
                 query = query.Where(c => c.FuelType == filter.FuelType);
 
-            if (filter.StartDate.HasValue && filter.EndDate.HasValue)
+            if (filter is { StartDate: not null, EndDate: not null })
             {
                 var startDate = DateOnly.FromDateTime(filter.StartDate.Value);
                 var endDate = DateOnly.FromDateTime(filter.EndDate.Value);

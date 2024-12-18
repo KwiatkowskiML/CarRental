@@ -2,15 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using CarRental.WebAPI.Data.Context;
-using CarRental.WebAPI.Auth;
-using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Services;
-using CarRental.WebAPI.Services.Interfaces;
 using CarRental.WebAPI.Services.Options;
-using WebAPI.Data.Mappers;
-using WebAPI.Data.Repositories;
+using WebAPI.Auth;
+using WebAPI.Data.Context;
 using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Services;
+using WebAPI.Services.Interfaces;
+using WebAPI.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
