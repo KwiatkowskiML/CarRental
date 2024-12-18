@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using CarRental.WebAPI.Data.Context;
-using CarRental.WebAPI.Data.Repositories;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
-using CarRental.WebAPI.Auth;
-using CarRental.WebAPI.Services;
-using CarRental.WebAPI.Services.Interfaces;
 using CarRental.WebAPI.Services.Options;
+using WebAPI.Auth;
+using WebAPI.Data.Context;
+using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Services;
+using WebAPI.Services.Interfaces;
+using WebAPI.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,10 +32,12 @@ builder.Services.Configure<EmailOptions>(
     builder.Configuration.GetSection("Email"));
 
 // Register Repositories and Services
-builder.Services.AddScoped<ICarRentalRepository, CarRentalRepository>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();
+
+// Register Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register HttpClient for SendGrid
 builder.Services.AddHttpClient();

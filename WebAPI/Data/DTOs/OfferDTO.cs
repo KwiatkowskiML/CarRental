@@ -1,6 +1,8 @@
-using CarRental.WebAPI.Data.Models;
+using WebAPI.Data.Models;
 
-public class OfferDTO
+namespace WebAPI.Data.DTOs;
+
+public sealed class OfferDto
 {
     public int OfferId { get; set; }
 
@@ -18,7 +20,7 @@ public class OfferDTO
 
     public bool? HasChildSeat { get; set; }
 
-    public virtual Insurance? Insurance { get; set; }
+    public Insurance? Insurance { get; set; }
 
-    public virtual CarDTO? Car { get; set; }
+    public CarDto? Car { get; set; }
 }

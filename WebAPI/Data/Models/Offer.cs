@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-namespace CarRental.WebAPI.Data.Models;
-public partial class Offer
+namespace WebAPI.Data.Models;
+
+public class Offer
 {
     public int OfferId { get; set; }
     public decimal TotalPrice { get; set; }

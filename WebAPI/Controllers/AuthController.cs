@@ -1,25 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
-using CarRental.WebAPI.Auth;
-using CarRental.WebAPI.Data.Models;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Auth;
+using WebAPI.Data.Models;
+using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Requests;
 
-namespace CarRental.WebAPI.Controllers;
+namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly GoogleAuthService _authService;
-    private readonly ICarRentalRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         GoogleAuthService authService,
-        ICarRentalRepository repository,
+        IUnitOfWork unitOfWork,
         ILogger<AuthController> logger)
     {
         _authService = authService;
-        _repository = repository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -58,7 +59,7 @@ public class AuthController : ControllerBase
                 CreatedAt = DateTime.UtcNow
             };
 
-            user = await _repository.CreateUser(user);
+            user = await _unitOfWork.UsersRepository.CreateUserAsync(user);
 
             var customer = new Customer
             {
@@ -66,7 +67,7 @@ public class AuthController : ControllerBase
                 DrivingLicenseYears = request.DrivingLicenseYears
             };
 
-            await _repository.CreateCustomer(customer);
+            await _unitOfWork.UsersRepository.CreateCustomerAsync(customer);
 
             // Generate JWT token for the new user
             var authResult = await _authService.ValidateGoogleTokenAndGenerateJwt(request.GoogleToken);
@@ -78,19 +79,4 @@ public class AuthController : ControllerBase
             return BadRequest("Registration failed");
         }
     }
-}
-
-public class UserRegistrationRequest
-{
-    public string Email { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string GoogleToken { get; set; } = string.Empty;
-    public int Age { get; set; }
-    public int DrivingLicenseYears { get; set; }
-}
-
-public class GoogleLoginRequest
-{
-    public string Token { get; set; } = string.Empty;
 }

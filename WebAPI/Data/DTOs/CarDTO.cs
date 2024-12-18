@@ -1,4 +1,6 @@
-public class CarDTO
+namespace WebAPI.Data.DTOs;
+
+public class CarDto
 {
     public int CarId { get; set; }
     public string LicensePlate { get; set; } = null!;
@@ -11,5 +13,5 @@ public class CarDTO
     public int Power { get; set; }
     public string FuelType { get; set; } = null!;
     public string? Description { get; set; }
-    public CarProviderDTO? CarProvider { get; set; }
+    public CarProviderDto? CarProvider { get; set; }
 }

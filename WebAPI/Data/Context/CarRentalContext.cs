@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using CarRental.WebAPI.Data.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using WebAPI.Data.Models;
 
-namespace CarRental.WebAPI.Data.Context;
+namespace WebAPI.Data.Context;
 
-public partial class CarRentalContext : DbContext
+public partial class CarRentalContext(DbContextOptions<CarRentalContext> options) : DbContext(options)
 {
-    public CarRentalContext(DbContextOptions<CarRentalContext> options)
-        : base(options)
-    {
-    }
-
     public virtual DbSet<Car> Cars { get; set; }
 
     public virtual DbSet<CarProvider> CarProviders { get; set; }

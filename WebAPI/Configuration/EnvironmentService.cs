@@ -1,7 +1,6 @@
 using DotNetEnv;
-using CarRental.WebAPI.Configuration;
 
-namespace CarRental.WebAPI.Services
+namespace WebAPI.Configuration
 {
     public class EnvironmentService
     {

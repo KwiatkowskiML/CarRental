@@ -1,14 +1,13 @@
-namespace CarRental.WebAPI.Exceptions
-{
-    public class DatabaseOperationException : Exception
-    {
-        public DatabaseOperationException(string message) : base(message)
-        {
-        }
+namespace WebAPI.Exceptions;
 
-        public DatabaseOperationException(string message, Exception innerException) 
-            : base(message, innerException)
-        {
-        }
+public class DatabaseOperationException : Exception
+{
+    public DatabaseOperationException(string message) : base(message)
+    {
+    }
+
+    public DatabaseOperationException(string message, Exception innerException) 
+        : base(message, innerException)
+    {
     }
 }

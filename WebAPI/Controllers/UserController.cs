@@ -1,38 +1,28 @@
-using Microsoft.AspNetCore.Mvc;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
-using CarRental.WebAPI.Exceptions;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.Exceptions;
+using WebAPI.Mappers;
 
-namespace CarRental.WebAPI.Controllers
-{   
+namespace WebAPI.Controllers
+{
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        private readonly ICarRentalRepository _repository;
-        private readonly ILogger<UserController> _logger;
-
-        public UserController(
-            ICarRentalRepository repository,
-            ILogger<UserController> logger)
-        {
-            _repository = repository;
-            _logger = logger;
-        }
-
-        [HttpGet("/{userId}/rentals")]
-        public async Task<IActionResult> GetUserRentals(int userId)
+        [HttpGet("/{customerId}/rentals")]
+        public async Task<IActionResult> GetUserRentals(int customerId)
         {
             try
             {
-                var rentals = await _repository.GetUserRentalsAsync(userId);
-                return Ok(rentals);
+                var rentals = await unitOfWork.RentalsRepository.GetCustomerRentalsAsync(customerId);
+                var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
+                return Ok(rentalDtos);
             }
             catch (DatabaseOperationException ex)
             {
-                _logger.LogError(ex, "Error fetching user rentals");
+                unitOfWork.LogError(ex, "Error fetching user rentals");
                 return StatusCode(500, "An error occurred while fetching rentals");
             }
         }
@@ -47,8 +37,8 @@ namespace CarRental.WebAPI.Controllers
                     return BadRequest("Email address is required");
                 }
 
-                var user = await _repository.GetUserByEmailAsync(email);
-                
+                var user = await unitOfWork.UsersRepository.GetUserByEmailAsync(email);
+
                 if (user == null)
                 {
                     return NotFound($"User with email {email} not found");
@@ -58,7 +48,7 @@ namespace CarRental.WebAPI.Controllers
             }
             catch (DatabaseOperationException ex)
             {
-                _logger.LogError(ex, "Error fetching user ID for email: {Email}", email);
+                unitOfWork.LogError(ex, $"Error fetching user ID for email: {email}");
                 return StatusCode(500, "An error occurred while fetching user ID");
             }
         }
@@ -75,13 +65,15 @@ namespace CarRental.WebAPI.Controllers
                     return Unauthorized();
                 }
 
-                var user = await _repository.GetUserByEmailAsync(email);
+                var user = await unitOfWork.UsersRepository.GetUserByEmailAsync(email);
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
 
-                return Ok(new { 
+                // TODO: return dto instead
+                return Ok(new
+                {
                     userId = user.UserId,
                     email = user.Email,
                     firstName = user.FirstName,
@@ -90,11 +82,9 @@ namespace CarRental.WebAPI.Controllers
             }
             catch (DatabaseOperationException ex)
             {
-                _logger.LogError(ex, "Error fetching current user");
+                unitOfWork.LogError(ex, "Error fetching current user");
                 return StatusCode(500, "An error occurred while fetching user information");
             }
         }
     }
-
-    
 }

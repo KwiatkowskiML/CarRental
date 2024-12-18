@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-namespace CarRental.WebAPI.Data.Models;
-public partial class Rental
+﻿namespace WebAPI.Data.Models;
+
+public class Rental
 {
     public int RentalId { get; set; }
     public int OfferId { get; set; }

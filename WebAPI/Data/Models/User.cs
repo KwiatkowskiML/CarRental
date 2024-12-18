@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CarRental.WebAPI.Data.Models;
+namespace WebAPI.Data.Models;
 
-public partial class User
+public class User
 {
     public int UserId { get; set; }
 

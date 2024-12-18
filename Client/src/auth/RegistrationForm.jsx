@@ -33,7 +33,7 @@ export function RegistrationForm({ googleData, onRegistrationComplete }) {
     
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/Auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

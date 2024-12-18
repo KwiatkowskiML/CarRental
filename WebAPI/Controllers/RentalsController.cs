@@ -1,31 +1,32 @@
-using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using CarRental.WebAPI.Data.Repositories.Interfaces;
-using CarRental.WebAPI.Services.Interfaces;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.filters;
+using WebAPI.Mappers;
+using WebAPI.Requests;
+using WebAPI.Services.Interfaces;
 
-namespace CarRental.WebAPI.Controllers;  // Make sure this matches your other controllers
+namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RentalConfirmationController : ControllerBase
+public class RentalsController : ControllerBase
 {
     private readonly IRentalConfirmationService _confirmationService;
-    private readonly ICarRentalRepository _repository;
-    private readonly ILogger<RentalConfirmationController> _logger;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<RentalsController> _logger;
 
-    public RentalConfirmationController(
+    public RentalsController(
         IRentalConfirmationService confirmationService,
-        ICarRentalRepository repository,
-        ILogger<RentalConfirmationController> logger)
+        IUnitOfWork unitOfWork,
+        ILogger<RentalsController> logger)
     {
         _confirmationService = confirmationService;
-        _repository = repository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    [HttpPost("send")]
+    [HttpPost("send-confirmation")]
     public async Task<IActionResult> SendConfirmationEmail([FromBody] SendConfirmationEmailRequest request)
     {
         _logger.LogInformation("Received confirmation request: {@Request}", request);
@@ -44,14 +45,14 @@ public class RentalConfirmationController : ControllerBase
                 return Unauthorized("No email claim found in token");
             }
 
-            var user = await _repository.GetUserByEmailAsync(email);
+            var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(email);
             if (user == null)
             {
                 return NotFound($"User not found for email: {email}");
             }
 
             // Get customer record for the user
-            var customer = await _repository.GetCustomerByUserId(user.UserId);
+            var customer = await _unitOfWork.UsersRepository.GetCustomerByUserIdAsync(user.UserId);
             if (customer == null)
             {
                 return NotFound($"Customer record not found for user {user.UserId}");
@@ -65,7 +66,7 @@ public class RentalConfirmationController : ControllerBase
             };
 
             _logger.LogInformation("Checking offer with filter: {@Filter}", filter);
-            var offer = await _repository.GetOffer(filter);
+            var offer = await _unitOfWork.OffersRepository.GetOfferAsync(filter);
             
             if (offer == null)
             {
@@ -90,51 +91,49 @@ public class RentalConfirmationController : ControllerBase
         }
     }
 
-    [HttpGet("validate")]
+    [HttpGet("validate-token")]
     public async Task<IActionResult> ValidateToken([FromQuery] string token)
     {
-        _logger.LogInformation("Validate endpoint called");
-        _logger.LogInformation("Received token: {Token}", token);
-
         try
         {
             if (string.IsNullOrEmpty(token))
-            {
-                _logger.LogWarning("Received null or empty token");
                 return BadRequest("Token is required");
-            }
-
-            // Try to decode the token
+            
+            // Token decoding
             var decodedToken = Uri.UnescapeDataString(token);
-            _logger.LogInformation("Decoded token: {DecodedToken}", decodedToken);
-
-            var (isValid, offerId, userId) = _confirmationService.ValidateConfirmationToken(decodedToken);
-            _logger.LogInformation("Validation result - IsValid: {IsValid}, OfferId: {OfferId}, UserId: {UserId}",
-                isValid, offerId, userId);
+            var (isValid, offerId, customerId) = _confirmationService.ValidateConfirmationToken(decodedToken);
+            _logger.LogInformation("Validation result - IsValid: {IsValid}, OfferId: {OfferId}, CustomerId: {customerId}",
+                isValid, offerId, customerId);
             
             if (!isValid)
                 return BadRequest("Invalid or expired confirmation link");
-
-            // TODO: block unautorized users
-
-            // Verify the current user matches the token's user
-            // var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            // var user = await _repository.GetUserByEmailAsync(currentUserEmail);
             
-            // if (user == null || user.UserId != userId)
-            // {
-            //     return Unauthorized("This confirmation link is for a different user");
-            // }
-
+            // Verify the current user matches the token's user
+            var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return NotFound("No current user email found");
+            _logger.LogInformation($"Current user's email: {currentUserEmail}");
+            
+            var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(currentUserEmail); 
+            if (user == null)
+                return NotFound($"User with email address {currentUserEmail} not found");
+            
+            var customer = await _unitOfWork.UsersRepository.GetCustomerByUserIdAsync(user.UserId);
+            if (customer == null)
+                return BadRequest("Customer record not found");
+            
+            if (customerId != customer.CustomerId)
+                return Unauthorized("This confirmation link is for a different user");
+            
             // Get the offer details
             var filter = new OfferFilter { OfferId = offerId };
-            var offer = await _repository.GetOffer(filter);
+            var offer = await _unitOfWork.OffersRepository.GetOfferAsync(filter);
             
             if (offer == null)
                 return NotFound("Offer not found");
 
             // Return offer details for confirmation page
-            return Ok(offer);
+            return Ok(OfferMapper.ToDto(offer));
         }
         catch (Exception ex)
         {
@@ -148,24 +147,25 @@ public class RentalConfirmationController : ControllerBase
     {
         try
         {
-            var (isValid, offerId, userId) = _confirmationService.ValidateConfirmationToken(token);
+            var (isValid, offerId, _) = _confirmationService.ValidateConfirmationToken(token);
 
             if (!isValid)
                 return BadRequest("Invalid or expired confirmation link");
 
             // Check if rental already exists for this offer
-            var existingRental = await _repository.GetRentalByOfferId(offerId);
+            var existingRental = await _unitOfWork.RentalsRepository.GetRentalByOfferIdAsync(offerId);
             if (existingRental != null)
             {
                 return StatusCode(409, "Rental has already been confirmed");
             }
 
             // Create the rental
-            var rental = await _repository.CreateRentalFromOfferAsync(offerId);
+            var rental = await _unitOfWork.RentalsRepository.CreateRentalFromOfferAsync(offerId);
             if (rental == null)
                 return BadRequest("Failed to create rental");
 
-            return Ok(rental);
+            var result = RentalMapper.ToDto(rental);
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -173,11 +173,4 @@ public class RentalConfirmationController : ControllerBase
             return StatusCode(500, "An error occurred while confirming the rental");
         }
     }
-}
-
-
-
-public class SendConfirmationEmailRequest
-{
-    public int OfferId { get; set; }
 }
