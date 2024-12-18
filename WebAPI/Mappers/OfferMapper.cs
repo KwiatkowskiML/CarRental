@@ -10,13 +10,13 @@ public static class OfferMapper
         var offerDto = new OfferDto{
             OfferId = offer.OfferId,
             TotalPrice = offer.TotalPrice,
-            CustomerId = offer.CustomerId,
             StartDate = offer.StartDate,
             EndDate = offer.EndDate,
             CreatedAt = offer.CreatedAt,
             HasGps = offer.HasGps,
             HasChildSeat = offer.HasChildSeat,
             Insurance = offer.Insurance,
+            Customer = CustomerMapper.ToDto(offer.Customer!),
             Car = CarMapper.ToDto(offer.Car!) // get rid of nullable fields
         };
 

@@ -17,6 +17,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             var query = Context.Rentals
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Customer)
+                .ThenInclude(cust => cust!.User)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Car)
                 .ThenInclude(c => c!.CarProvider)

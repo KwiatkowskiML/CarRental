@@ -111,6 +111,12 @@ public partial class CarRentalContext(DbContextOptions<CarRentalContext> options
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
             entity.Property(e => e.DrivingLicenseYears).HasColumnName("driving_license_years");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.User)
+                .WithOne()
+                .HasForeignKey<Customer>(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Employee>(entity =>
