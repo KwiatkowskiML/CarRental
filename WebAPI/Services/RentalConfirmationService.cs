@@ -32,7 +32,7 @@ public class RentalConfirmationService : IRentalConfirmationService
             var token = GenerateConfirmationToken(offerId, userId);
             _logger.LogInformation("Generated raw token: {Token}", token);
 
-            var frontendUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
+            var frontendUrl = _configuration["FRONTEND_URL"] ?? "http://localhost:5173";
             var encodedToken = Uri.EscapeDataString(token);
             _logger.LogInformation("Encoded token: {EncodedToken}", encodedToken);
 
@@ -57,7 +57,7 @@ public class RentalConfirmationService : IRentalConfirmationService
             var tokenData = $"{offerId}_{userId}_{timestamp}";
             _logger.LogInformation("Token data before hashing: {TokenData}", tokenData);
 
-            var key = _configuration["Jwt:Secret"];
+            var key = _configuration["JWT_SECRET"];
             using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
             {
                 var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(tokenData));
@@ -126,7 +126,7 @@ public class RentalConfirmationService : IRentalConfirmationService
             // Validate hash
             var receivedHash = parts[3];
             var tokenData = $"{offerId}_{userId}_{expirationDate:u}";
-            var key = _configuration["Jwt:Secret"];
+            var key = _configuration["JWT_SECRET"];
 
             _logger.LogInformation("Recreating hash for validation. TokenData: {TokenData}", tokenData);
 
