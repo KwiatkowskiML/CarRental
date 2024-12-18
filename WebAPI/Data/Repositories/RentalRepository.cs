@@ -92,9 +92,26 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         }
     }
 
-    // TODO: look into it
     public async Task<Rental?> GetRentalByOfferIdAsync(int offerId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var rental = await Context.Rentals
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Car)
+                .ThenInclude(c => c!.CarProvider)
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Customer)
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Insurance)
+                .FirstOrDefaultAsync(r => r.OfferId == offerId);
+            
+            return rental;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error getting rental by offerId {OfferId}", offerId);
+            throw new DatabaseOperationException($"Failed to get rental for offer {offerId}", ex);
+        }
     }
 }

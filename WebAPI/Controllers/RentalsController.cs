@@ -94,39 +94,37 @@ public class RentalsController : ControllerBase
     [HttpGet("validate-token")]
     public async Task<IActionResult> ValidateToken([FromQuery] string token)
     {
-        _logger.LogInformation("Validate endpoint called");
-        _logger.LogInformation("Received token: {Token}", token);
-
         try
         {
             if (string.IsNullOrEmpty(token))
-            {
-                _logger.LogWarning("Received null or empty token");
                 return BadRequest("Token is required");
-            }
-
-            // Try to decode the token
+            
+            // Token decoding
             var decodedToken = Uri.UnescapeDataString(token);
-            _logger.LogInformation("Decoded token: {DecodedToken}", decodedToken);
-
-            var (isValid, offerId, userId) = _confirmationService.ValidateConfirmationToken(decodedToken);
-            _logger.LogInformation("Validation result - IsValid: {IsValid}, OfferId: {OfferId}, UserId: {UserId}",
-                isValid, offerId, userId);
+            var (isValid, offerId, customerId) = _confirmationService.ValidateConfirmationToken(decodedToken);
+            _logger.LogInformation("Validation result - IsValid: {IsValid}, OfferId: {OfferId}, CustomerId: {customerId}",
+                isValid, offerId, customerId);
             
             if (!isValid)
                 return BadRequest("Invalid or expired confirmation link");
-
-            // TODO: block unautorized users
-
-            // Verify the current user matches the token's user
-            // var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            // var user = await _repository.GetUserByEmailAsync(currentUserEmail);
             
-            // if (user == null || user.UserId != userId)
-            // {
-            //     return Unauthorized("This confirmation link is for a different user");
-            // }
-
+            // Verify the current user matches the token's user
+            var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return NotFound("No current user email found");
+            _logger.LogInformation($"Current user's email: {currentUserEmail}");
+            
+            var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(currentUserEmail); 
+            if (user == null)
+                return NotFound($"User with email address {currentUserEmail} not found");
+            
+            var customer = await _unitOfWork.UsersRepository.GetCustomerByUserIdAsync(user.UserId);
+            if (customer == null)
+                return BadRequest("Customer record not found");
+            
+            if (customerId != customer.CustomerId)
+                return Unauthorized("This confirmation link is for a different user");
+            
             // Get the offer details
             var filter = new OfferFilter { OfferId = offerId };
             var offer = await _unitOfWork.OffersRepository.GetOfferAsync(filter);
@@ -135,7 +133,7 @@ public class RentalsController : ControllerBase
                 return NotFound("Offer not found");
 
             // Return offer details for confirmation page
-            return Ok(offer);
+            return Ok(OfferMapper.ToDto(offer));
         }
         catch (Exception ex)
         {
