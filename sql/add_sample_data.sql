@@ -37,11 +37,8 @@ VALUES
     (1, 1, 1, 1000, '2024-11-19', '2024-11-25', CURRENT_TIMESTAMP, TRUE, FALSE),
     (2, 2, 2, 2000, '2024-11-10', '2024-11-17', CURRENT_TIMESTAMP, FALSE, TRUE);
 
--- Insert rentals
-INSERT INTO rentals (offer_id, status, created_at) VALUES
-(1, 'active', CURRENT_TIMESTAMP),
-(2, 'completed', CURRENT_TIMESTAMP);
-
--- Insert returns
-INSERT INTO returns (rental_id, return_date, condition_description, photo_url, processed_by) VALUES
-(35, '2024-11-17', 'Excellent condition', 'https://storage.example.com/photos/return2.jpg', 2);
+INSERT INTO rental_status (description)
+VALUES 
+    ('Confirmed'),
+    ('Pending return'),
+    ('Completed');
