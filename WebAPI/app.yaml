@@ -1,0 +1,11 @@
+runtime: custom
+env: flex
+
+env_variables:
+  DB_USERNAME: "your_prod_username"
+  DB_PASSWORD: "your_prod_password"
+  DB_HOST: "YOUR_INSTANCE_CONNECTION_IP"
+  DB_NAME: "car_rental"
+
+beta_settings:
+  cloud_sql_instances: "YOUR_INSTANCE_CONNECTION_IP"
