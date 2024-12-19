@@ -18,7 +18,7 @@ export function CarCard({ car }) {
       }}
     >
       <img 
-        src="" // TO DO
+        src={car.images?.[0] ? car.images[0] : "/api/placeholder/400/320"}
         alt={`${car.brand} ${car.model}`}
         style={{
           width: '300px',

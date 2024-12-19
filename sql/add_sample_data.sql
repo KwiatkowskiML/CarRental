@@ -55,3 +55,15 @@ VALUES
 (2, 2, CURRENT_TIMESTAMP - INTERVAL '7 days'),
 (3, 1, CURRENT_TIMESTAMP),
 (4, 1, CURRENT_TIMESTAMP);
+
+UPDATE cars 
+SET images = ARRAY['https://storage.cloud.google.com/car-images-dev-0/Audi_Q5_FY_50_TFSI_e_Facelift_IMG_5931.jpg']
+WHERE brand ILIKE 'Audi%';
+
+UPDATE cars 
+SET images = ARRAY['https://storage.cloud.google.com/car-images-dev-0/Mercedes-Benz-C300-Coupe-3dosetki.pl-3.jpg']
+WHERE brand ILIKE 'Mercedes%';
+
+UPDATE cars 
+SET images = ARRAY['https://storage.cloud.google.com/car-images-dev-0/bmw-330.jpeg']
+WHERE brand ILIKE 'BMW%';
