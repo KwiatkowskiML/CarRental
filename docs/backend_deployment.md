@@ -1,7 +1,10 @@
 # Updating the application
 When making changes to the application:
 
-1. Make code changes
+1. Make code changes and go to WebAPI
+```bash
+cd WebAPI
+```
 2. Rebuild Docker image:
 ```bash
 gcloud builds submit --tag gcr.io/awesomecarrental/car-rental-api

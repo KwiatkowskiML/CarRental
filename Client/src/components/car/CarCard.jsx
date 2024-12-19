@@ -20,6 +20,7 @@ export function CarCard({ car }) {
       <img 
         src={car.images?.[0] ? car.images[0] : "/api/placeholder/400/320"}
         alt={`${car.brand} ${car.model}`}
+        crossOrigin="anonymous"
         style={{
           width: '300px',
           height: '200px',

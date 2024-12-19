@@ -1,14 +1,20 @@
 # Making changes
 ### For Frontend Changes
 
-1. Make your code changes in the React application
+1. Make your code changes in the React application in Client
+```bash
+cd Client
+```
 
 2. Test locally:
 ```bash
 npm run dev
 ```
 
-3. Update environment variables if needed in `.env.production`
+3. Update environment variables if needed in `.env`, change api target to cloud run url in vite.config
+```
+target: 'https://car-rental-api-795304686308.europe-west4.run.app',
+```
 
 4. Build the new version:
 ```bash
