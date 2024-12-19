@@ -82,18 +82,18 @@ namespace WebAPI.Controllers
                 }
 
                 // Process return
-                var result = await unitOfWork.RentalsRepository.ProcessReturn(rentalId);
+                var result = await unitOfWork.RentalsRepository.InitReturn(rentalId);
                 if (!result)
                 {
-                    return StatusCode(500, $"Error processing return for RentalId: {rentalId} and CustomerId: {customerId}");
+                    return StatusCode(500, $"Error initializing return for RentalId: {rentalId} and CustomerId: {customerId}");
                 }
                 
                 return Ok(result);
             }
             catch (DatabaseOperationException ex)
             {
-                unitOfWork.LogError(ex, $"Error processing return for RentalId: {rentalId} and CustomerId: {customerId}");
-                return StatusCode(500, "An error occurred while processing the return");
+                unitOfWork.LogError(ex, $"Error initializing return for RentalId: {rentalId} and CustomerId: {customerId}");
+                return StatusCode(500, "An error occurred while initializing the return");
             }
         }
         

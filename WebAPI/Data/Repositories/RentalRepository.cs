@@ -4,6 +4,7 @@ using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
 using WebAPI.filters;
+using WebAPI.Requests;
 
 namespace WebAPI.Data.Repositories;
 
@@ -29,34 +30,6 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             
             if (filter != null && filter.RentalId.HasValue)
                 query = query.Where(r => r.RentalId == filter.RentalId);
-            
-            query = query.OrderByDescending(r => r.CreatedAt);
-
-            return await query.ToListAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error fetching rentals");
-            throw new DatabaseOperationException($"Failed to fetch rentals", ex);
-        }
-    }
-    
-    public async Task<List<Rental>> GetRentalAsync(RentalFilter? filter)
-    {
-        try
-        {
-            var query = Context.Rentals
-                .Include(r => r.RentalStatus)
-                .Include(r => r.Offer)
-                .ThenInclude(o => o.Customer)
-                .ThenInclude(cust => cust!.User)
-                .Include(r => r.Offer)
-                .ThenInclude(o => o.Car)
-                .ThenInclude(c => c!.CarProvider)
-                .AsQueryable();
-                
-            if (filter != null && filter.CustomerId.HasValue)
-                query = query.Where(r => r.Offer.Customer != null && r.Offer.Customer.CustomerId == filter.CustomerId);
             
             query = query.OrderByDescending(r => r.CreatedAt);
 
@@ -153,7 +126,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         }
     }
     
-    public async Task<bool> SetRentalStatus(int rentalId, int rentalStatusId)
+    private async Task<bool> SetRentalStatus(int rentalId, int rentalStatusId)
     {
         try
         {
@@ -163,33 +136,42 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
                 return false;
             }
             
-            // TODO: add rentalStatusId verification
-
             rental.RentalStatusId = rentalStatusId;
             await Context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error setting rental status for rentalId {RentalId}", rentalId);
+            Logger.LogError(ex, $"Error setting rental status {rentalStatusId} for rentalId {rentalId}");
             throw new DatabaseOperationException($"Failed to set rental status for rentalId {rentalId}", ex);
         }
     }   
     
-    public async Task<bool> ProcessReturn(int rentalId)
+    public async Task<bool> InitReturn(int rentalId)
     {
         try
         {
             var result = await SetRentalStatus(rentalId, RentalStatus.GetPendingId());
-            
-            // TODO: add return processing
-            
             return result;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error processing return for rentalId {RentalId}", rentalId);  
-            throw new DatabaseOperationException($"Failed to process return for rentalId {rentalId}", ex);
+            Logger.LogError(ex, "Error initializing return for rentalId {RentalId}", rentalId);  
+            throw new DatabaseOperationException($"Failed to initialize the return for rentalId {rentalId}", ex);
+        }
+    }
+    
+    public async Task<bool> ProcessReturn(AcceptReturnRequest request)
+    {
+        try
+        {
+            var result = await SetRentalStatus(request.RentalId, RentalStatus.GetCompletedId());
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error processing return for rentalId {RentalId}", request.RentalId);  
+            throw new DatabaseOperationException($"Failed to process return for rentalId {request.RentalId}", ex);
         }
     }
 }
