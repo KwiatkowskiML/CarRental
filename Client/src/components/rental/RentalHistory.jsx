@@ -26,19 +26,26 @@ function RentalHistory() {
                 const userData = await userResponse.json();
 
                 // Note the proper route with case sensitivity
-                const rentalsResponse = await fetch(`/api/User/${userData.userId}/rentals`, {
+                const rentalsResponse = await fetch(`/api/User/11/rentals`, {
                     headers: {
                         'Authorization': `Bearer ${user.token}`
                     }
                 });
 
                 if (!rentalsResponse.ok) {
+                    const errorText = await rentalsResponse.text();
+                    console.error('Error fetching rentals:', errorText);
                     throw new Error('Failed to fetch rentals');
                 }
 
-                const data = await rentalsResponse.json();
-                setRentals(data);
-                setIsLoading(false);
+                try {
+                    const rentalsData = await rentalsResponse.json();
+                    setRentals(rentalsData);
+                    setIsLoading(false);
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                    throw new Error('Failed to parse rentals response as JSON');
+                }
             } catch (err) {
                 console.error('Error fetching rentals:', err);
                 setError(err.message);
