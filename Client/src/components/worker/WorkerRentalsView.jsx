@@ -1,46 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
 import { Page } from '../layout/Page';
 import { Button } from '../ui/Button';
-
-const MOCK_RENTALS = [
-    {
-        rentalId: 123456,
-        status: 'gotowy do zwrotu',
-        offer: {
-            car: {
-                brand: 'Opel',
-                model: 'Corsa E'
-            }
-        }
-    },
-    {
-        rentalId: 234577,
-        status: 'w trakcie',
-        offer: {
-            car: {
-                brand: 'Polonez',
-                model: 'Caro'
-            }
-        }
-    },
-    {
-        rentalId: 345478,
-        status: 'w trakcie',
-        offer: {
-            car: {
-                brand: 'Skoda',
-                model: 'Fabia'
-            }
-        }
-    }
-];
 
 const RentalListItem = ({ rental }) => {
     const navigate = useNavigate();
 
     const handleButtonClick = (rentalId) => {
-        // Zawsze przekierowujemy do szczegółów, niezależnie od statusu
         navigate(`/worker/rentals/${rentalId}`);
     };
 
@@ -58,25 +25,50 @@ const RentalListItem = ({ rental }) => {
 
             <Button
                 onClick={() => handleButtonClick(rental.rentalId)}
-                variant={rental.status === 'gotowy do zwrotu' ? "primary" : "secondary"}
-                className={rental.status === 'gotowy do zwrotu' ?
-                    "bg-brown-600 hover:bg-brown-700" :
-                    "border border-brown-600 text-brown-600 hover:bg-brown-50"
-                }
+                variant={rental.status === 'ready_for_return' ? "primary" : "secondary"}
             >
-                {rental.status === 'gotowy do zwrotu' ? 'Przyjmij zwrot' : 'Zobacz szczegóły'}
+                {rental.status === 'ready_for_return' ? 'Przyjmij zwrot' : 'Zobacz szczegóły'}
             </Button>
         </div>
     );
 };
 
 export function WorkerRentalsView() {
+    const [rentals, setRentals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [filters, setFilters] = useState({
         status: 'all',
         searchTerm: '',
     });
+    const { user } = useAuth();
 
-    const filteredRentals = MOCK_RENTALS.filter(rental => {
+    useEffect(() => {
+        const fetchRentals = async () => {
+            try {
+                const response = await fetch('/api/Worker/rentals', {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch rentals');
+                }
+
+                const data = await response.json();
+                setRentals(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRentals();
+    }, [user.token]);
+
+    const filteredRentals = rentals.filter(rental => {
         const matchesStatus = filters.status === 'all' || rental.status === filters.status;
         const searchLower = filters.searchTerm.toLowerCase();
         const matchesSearch = !filters.searchTerm ||
@@ -85,6 +77,9 @@ export function WorkerRentalsView() {
 
         return matchesStatus && matchesSearch;
     });
+
+    if (loading) return <div className="text-center py-12">Loading...</div>;
+    if (error) return <div className="text-center py-12 text-red-600">Error: {error}</div>;
 
     return (
         <Page>
@@ -105,8 +100,9 @@ export function WorkerRentalsView() {
                             className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
                         >
                             <option value="all">Wszystkie statusy</option>
-                            <option value="w trakcie">W trakcie</option>
-                            <option value="gotowy do zwrotu">Gotowe do zwrotu</option>
+                            <option value="active">W trakcie</option>
+                            <option value="ready_for_return">Gotowe do zwrotu</option>
+                            <option value="completed">Zakończone</option>
                         </select>
                     </div>
                 </div>
