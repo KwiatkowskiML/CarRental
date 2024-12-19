@@ -10,6 +10,11 @@ public class RentalStatus
         return 3;
     }
     
+    public static int GetPendingId()
+    {
+        return 2;
+    }
+    
     public static int GetConfirmedId()
     {
         return 1;

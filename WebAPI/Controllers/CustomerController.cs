@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
 using WebAPI.filters;
@@ -49,5 +50,47 @@ namespace WebAPI.Controllers
                 return StatusCode(500, "An error occurred while fetching CustomerId");
             }
         }
+        
+        
+        [HttpPost("return/{rentalId}/{customerId}")]
+        public async Task<IActionResult> ProcessReturn(int rentalId, int customerId)
+        {
+            try
+            {
+                var customer = await unitOfWork.UsersRepository.GetCustomerAsync(customerId);
+                if (customer == null)
+                {
+                    return NotFound($"Customer with CustomerId {customerId} not found");
+                }
+
+                // Input data validation
+                var filter = new RentalFilter() { CustomerId = customerId, RentalId = rentalId };
+                var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(filter);
+
+                if (rentals.Count == 0)
+                {
+                    return NotFound($"Rental with RentalId {rentalId} not found for CustomerId {customerId}");
+                }
+                if (rentals.Count > 1)
+                {
+                    return StatusCode(500, $"Multiple rentals found for RentalId {rentalId} and CustomerId {customerId}");
+                }
+
+                // Process return
+                var result = await unitOfWork.RentalsRepository.ProcessReturn(rentalId);
+                if (!result)
+                {
+                    return StatusCode(500, $"Error processing return for RentalId: {rentalId} and CustomerId: {customerId}");
+                }
+                
+                return Ok(result);
+            }
+            catch (DatabaseOperationException ex)
+            {
+                unitOfWork.LogError(ex, $"Error processing return for RentalId: {rentalId} and CustomerId: {customerId}");
+                return StatusCode(500, "An error occurred while processing the return");
+            }
+        }
+        
     }
 }

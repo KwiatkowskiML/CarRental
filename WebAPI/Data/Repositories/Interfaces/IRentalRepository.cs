@@ -8,4 +8,5 @@ public interface IRentalRepository
     Task<List<Rental>> GetRentalsAsync(RentalFilter? filter);
     Task<Rental?> CreateRentalFromOfferAsync(int offerId);
     Task<Rental?> GetRentalByOfferIdAsync(int offerId);
+    Task<bool> ProcessReturn(int rentalId);
 }

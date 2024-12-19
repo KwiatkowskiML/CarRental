@@ -36,7 +36,22 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
             throw new DatabaseOperationException($"Failed to fetch customer with userId {userId}", ex);
         }
     }
-    
+
+    public async Task<Customer?> GetCustomerAsync(int customerId)
+    {
+        try
+        {
+            return await Context.Customers
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching customer by customerId");
+            throw new DatabaseOperationException($"Failed to fetch customer with customerId {customerId}", ex);
+        }
+    }
+
     public async Task<User> CreateUserAsync(User user)
     {
         try
