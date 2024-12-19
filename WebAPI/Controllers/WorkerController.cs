@@ -14,12 +14,11 @@ namespace WebAPI.Controllers
     public class WorkerController(IUnitOfWork unitOfWork) : ControllerBase
     {
         [HttpGet("rentals")]
-        public async Task<IActionResult> GetUserRentals()
+        public async Task<IActionResult> GetUserRentals([FromQuery] RentalFilter request)
         {
             try
             {
-                var rentalFilter = new RentalFilter();
-                var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(rentalFilter);
+                var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(request);
                 var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
                 return Ok(rentalDtos);
             }
@@ -45,13 +44,8 @@ namespace WebAPI.Controllers
                 if (rental.RentalStatusId != RentalStatus.GetPendingId())
                     return BadRequest("Return is not pending");
                 
-                var result = await unitOfWork.RentalsRepository.ProcessReturn(request);
-                if (!result)
-                {
-                    return StatusCode(500, $"Error processing return for RentalId: {request.RentalId}");
-                }
-                
-                return Ok(result);
+                var completedReturn = await unitOfWork.RentalsRepository.ProcessReturn(request);
+                return Ok(ReturnMapper.ToDto(completedReturn));
             }
             catch (DatabaseOperationException ex)
             {

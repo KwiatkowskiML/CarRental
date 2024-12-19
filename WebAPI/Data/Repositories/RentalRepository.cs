@@ -31,6 +31,9 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             if (filter != null && filter.RentalId.HasValue)
                 query = query.Where(r => r.RentalId == filter.RentalId);
             
+            if (filter != null && filter.RentalStatus.HasValue)
+                query = query.Where(r => r.RentalStatusId == filter.RentalStatus);
+            
             query = query.OrderByDescending(r => r.CreatedAt);
 
             return await query.ToListAsync();
@@ -148,6 +151,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         }
     }   
     
+    // Customer's initialization of the return
     public async Task<bool> InitReturn(int rentalId)
     {
         await using var transaction = await Context.Database.BeginTransactionAsync();
@@ -165,7 +169,8 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         }
     }
     
-    public async Task<bool> ProcessReturn(AcceptReturnRequest request)
+    // Worker's processing of the return
+    public async Task<Return> ProcessReturn(AcceptReturnRequest request)
     {
         await using var transaction = await Context.Database.BeginTransactionAsync();
         try
@@ -191,7 +196,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             await Context.SaveChangesAsync();
             await transaction.CommitAsync();
             
-            return result;
+            return completedReturn;
         }
         catch (Exception ex)
         {

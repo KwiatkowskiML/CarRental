@@ -10,5 +10,5 @@ public interface IRentalRepository
     Task<Rental?> CreateRentalFromOfferAsync(int offerId);
     Task<Rental?> GetRentalByOfferIdAsync(int offerId);
     Task<bool> InitReturn(int rentalId);
-    Task<bool> ProcessReturn(AcceptReturnRequest request);
+    Task<Return> ProcessReturn(AcceptReturnRequest request);
 }
