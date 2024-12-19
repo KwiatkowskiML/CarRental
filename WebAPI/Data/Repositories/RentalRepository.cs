@@ -176,13 +176,12 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
                 throw new InvalidOperationException($"Failed to set rental status to completed for rentalId {request.RentalId}");
             }
             
-            // TODO: adjust the date and return values
             var completedReturn = new Return
             {
                 RentalId = request.RentalId,
-                ReturnDate = DateOnly.FromDateTime(DateTime.UtcNow), 
-                ConditionDescription = "placeholder",
-                PhotoUrl = "placeholder",
+                ReturnDate = request.ReturnDate, 
+                ConditionDescription = request.ConditionDescription,
+                PhotoUrl = request.PhotoUrl,
                 ProcessedBy = request.EmployeeId,
                 CreatedAt = DateTime.UtcNow
             };

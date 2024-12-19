@@ -4,6 +4,7 @@ public class AcceptReturnRequest
 {
     public int RentalId { get; set; }
     public int EmployeeId { get; set; }
-    
-    // TODO: Add properties for the return details
+    public string ConditionDescription { get; set; } = "";
+    public string PhotoUrl { get; set; } = "";
+    public DateOnly ReturnDate { get; set; }
 }
