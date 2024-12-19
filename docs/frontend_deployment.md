@@ -57,16 +57,6 @@ If issues are found after deployment:
      --region europe-west4
    ```
 
-## Important Notes
-
-- Always test changes locally before deployment
-- Keep track of deployment versions
-- Monitor logs after deployment
-- Consider implementing staged deployments for critical changes
-- Backup database before major changes
-- Update documentation if APIs change
-
-
 # Deploying Frontend to Firebase Hosting
 
 ## 1. Enable Firebase in GCP Console
@@ -74,7 +64,15 @@ If issues are found after deployment:
 1. Go to Google Cloud Console
 2. Navigate to your project "awesomecarrental"
 3. Search for "Firebase" in the APIs & Services
-4. Enable Firebase API
+4. Enable Firebase API:			
+- Firebase Cloud Messaging API					
+- Firebase Dynamic Links API					
+- Firebase Hosting API					
+- Firebase Installations API					
+- Firebase Management API					
+- Firebase Remote Config API					
+- Firebase Remote Config Realtime API					
+- Firebase Rules API
 
 ## 2. Environment Configuration
 
