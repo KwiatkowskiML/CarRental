@@ -45,7 +45,6 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         }
     }
 
-    // TODO: look into it
     public async Task<Rental?> CreateRentalFromOfferAsync(int offerId)
     {
         await using var transaction = await Context.Database.BeginTransactionAsync();

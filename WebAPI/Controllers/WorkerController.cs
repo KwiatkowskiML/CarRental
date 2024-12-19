@@ -13,6 +13,7 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class WorkerController(IUnitOfWork unitOfWork) : ControllerBase
     {
+        // TODO: rethink whether this should return the rentalDto with all rental info
         [HttpGet("rentals")]
         public async Task<IActionResult> GetUserRentals([FromQuery] RentalFilter request)
         {
