@@ -12,7 +12,7 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class CustomerController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        [HttpGet("/{customerId}/rentals")]
+        [HttpGet("{customerId}/rentals")]
         public async Task<IActionResult> GetCustomerRentals(int customerId)
         {
             try
