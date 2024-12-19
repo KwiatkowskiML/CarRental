@@ -23,7 +23,7 @@ function RentalHistory() {
 
             const userData = await userResponse.json();
 
-            const rentalsResponse = await fetch(`/api/User/11/rentals`, {
+            const rentalsResponse = await fetch(`/api/Customer/11/rentals`, {
                 headers: {
                     'Authorization': `Bearer ${user.token}`
                 }
