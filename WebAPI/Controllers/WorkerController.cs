@@ -11,7 +11,7 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class WorkerController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        [HttpGet("/rentals")]
+        [HttpGet("rentals")]
         public async Task<IActionResult> GetUserRentals()
         {
             try
