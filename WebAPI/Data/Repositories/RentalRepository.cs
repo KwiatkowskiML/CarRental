@@ -15,6 +15,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         try
         {
             var query = Context.Rentals
+                .Include(r => r.RentalStatus)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Customer)
                 .ThenInclude(cust => cust!.User)
@@ -78,16 +79,17 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             await transaction.CommitAsync();
 
             // Load necessary navigation properties for the DTO
-            await Context.Entry(rental)
-                .Reference(r => r.Offer)
-                .Query()
-                .Include(o => o.Car)
+            return await Context.Rentals
+                .Include(r => r.RentalStatus)
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Car)
                 .ThenInclude(c => c!.CarProvider)
-                .Include(o => o.Customer)
-                .Include(o => o.Insurance)
-                .LoadAsync();
-
-            return rental;
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Customer)
+                .ThenInclude(cust => cust!.User)
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Insurance)
+                .FirstOrDefaultAsync(r => r.RentalId == rental.RentalId);
         }
         catch (Exception ex)
         {
