@@ -56,7 +56,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
 
             var hasOverlap = await Context.Rentals
                 .AnyAsync(r => r.Offer.CarId == offer.CarId &&
-                               r.Status != "cancelled" &&
+                               r.RentalStatusId != RentalStatus.GetCompletedId() &&
                                ((r.Offer.StartDate <= offer.EndDate && r.Offer.EndDate >= offer.StartDate) ||
                                 (r.Offer.StartDate >= offer.StartDate && r.Offer.StartDate <= offer.EndDate)));
 
@@ -67,7 +67,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             var rental = new Rental
             {
                 OfferId = offerId,
-                Status = "active",
+                RentalStatusId = RentalStatus.GetConfirmedId(),
                 CreatedAt = DateTime.UtcNow
             };
 

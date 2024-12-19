@@ -27,6 +27,7 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
         try
         {
             return await Context.Customers
+                .Include(c => c.User)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
         catch (Exception ex)

@@ -72,6 +72,7 @@ namespace WebAPI.Controllers
                 var offer = new Offer
                 {
                     CustomerId = customer.CustomerId,
+                    Customer = customer,
                     CarId = request.CarId,
                     InsuranceId = request.InsuranceId,
                     StartDate = request.StartDate,

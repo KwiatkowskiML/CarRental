@@ -7,6 +7,15 @@ public static class OfferMapper
 {
     public static OfferDto ToDto(Offer offer)
     {
+        if (offer.Customer == null)
+            throw new ArgumentException("Offer must have a Customer", nameof(offer));
+            
+        if (offer.Customer.User == null)
+            throw new ArgumentException("Customer must have a User", nameof(offer));
+            
+        if (offer.Car == null)
+            throw new ArgumentException("Offer must have a Car", nameof(offer));
+
         var offerDto = new OfferDto{
             OfferId = offer.OfferId,
             TotalPrice = offer.TotalPrice,

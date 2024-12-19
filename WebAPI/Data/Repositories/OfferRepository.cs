@@ -16,6 +16,7 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
         {
             var query = Context.Offers
                 .Include(o => o.Customer)
+                .ThenInclude(cust => cust!.User)
                 .Include(o => o.Car)
                 .ThenInclude(c => c!.CarProvider)
                 .Include(o => o.Insurance)
@@ -51,12 +52,9 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
 
             if (filter.HasChildSeat.HasValue)
                 query = query.Where(o => o.HasChildSeat == filter.HasChildSeat);
-
-            // Log the generated SQL query for debugging
-            var sql = query.ToQueryString();
-            Logger.LogInformation($"GetOfferAsync: generated SQL: {sql}");
-
-            return await query.FirstOrDefaultAsync();
+            
+            var offer = await query.FirstOrDefaultAsync();
+            return offer;
         }
         catch (Exception ex)
         {
@@ -94,7 +92,7 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
 
             var hasConflict = await Context.Rentals
                 .AnyAsync(r => r.Offer.CarId == offer.CarId &&
-                               r.Status != "cancelled" &&
+                               r.RentalStatusId != RentalStatus.GetCompletedId() &&
                                r.Offer.StartDate <= offer.EndDate &&
                                r.Offer.EndDate >= offer.StartDate);
 
