@@ -34,11 +34,10 @@ VALUES
 
 INSERT INTO offers (insurance_id, customer_id, car_id, total_price, start_date, end_date, created_at, has_gps, has_child_seat)
 VALUES 
-    (1, 1, 1, 1000, '2024-11-19', '2024-11-25', CURRENT_TIMESTAMP, TRUE, FALSE),
+    (1, 1, 1, 1000, '2025-11-19', '2025-11-25', CURRENT_TIMESTAMP, TRUE, FALSE),
     (2, 2, 2, 2000, '2024-11-10', '2024-11-17', CURRENT_TIMESTAMP, FALSE, TRUE);
 
-INSERT INTO rental_status (description)
+INSERT INTO rentals (offer_id, rental_status_id, created_at)
 VALUES 
-    ('Confirmed'),
-    ('Pending return'),
-    ('Completed');
+    (1, 1, CURRENT_TIMESTAMP),
+    (2, 3, CURRENT_TIMESTAMP);

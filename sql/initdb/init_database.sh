@@ -17,3 +17,13 @@ for table in "${sql_table_names[@]}"; do
     echo "Applying $sql_files_path/$table.sql to $db_name"
     psql -U "$POSTGRES_USER" -d "$db_name" -f "$sql_files_path/$table.sql"
 done
+
+# Initialize rental_status table
+echo "Initializing rental_status table"
+psql -U "$POSTGRES_USER" -d "$db_name" -c "
+INSERT INTO rental_status (description)
+VALUES 
+    ('Confirmed'),
+    ('Pending return'),
+    ('Completed')
+ON CONFLICT DO NOTHING;"
