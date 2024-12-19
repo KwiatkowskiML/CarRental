@@ -66,8 +66,6 @@ namespace WebAPI.Controllers
                 // Input data validation
                 var filter = new RentalFilter() { CustomerId = customerId, RentalId = rentalId };
                 var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(filter);
-
-                // TODO: something is wrong with returned rentals
                 if (rentals.Count == 0)
                 {
                     return NotFound($"Rental with RentalId {rentalId} not found for CustomerId {customerId}");
