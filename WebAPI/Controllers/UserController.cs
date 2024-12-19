@@ -12,23 +12,6 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class UserController(IUnitOfWork unitOfWork) : ControllerBase
     {
-        [HttpGet("/{customerId}/rentals")]
-        public async Task<IActionResult> GetUserRentals(int customerId)
-        {
-            try
-            {
-                var rentalFilter = new RentalFilter() {CustomerId = customerId};
-                var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(rentalFilter);
-                var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
-                return Ok(rentalDtos);
-            }
-            catch (DatabaseOperationException ex)
-            {
-                unitOfWork.LogError(ex, "Error fetching user rentals");
-                return StatusCode(500, "An error occurred while fetching rentals");
-            }
-        }
-
         [HttpGet("by-email")]
         public async Task<IActionResult> GetUserIdByEmail([FromQuery] string email)
         {
@@ -72,15 +55,8 @@ namespace WebAPI.Controllers
                 {
                     return NotFound("User not found");
                 }
-
-                // TODO: return dto instead
-                return Ok(new
-                {
-                    userId = user.UserId,
-                    email = user.Email,
-                    firstName = user.FirstName,
-                    lastName = user.LastName
-                });
+                
+                return Ok(UserMapper.ToDto(user));
             }
             catch (DatabaseOperationException ex)
             {
