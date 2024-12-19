@@ -67,6 +67,7 @@ namespace WebAPI.Controllers
                 var filter = new RentalFilter() { CustomerId = customerId, RentalId = rentalId };
                 var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(filter);
 
+                // TODO: something is wrong with returned rentals
                 if (rentals.Count == 0)
                 {
                     return NotFound($"Rental with RentalId {rentalId} not found for CustomerId {customerId}");
@@ -74,6 +75,12 @@ namespace WebAPI.Controllers
                 if (rentals.Count > 1)
                 {
                     return StatusCode(500, $"Multiple rentals found for RentalId {rentalId} and CustomerId {customerId}");
+                }
+                
+                var rental = rentals.First();
+                if (rental.RentalStatusId != RentalStatus.GetConfirmedId())
+                {
+                    return StatusCode(500, $"Rental with RentalId {rentalId} is not in Confirmed status");
                 }
 
                 // Process return

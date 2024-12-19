@@ -27,6 +27,9 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             if (filter != null && filter.CustomerId.HasValue)
                 query = query.Where(r => r.Offer.Customer != null && r.Offer.Customer.CustomerId == filter.CustomerId);
             
+            if (filter != null && filter.RentalId.HasValue)
+                query = query.Where(r => r.RentalId == filter.RentalId);
+            
             query = query.OrderByDescending(r => r.CreatedAt);
 
             return await query.ToListAsync();
