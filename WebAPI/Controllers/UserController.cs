@@ -55,7 +55,7 @@ namespace WebAPI.Controllers
                 {
                     return NotFound("User not found");
                 }
-                
+
                 return Ok(UserMapper.ToDto(user));
             }
             catch (DatabaseOperationException ex)

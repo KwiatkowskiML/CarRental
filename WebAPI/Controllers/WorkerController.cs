@@ -29,22 +29,22 @@ namespace WebAPI.Controllers
                 return StatusCode(500, "An error occurred while fetching rentals");
             }
         }
-        
+
         [HttpPost("accept-return")]
-        public async Task<IActionResult> AcceptReturn([FromBody] AcceptReturnRequest request )
+        public async Task<IActionResult> AcceptReturn([FromBody] AcceptReturnRequest request)
         {
             try
             {
-                var rentalFilter = new RentalFilter() {RentalId = request.RentalId};
+                var rentalFilter = new RentalFilter() { RentalId = request.RentalId };
                 var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(rentalFilter);
-                
+
                 if (rentals.Count == 0)
                     return NotFound($"Rental with RentalId {request.RentalId} not found");
 
                 var rental = rentals.First();
                 if (rental.RentalStatusId != RentalStatus.GetPendingId())
                     return BadRequest("Return is not pending");
-                
+
                 var completedReturn = await unitOfWork.RentalsRepository.ProcessReturn(request);
                 return Ok(ReturnMapper.ToDto(completedReturn));
             }
