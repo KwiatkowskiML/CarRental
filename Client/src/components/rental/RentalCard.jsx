@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../auth/AuthContext';
 
-function RentalCard({ rental, onStatusUpdate }) {
+function RentalCard({ rental, customerId, onStatusUpdate }) {
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
@@ -16,22 +16,18 @@ function RentalCard({ rental, onStatusUpdate }) {
         setError(null);
 
         try {
-            const response = await fetch(`/api/rentals/${rental.rentalId}/return`, {
+            const response = await fetch(`/api/Customer/return/${rental.rentalId}/${customerId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${user.token}`,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    status: 'pending_return'
-                })
+                }
             });
 
             if (!response.ok) {
                 throw new Error('Failed to update rental status');
             }
 
-            // Call the parent component's update function
             if (onStatusUpdate) {
                 onStatusUpdate();
             }
@@ -44,10 +40,10 @@ function RentalCard({ rental, onStatusUpdate }) {
     };
 
     const getStatusColor = (status) => {
-        switch (status) {
-            case 'active':
+        switch (status?.description?.toLowerCase()) {
+            case 'confirmed':
                 return '#22c55e'; // green
-            case 'pending_return':
+            case 'pending return':
                 return '#eab308'; // yellow
             case 'completed':
                 return '#6b7280'; // gray
@@ -65,15 +61,15 @@ function RentalCard({ rental, onStatusUpdate }) {
                         display: 'inline-block',
                         padding: '4px 8px',
                         borderRadius: '4px',
-                        backgroundColor: getStatusColor(rental.status),
+                        backgroundColor: getStatusColor(rental.rentalStatus),
                         color: 'white',
                         fontSize: '14px',
                         marginBottom: '12px'
                     }}>
-                        {rental.status}
+                        {rental.rentalStatus?.description || 'Unknown'}
                     </div>
                 </div>
-                {rental.status === 'active' && (
+                {rental.rentalStatus?.description === 'Confirmed' && (
                     <Button
                         variant="secondary"
                         onClick={handleReturn}
@@ -90,7 +86,7 @@ function RentalCard({ rental, onStatusUpdate }) {
             <div style={detailsGridStyle}>
                 <DetailRow label="Start Date" value={new Date(startDate).toLocaleDateString()} />
                 <DetailRow label="End Date" value={new Date(endDate).toLocaleDateString()} />
-                <DetailRow label="Total Price" value={`$${totalPrice}`} />
+                <DetailRow label="Total Price" value={`$${totalPrice.toFixed(2)}`} />
                 <DetailRow label="GPS" value={hasGps ? 'Yes' : 'No'} />
                 <DetailRow label="Child Seat" value={hasChildSeat ? 'Yes' : 'No'} />
                 <DetailRow label="Insurance" value={insurance ? insurance.name : 'None'} />
