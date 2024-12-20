@@ -1,9 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 
-function NavBar() {
+export function Navbar() {
   const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <nav style={{
@@ -18,12 +20,9 @@ function NavBar() {
       <div style={{ fontWeight: 'bold' }}>Car Rental</div>
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Browser</Link>
-          <Link to="/rental/history" style={{ textDecoration: 'none', color: 'black' }}>Rental History</Link>
-          <Link to="/worker/rentals" style={{ textDecoration: 'none', color: 'black' }}>Worker View</Link>
           <span>Welcome!</span>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             style={{
               padding: '0.5rem 1rem',
               backgroundColor: '#dc3545',
@@ -40,5 +39,3 @@ function NavBar() {
     </nav>
   );
 }
-
-export default NavBar;

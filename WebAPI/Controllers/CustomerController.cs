@@ -18,7 +18,7 @@ namespace WebAPI.Controllers
         {
             try
             {
-                var rentalFilter = new RentalFilter() { CustomerId = customerId };
+                var rentalFilter = new RentalFilter() {CustomerId = customerId};
                 var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(rentalFilter);
                 var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
                 return Ok(rentalDtos);
