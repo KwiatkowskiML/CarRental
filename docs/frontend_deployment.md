@@ -11,17 +11,12 @@ cd Client
 npm run dev
 ```
 
-3. Update environment variables if needed in `.env`, change api target to cloud run url in vite.config
-```
-target: 'https://car-rental-api-795304686308.europe-west4.run.app',
-```
-
-4. Build the new version:
+3. Build the new version:
 ```bash
 npm run build
 ```
 
-5. Deploy the new version to Firebase:
+4. Deploy the new version to Firebase:
 ```bash
 firebase deploy
 ```
