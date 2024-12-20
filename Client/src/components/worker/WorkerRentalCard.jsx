@@ -1,5 +1,5 @@
-// WorkerRentalCard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ReturnConfirmationDialog } from './ReturnConfirmationDialog';
 import { useAuth } from '../../auth/AuthContext';
 import { Button } from '../ui/Button';
 
@@ -7,100 +7,154 @@ function WorkerRentalCard({ rental, onStatusUpdate }) {
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [employeeId, setEmployeeId] = useState(null);
 
     const { offer } = rental;
     const { car, startDate, endDate, totalPrice, hasGps, hasChildSeat, insurance } = offer;
     const { brand, model, year, description, carProvider } = car;
 
-    const handleAcceptReturn = async () => {
+    // Fetch employee ID when component mounts
+    useEffect(() => {
+        const fetchEmployeeId = async () => {
+            try {
+                const response = await fetch('/api/User/current', {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setEmployeeId(data.userId);
+                }
+            } catch (err) {
+                console.error('Error fetching employee ID:', err);
+                setError('Failed to fetch employee information');
+            }
+        };
+
+        fetchEmployeeId();
+    }, [user.token]);
+
+    const handleAcceptReturn = async (returnData) => {
         setIsSubmitting(true);
         setError(null);
 
+        const requestBody = {
+            rentalId: rental.rentalId,
+            employeeId: employeeId,
+            conditionDescription: returnData.conditionDescription,
+            photoUrl: returnData.photoUrl,
+            returnDate: returnData.returnDate
+        };
+
         try {
-            const response = await fetch(`/api/Worker/rentals/${rental.rentalId}/accept-return`, {
+            const response = await fetch('/api/Worker/accept-return', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${user.token}`,
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
-                throw new Error('Failed to accept return');
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to accept return');
             }
+
+            setIsDialogOpen(false);
 
             if (onStatusUpdate) {
                 onStatusUpdate();
             }
         } catch (err) {
             console.error('Error accepting return:', err);
-            setError('Failed to accept return. Please try again.');
+            setError(err.message || 'Failed to accept return. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const getStatusColor = (status) => {
-        if (!status?.description) return '#6b7280'; // default gray for undefined/null status
+        if (!status?.description) return '#6b7280';
 
         switch (status.description.toLowerCase()) {
             case 'confirmed':
-                return '#22c55e'; // green
+                return '#22c55e';
             case 'pending return':
-                return '#eab308'; // yellow
+                return '#eab308';
             case 'completed':
-                return '#6b7280'; // gray
+                return '#6b7280';
             default:
                 return '#6b7280';
         }
     };
 
     return (
-        <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-start mb-4">
+        <div className="rental-card" style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                 <div>
-                    <h3 className="text-xl font-semibold mb-2">
+                    <h2 style={{ marginBottom: '12px', fontSize: '24px' }}>
                         {brand} {model} ({year})
-                    </h3>
-                    <div
-                        className="inline-block px-3 py-1 rounded-full text-sm"
-                        style={{
-                            backgroundColor: getStatusColor(rental.rentalStatus),
-                            color: 'white'
-                        }}
-                    >
+                    </h2>
+                    <div style={{
+                        display: 'inline-block',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: getStatusColor(rental.rentalStatus),
+                        color: 'white',
+                        fontSize: '14px',
+                        marginBottom: '12px'
+                    }}>
                         {rental.rentalStatus?.description || 'Unknown'}
                     </div>
                 </div>
-                {rental.status === 'ready_for_return' && (
+                {rental.rentalStatus?.description === 'Pending return' && (
                     <Button
                         variant="primary"
-                        onClick={handleAcceptReturn}
+                        onClick={() => setIsDialogOpen(true)}
                         disabled={isSubmitting}
+                        style={{ minWidth: '120px' }}
                     >
-                        {isSubmitting ? 'Przetwarzanie...' : 'Przyjmij zwrot'}
+                        Accept Return
                     </Button>
                 )}
+
+                <ReturnConfirmationDialog
+                    isOpen={isDialogOpen}
+                    onClose={() => setIsDialogOpen(false)}
+                    onConfirm={handleAcceptReturn}
+                    isSubmitting={isSubmitting}
+                />
             </div>
 
             {description && (
-                <p className="text-gray-600 mb-4">{description}</p>
+                <div style={{ marginBottom: '8px', color: '#666' }}>
+                    {description}
+                </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <DetailRow label="Data rozpoczęcia" value={new Date(startDate).toLocaleDateString()} />
-                <DetailRow label="Data zakończenia" value={new Date(endDate).toLocaleDateString()} />
-                <DetailRow label="Całkowita cena" value={`${totalPrice.toFixed(2)} PLN`} />
-                <DetailRow label="GPS" value={hasGps ? 'Tak' : 'Nie'} />
-                <DetailRow label="Fotelik" value={hasChildSeat ? 'Tak' : 'Nie'} />
-                <DetailRow label="Ubezpieczenie" value={insurance?.name || 'Brak'} />
-                <DetailRow label="Dostawca" value={carProvider.name} />
-                <DetailRow label="Kontakt" value={carProvider.contactEmail} />
-                <DetailRow label="ID wynajmu" value={rental.rentalId} />
+            <div style={detailsGridStyle}>
+                <DetailRow label="Start Date" value={new Date(startDate).toLocaleDateString()} />
+                <DetailRow label="End Date" value={new Date(endDate).toLocaleDateString()} />
+                <DetailRow label="Total Price" value={`${totalPrice.toFixed(2)} PLN`} />
+                <DetailRow label="GPS" value={hasGps ? 'Yes' : 'No'} />
+                <DetailRow label="Child Seat" value={hasChildSeat ? 'Yes' : 'No'} />
+                <DetailRow label="Insurance" value={insurance ? insurance.name : 'None'} />
+                <DetailRow label="Provider" value={carProvider.name} />
+                <DetailRow label="Contact" value={carProvider.contactEmail} />
+                <DetailRow label="Rental ID" value={rental.rentalId} />
             </div>
 
             {error && (
-                <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md">
+                <div style={{
+                    marginTop: '12px',
+                    padding: '8px',
+                    backgroundColor: '#fee2e2',
+                    color: '#dc2626',
+                    borderRadius: '4px'
+                }}>
                     {error}
                 </div>
             )}
@@ -108,11 +162,31 @@ function WorkerRentalCard({ rental, onStatusUpdate }) {
     );
 }
 
-const DetailRow = ({ label, value }) => (
-    <div className="flex flex-col">
-        <span className="text-sm text-gray-500">{label}</span>
-        <span className="font-medium">{value}</span>
-    </div>
-);
+function DetailRow({ label, value }) {
+    return (
+        <div style={{ marginBottom: '4px' }}>
+            <span style={{ fontWeight: 'bold', marginRight: '8px', color: '#666' }}>
+                {label}:
+            </span>
+            <span>{value}</span>
+        </div>
+    );
+}
+
+const cardStyle = {
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    padding: '16px',
+    margin: '16px 0',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    backgroundColor: 'white'
+};
+
+const detailsGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '12px',
+    marginTop: '16px'
+};
 
 export default WorkerRentalCard;
