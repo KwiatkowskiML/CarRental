@@ -72,6 +72,7 @@ namespace WebAPI.Controllers
                 var offer = new Offer
                 {
                     CustomerId = customer.CustomerId,
+                    Customer = customer,
                     CarId = request.CarId,
                     InsuranceId = request.InsuranceId,
                     StartDate = request.StartDate,
@@ -91,35 +92,5 @@ namespace WebAPI.Controllers
                 return StatusCode(500, "An error occurred while calculating the rental price");
             }
         }
-
-        // TODO: is it necessary?
-        // [HttpPost("choose-offer")]
-        // public async Task<ActionResult> ChooseOffer([FromBody] ChooseOfferRequest request)
-        // {
-        //     try
-        //     {
-        //         var customer = await _unitOfWork.UsersRepository.GetCustomerByUserIdAsync(request.UserId);
-        //
-        //         if (customer == null)
-        //             return NotFound($"Customer with userId = {request.UserId} not found");
-        //
-        //         var offerFilter = new OfferFilter
-        //         {
-        //             OfferId = request.OfferId,
-        //             CustomerId = customer.CustomerId
-        //         };
-        //
-        //         var offer = await _unitOfWork.OffersRepository.GetOfferAsync(offerFilter);
-        //         if (offer == null)
-        //             return NotFound($"Offer with ID {request.OfferId} not found for this customer");
-        //
-        //         return Ok();
-        //     }
-        //     catch (DatabaseOperationException ex)
-        //     {
-        //         _unitOfWork.LogError(ex, "Error choosing offer");
-        //         return StatusCode(500, "An error occurred while choosing offer");
-        //     }
-        // }
     }
 }

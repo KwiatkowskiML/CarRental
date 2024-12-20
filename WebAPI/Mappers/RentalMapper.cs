@@ -10,7 +10,7 @@ public static class RentalMapper
         return new RentalDto{
             RentalId = r.RentalId,
             OfferId = r.OfferId,
-            Status = r.Status,
+            RentalStatus = r.RentalStatus,
             CreatedAt = r.CreatedAt,
             Offer = OfferMapper.ToDto(r.Offer)
         };

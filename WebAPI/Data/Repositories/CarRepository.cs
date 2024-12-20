@@ -43,9 +43,10 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
                 var startDate = DateOnly.FromDateTime(filter.StartDate.Value);
                 var endDate = DateOnly.FromDateTime(filter.EndDate.Value);
                     
+                // get rid of magic numbers
                 query = query.Where(c => !c.Offers.Any(o => 
                     o.Rental != null && 
-                    o.Rental.Status != "cancelled" &&
+                    o.Rental.RentalStatusId != RentalStatus.GetCompletedId() &&
                     o.StartDate <= endDate && o.EndDate >= startDate
                 ));
             }

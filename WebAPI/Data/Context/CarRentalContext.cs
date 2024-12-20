@@ -111,6 +111,15 @@ public partial class CarRentalContext(DbContextOptions<CarRentalContext> options
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
             entity.Property(e => e.DrivingLicenseYears).HasColumnName("driving_license_years");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            
+            entity.HasOne(c => c.User)
+                .WithOne()
+                .HasForeignKey<Customer>(c => c.UserId)
+                .IsRequired() 
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(e => e.UserId)
+                .IsRequired();
         });
 
         modelBuilder.Entity<Employee>(entity =>
@@ -142,9 +151,11 @@ public partial class CarRentalContext(DbContextOptions<CarRentalContext> options
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasColumnName("status");
+            entity.Property(e => e.RentalStatusId).HasColumnName("rental_status_id");
+            
+            entity.HasOne(d => d.RentalStatus).WithMany()
+                .HasForeignKey(d => d.RentalStatusId)
+                .HasConstraintName("rentals_rental_status_id_fkey");
 
             entity.HasOne(d => d.Offer)
                 .WithOne(p => p.Rental)
@@ -246,6 +257,16 @@ public partial class CarRentalContext(DbContextOptions<CarRentalContext> options
             entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
             entity.Property(e => e.Price).HasColumnName("price");
             entity.Property(e => e.name).HasColumnName("name");
+        });
+        
+        modelBuilder.Entity<RentalStatus>(entity =>
+        {
+            entity.HasKey(e => e.RentalStatusId).HasName("rental_status_pkey");
+
+            entity.ToTable("rental_status");
+
+            entity.Property(e => e.RentalStatusId).HasColumnName("rental_status_id");
+            entity.Property(e => e.Description).HasColumnName("description");
         });
 
         OnModelCreatingPartial(modelBuilder);
