@@ -8,6 +8,7 @@ function RentalHistory() {
     const [rentals, setRentals] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [customerId, setCustomerId] = useState(null);  // Add state for customerId
 
     const fetchRentals = async () => {
         try {
@@ -28,6 +29,7 @@ function RentalHistory() {
                 }
             });
             const customerData = await customerIdResponse.json();
+            setCustomerId(customerData.customerId);  // Store customerId
 
             const rentalsResponse = await fetch(`/api/Customer/${customerData.customerId}/rentals`, {
                 headers: {
@@ -54,7 +56,7 @@ function RentalHistory() {
     }, [user.token]);
 
     const handleStatusUpdate = () => {
-        fetchRentals(); // Refresh the rentals list after status update
+        fetchRentals();
     };
 
     if (isLoading) {
@@ -75,6 +77,7 @@ function RentalHistory() {
                     <RentalCard
                         key={rental.rentalId}
                         rental={rental}
+                        customerId={customerId}  // Pass customerId to RentalCard
                         onStatusUpdate={handleStatusUpdate}
                     />
                 ))
