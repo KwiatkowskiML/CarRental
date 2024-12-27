@@ -6,6 +6,7 @@ using CarRental.WebAPI.Services.Options;
 using WebAPI.Auth;
 using WebAPI.Data.Context;
 using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.PriceCalculators;
 using WebAPI.Services;
 using WebAPI.Services.Interfaces;
 using WebAPI.UnitOfWork;
@@ -30,6 +31,9 @@ builder.Services.Configure<JwtOptions>(
 // Configure Email
 builder.Services.Configure<EmailOptions>(
     builder.Configuration.GetSection("Email"));
+
+// Register Price Calculator
+builder.Services.AddScoped<IPriceCalculator, PriceCalculator>();
 
 // Register Repositories and Services
 builder.Services.AddScoped<GoogleAuthService>();
