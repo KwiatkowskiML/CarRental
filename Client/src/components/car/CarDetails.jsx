@@ -22,9 +22,13 @@ export function CarDetails() {
     const fetchUserData = async () => {
       try {
         const response = await fetch('/api/User/current', {
+          method: 'GET',
           headers: {
-            'Authorization': `Bearer ${user.token}`
-          }
+              'Authorization': `Bearer ${user.token}`,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+          },
+          cache: 'no-store'
         });
         if (response.ok) {
           const userData = await response.json();

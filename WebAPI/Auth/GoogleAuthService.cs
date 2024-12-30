@@ -41,8 +41,13 @@ public class GoogleAuthService
             };
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
-            var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(payload.Email);
+            _logger.LogInformation("Google token payload email: {Email}", payload.Email);  // Add this
 
+            var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(payload.Email);
+            if (user != null)
+            {
+                _logger.LogInformation("Found user with email: {Email}", user.Email);  // Add this
+            }
             if (user == null)
             {
                 return new AuthResult 

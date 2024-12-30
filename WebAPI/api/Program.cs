@@ -12,8 +12,6 @@ using WebAPI.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddEnvironmentVariables();
-
 // Add configuration source
 builder.Configuration.AddEnvironmentVariables();
 
@@ -86,24 +84,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Register DbContext
-builder.Services.AddDbContext<CarRentalContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Configure Authentication
-builder.Services.Configure<GoogleAuthOptions>(
-    builder.Configuration.GetSection("GoogleAuth"));
-builder.Services.Configure<JwtOptions>(
-    builder.Configuration.GetSection("Jwt"));
-
-// Configure Email
-builder.Services.Configure<EmailOptions>(
-    builder.Configuration.GetSection("Email"));
 
 // Register Repositories and Services
 builder.Services.AddScoped<GoogleAuthService>();
