@@ -13,7 +13,8 @@ obj/
 *.publishsettings
 */appsettings.json
 */appsettings.Development.json
-
+*/appsettings.Deployment.json
+WebAPI/Properties/launchSettings.json
 # Node/React
 node_modules/
 dist/

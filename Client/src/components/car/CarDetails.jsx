@@ -22,9 +22,13 @@ export function CarDetails() {
     const fetchUserData = async () => {
       try {
         const response = await fetch('/api/User/current', {
+          method: 'GET',
           headers: {
-            'Authorization': `Bearer ${user.token}`
-          }
+              'Authorization': `Bearer ${user.token}`,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+          },
+          cache: 'no-store'
         });
         if (response.ok) {
           const userData = await response.json();
@@ -176,7 +180,8 @@ export function CarDetails() {
         alignItems: 'start'
       }}>
         <img 
-          src="" // TO DO
+          src={car.images?.[0] ? car.images[0] : "/api/placeholder/400/320"}
+          crossOrigin="anonymous"
           alt={`${car.brand} ${car.model}`}
           style={{
             width: '100%',

@@ -44,14 +44,43 @@ VALUES
     (1, 3, 4, 1500, '2024-12-01', '2024-12-07', CURRENT_TIMESTAMP, TRUE, TRUE),
     (2, 1, 5, 2500, '2024-12-15', '2024-12-22', CURRENT_TIMESTAMP, TRUE, FALSE);
 
-INSERT INTO rentals (offer_id, rental_status_id, created_at)
+INSERT INTO rental_status (description)
 VALUES 
     ('Confirmed'),
     ('Pending return'),
-    ('Completed');
+    ('Completed')
+ON CONFLICT DO NOTHING;
 
-    INSERT INTO rentals (offer_id, rental_status_id, created_at) VALUES
+INSERT INTO rentals (offer_id, rental_status_id, created_at) VALUES
 (1, 3, CURRENT_TIMESTAMP - INTERVAL '30 days'),
 (2, 2, CURRENT_TIMESTAMP - INTERVAL '7 days'),
 (3, 1, CURRENT_TIMESTAMP),
 (4, 1, CURRENT_TIMESTAMP);
+
+UPDATE cars 
+SET images = ARRAY['https://storage.googleapis.com/car-images-dev-0/Audi_Q5_FY_50_TFSI_e_Facelift_IMG_5931.jpg']
+WHERE brand ILIKE 'Audi%';
+
+UPDATE cars 
+SET images = ARRAY['https://storage.googleapis.com/car-images-dev-0/Mercedes-Benz-C300-Coupe-3dosetki.pl-3.jpg']
+WHERE brand ILIKE 'Mercedes%';
+
+UPDATE cars 
+SET images = ARRAY['https://storage.googleapis.com/car-images-dev-0/bmw-330.jpeg']
+WHERE brand ILIKE 'BMW%';
+
+UPDATE cars 
+SET images = ARRAY['https://storage.googleapis.com/car-images-dev-0/porsche.jpeg']
+WHERE brand ILIKE 'Porsche%';
+
+UPDATE cars 
+SET images = ARRAY['https://storage.googleapis.com/car-images-dev-0/toyota.jpeg']
+WHERE brand ILIKE 'Toyota%';
+
+UPDATE cars
+SET images = ARRAY['https://storage.googleapis.com/car-images-dev-0/tesla.jpg']
+WHERE brand ILIKE 'Tesla%';
+
+UPDATE cars
+SET images = ARRAY['https://storage.googleapis.com/car-images-dev-0/lexus.jpg']
+WHERE brand ILIKE 'Lexus%';

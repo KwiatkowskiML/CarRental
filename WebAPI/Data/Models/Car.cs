@@ -16,6 +16,7 @@ public class Car
     public string? Description { get; set; }
     public DateTime? CreatedAt { get; set; }
     public decimal BasePrice { get; set; }
+    public string[]? Images { get; set; }
 
     public virtual CarProvider? CarProvider { get; set; }
     public virtual ICollection<Offer> Offers { get; set; } = new List<Offer>();

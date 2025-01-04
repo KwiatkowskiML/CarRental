@@ -12,5 +12,6 @@ CREATE TABLE cars (
     fuel_type VARCHAR(50) NOT NULL,
     base_price DECIMAL(10, 2) NOT NULL,
     description TEXT,
+    images TEXT[],
     created_at TIMESTAMP WITH TIME ZONE
 );
