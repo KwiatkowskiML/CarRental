@@ -5,8 +5,8 @@ using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
 using WebAPI.filters;
-using WebAPI.HelperClasses;
 using WebAPI.Mappers;
+using WebAPI.PriceCalculators;
 using WebAPI.Requests;
 
 namespace WebAPI.Controllers
@@ -14,7 +14,7 @@ namespace WebAPI.Controllers
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class OffersController(IUnitOfWork unitOfWork) : ControllerBase
+    public class OffersController(IUnitOfWork unitOfWork, IPriceCalculator priceCalculator) : ControllerBase
     {
         [HttpPost("get-offer")]
         public async Task<ActionResult<OfferDto>> GetOffer([FromBody] GetOfferRequest request)
@@ -65,7 +65,7 @@ namespace WebAPI.Controllers
                 if (insurance == null)
                     return NotFound("Insurance package not found");
 
-                decimal totalPrice = PriceCalculator.GetPrice(car.BasePrice, insurance.Price,
+                decimal totalPrice = priceCalculator.CalculatePrice(car.BasePrice, insurance.Price,
                     customer.DrivingLicenseYears, request);
 
                 // create new offer
