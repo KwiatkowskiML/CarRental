@@ -66,6 +66,9 @@ public partial class CarRentalContext(DbContextOptions<CarRentalContext> options
             entity.Property(e => e.BasePrice)
                 .HasColumnName("base_price")
                 .HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.Images)
+                .HasColumnName("images")
+                .HasColumnType("text[]");
             entity.HasOne(d => d.CarProvider).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.CarProviderId)
                 .HasConstraintName("cars_car_provider_id_fkey");

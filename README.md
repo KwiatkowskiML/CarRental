@@ -2,6 +2,32 @@
 
 A full-stack application for managing car rentals, built with .NET 8 and React.
 
+## Quick Setup
+### Build the database
+```sh
+chmod +x sql/initdb/init_database.sh
+docker-compose up
+```
+
+### Running the Backend
+1. Copy and fill the WebAPI/Properties/launchSettings.example.json to WebAPI/Properties/launchSettings.json
+2. Run the application:
+```bash
+dotnet run
+```
+### Running the Frontend
+1. Create the secret .env (as in template)
+
+Install dependencies:
+```bash
+npm install
+```
+
+Start the development server:
+```bash
+npm run dev
+```
+
 ## Database
 ![alt text](docs/img/database_schema.png)
 
@@ -20,38 +46,10 @@ psql -h localhost -p 5432 -U root car_rental_db
 
 ### Backend Configuration
 
-1. Create the development configuration file:
-```bash
-cd WebAPI
-cp appsettings.template.json appsettings.Development.json
-```
-
-2. Create the production configuration file:
-```bash
-cp appsettings.template.json appsettings.json
-```
-
-3. Update both files with your actual values:
-   - Database connection string
-   - Google OAuth credentials (from Google Cloud Console - you can find it there)
-   - JWT configuration:
-     ```json
-     {
-       "GoogleAuth": {
-         "ClientId": "your-client-id-from-google-console.apps.googleusercontent.com",
-         "ClientSecret": "your-client-secret"
-       },
-       "Jwt": {
-         "Secret": "your-secure-jwt-secret-at-least-32-characters",
-         "Issuer": "http://localhost:5024",
-         "Audience": "http://localhost:5173",
-         "ExpiryMinutes": 60
-       }
-     }
-     ```
+1. Set up the WebAPI/Properties/launchSettings.json
 
 ### Frontend Configuration
-
+TODO: move detailed instructions to another document
 1. Create the environment file:
 ```bash
 cd Client
@@ -97,17 +95,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'));"
 ## Backend (.NET)
 
 ### Backend Configuration
-
-1. Create the development configuration file:
-```bash
-cd WebAPI
-cp appsettings.template.json appsettings.Development.json
-```
-Restore dependencies:
-```bash
-cp appsettings.template.json appsettings.json
-```
-Run the application:
+1. Copy and fill the WebAPI/Properties/launchSettings.example.json to WebAPI/Properties/launchSettings.json
+2. Run the application:
 ```bash
 dotnet run
 ```
@@ -160,18 +149,7 @@ npm run dev
 
 
 ## Project Structure
-```
-CarRental/
-├── WebAPI/          # Backend .NET application
-│   ├── appsettings.template.json  # Template for settings
-│   ├── appsettings.json          # Production settings (gitignored)
-│   └── appsettings.Development.json  # Development settings (gitignored)
-├── Client/          # Frontend React application
-│   ├── .env.example  # Template for environment variables
-│   └── .env          # Environment variables (gitignored)
-├── sql/            # Database scripts
-└── docs/           # Documentation
-```
+TODO
 
 
 ## Technologies

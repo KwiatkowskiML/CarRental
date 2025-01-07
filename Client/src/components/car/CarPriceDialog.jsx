@@ -25,9 +25,13 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
     try {
       // Get user ID from backend using the token
       const userResponse = await fetch('/api/User/current', {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${user.token}`
-        }
+            'Authorization': `Bearer ${user.token}`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+        },
+        cache: 'no-store'
       });
 
       if (!userResponse.ok) {

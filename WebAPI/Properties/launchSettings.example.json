@@ -1,0 +1,53 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5024",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "INSTANCE_CONNECTION_NAME": "localhost",
+        "DB_NAME": "car_rental_db",
+        "DB_USER": "root",
+        "DB_PASS": "my_password",
+        "JWT_SECRET": "jwt_secret",
+        "JWT_ISSUER": "http://localhost:5024",
+        "JWT_AUDIENCE": "http://localhost:5173",
+        "JWT_EXPIRY_MINUTES": "60",
+        "GOOGLE_CLIENT_ID": "google-client-id",
+        "GOOGLE_CLIENT_SECRET": "google-client-secret",
+        "EMAIL_API_KEY": "email_api_key",
+        "EMAIL_FROM_EMAIL": "sender_email",
+        "EMAIL_FROM_NAME": "Car Rental Service",
+        "BASE_URL": "http://localhost:5024",
+        "FRONTEND_URL": "http://localhost:5173"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "https://localhost:7141;http://localhost:5024",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "INSTANCE_CONNECTION_NAME": "localhost",
+        "DB_NAME": "car_rental_db",
+        "DB_USER": "root",
+        "DB_PASS": "my_password",
+        "JWT_SECRET": "jwt_secret",
+        "JWT_ISSUER": "http://localhost:5024",
+        "JWT_AUDIENCE": "http://localhost:5173",
+        "JWT_EXPIRY_MINUTES": "60",
+        "GOOGLE_CLIENT_ID": "google-client-id",
+        "GOOGLE_CLIENT_SECRET": "google-client-secret",
+        "EMAIL_API_KEY": "email_api_key",
+        "EMAIL_FROM_EMAIL": "sender_email",
+        "EMAIL_FROM_NAME": "Car Rental Service",
+        "BASE_URL": "http://localhost:5024",
+        "FRONTEND_URL": "http://localhost:5173"
+      }
+    }
+  }
+}

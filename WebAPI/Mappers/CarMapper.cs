@@ -19,6 +19,7 @@ public static class CarMapper
             Power = c.Power,
             FuelType = c.FuelType,
             Description = c.Description,
+            Images = c.Images,
             CarProvider = CarProviderMapper.ToDto(c.CarProvider!) // get rid of nullable fields
         };
 

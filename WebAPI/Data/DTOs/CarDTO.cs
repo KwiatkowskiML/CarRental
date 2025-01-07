@@ -13,5 +13,7 @@ public class CarDto
     public int Power { get; set; }
     public string FuelType { get; set; } = null!;
     public string? Description { get; set; }
+    public string[]? Images { get; set; }
+
     public CarProviderDto? CarProvider { get; set; }
 }
