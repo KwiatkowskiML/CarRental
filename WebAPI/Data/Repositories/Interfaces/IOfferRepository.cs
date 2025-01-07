@@ -8,4 +8,5 @@ public interface IOfferRepository
     Task<Offer?> GetOfferAsync(OfferFilter filter);
     Task<Insurance?> GetInsuranceByIdAsync(int insuranceId);
     Task CreateOfferAsync(Offer offer);
+    Task DeleteExpiredOffersAsync();
 }

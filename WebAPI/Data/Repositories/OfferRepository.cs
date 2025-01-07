@@ -131,4 +131,36 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
             throw new DatabaseOperationException("Failed to create offer", ex);
         }
     }
+    
+    public async Task DeleteExpiredOffersAsync()
+    {
+        await using var transaction = await Context.Database.BeginTransactionAsync();
+        try
+        {
+            var cutoffTime = DateTime.UtcNow.AddMinutes(-10);
+            
+            var staleOffers = await Context.Offers
+                .Where(o => o.CreatedAt <= cutoffTime &&
+                            !Context.Rentals.Any(r => r.OfferId == o.OfferId))
+                .ToListAsync();
+
+            if (staleOffers.Any())
+            {
+                Context.Offers.RemoveRange(staleOffers);
+                var deletedCount = await Context.SaveChangesAsync();
+                Logger.LogInformation(
+                    "Deleted {Count} stale offers created before {CutoffTime}", 
+                    deletedCount, 
+                    cutoffTime);
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Logger.LogError(ex, "Error deleting stale offers");
+            throw new DatabaseOperationException("Failed to delete stale offers", ex);
+        }
+    }
 }

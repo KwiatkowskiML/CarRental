@@ -85,6 +85,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Register Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -98,9 +100,7 @@ builder.Services.AddScoped<IPriceCalculator, PriceCalculator>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();
-
-// Register Unit of Work
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddHostedService<OfferCleanupService>();
 
 // Register HttpClient for SendGrid
 builder.Services.AddHttpClient();
