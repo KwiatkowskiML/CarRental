@@ -5,6 +5,7 @@ using System.Text;
 using CarRental.WebAPI.Services.Options;
 using WebAPI.Auth;
 using WebAPI.Data.Context;
+using WebAPI.Data.Repositories;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.PriceCalculators;
 using WebAPI.Services;
@@ -94,7 +95,10 @@ builder.Services.AddSwaggerGen();
 // Register Price Calculator
 builder.Services.AddScoped<IPriceCalculator, PriceCalculator>();
 
-// Register Repositories and Services
+// Register Repositories
+builder.Services.AddScoped<ICarRepository, CarRepository>();
+
+// Register Services
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRentalConfirmationService, RentalConfirmationService>();

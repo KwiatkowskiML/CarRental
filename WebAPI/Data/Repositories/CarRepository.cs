@@ -7,8 +7,15 @@ using WebAPI.filters;
 
 namespace WebAPI.Data.Repositories;
 
-public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepository<Car>(context, logger), ICarRepository
+public class CarRepository: BaseRepository<Car>, ICarRepository
 {
+    private readonly ILogger<CarRepository> _logger;
+
+    public CarRepository(CarRentalContext context, ILogger<CarRepository> logger) 
+        : base(context, logger)
+    {
+        _logger = logger;
+    }
     public async Task<List<Car>> GetCarsAsync(CarFilter filter)
     {
         try
@@ -70,7 +77,7 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching car by id");
+            _logger.LogError(ex, "Error fetching car by id");
             throw new DatabaseOperationException($"Failed to fetch car with ID {carId}", ex);
         }
     }
