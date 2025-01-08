@@ -3,6 +3,7 @@ using WebAPI.Data.Context;
 using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
+using WebAPI.filters;
 
 namespace WebAPI.Data.Repositories;
 
@@ -19,6 +20,36 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
         {
             Logger.LogError(ex, "Error fetching user by email");
             throw new DatabaseOperationException($"Failed to fetch user with email {email}", ex);
+        }
+    }
+    
+    public async Task<List<User>> GetUsersAsync(UserFilter filter)
+    {
+        try
+        {
+            IQueryable<User> query = Context.Users;
+            
+            if (!string.IsNullOrEmpty(filter.Email))
+                query = query.Where(u => u.Email.Contains(filter.Email));
+            
+            if (!string.IsNullOrEmpty(filter.FirstName))
+                query = query.Where(u => u.FirstName.Contains(filter.FirstName));
+            
+            if (!string.IsNullOrEmpty(filter.LastName))
+                query = query.Where(u => u.LastName.Contains(filter.LastName));
+            
+            if (filter.UserId.HasValue)
+                query = query.Where(u => u.UserId == filter.UserId!.Value);
+            
+            if (filter.Age.HasValue)
+                query = query.Where(u => u.Age == filter.Age!.Value);
+            
+            return await query.AsNoTracking().ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching users with filters");
+            throw new DatabaseOperationException("Failed to fetch users", ex);
         }
     }
 

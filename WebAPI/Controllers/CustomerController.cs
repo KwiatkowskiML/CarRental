@@ -5,13 +5,14 @@ using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
 using WebAPI.filters;
 using WebAPI.Mappers;
+using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class CustomerController(IUnitOfWork unitOfWork) : ControllerBase
+    public class CustomerController(IUnitOfWork unitOfWork, IEmailService emailService) : ControllerBase
     {
         [HttpGet("{customerId}/rentals")]
         public async Task<IActionResult> GetCustomerRentals(int customerId)
@@ -87,6 +88,16 @@ namespace WebAPI.Controllers
                 {
                     return StatusCode(500, $"Error initializing return for RentalId: {rentalId} and CustomerId: {customerId}");
                 }
+                
+                // If return has been correctly initialized, send an email to the customer
+                var userFilter = new UserFilter() { UserId = customer.UserId };
+                var users = await unitOfWork.UsersRepository.GetUsersAsync(userFilter);
+                if (users.Count == 0)
+                    return NotFound("User not found");
+                if (users.Count > 1)
+                    return BadRequest("Multiple users found for the same ID");
+                var user = users[0];
+                await emailService.SendReturnProcessInitiatedEmail(user.Email, user.FirstName);
                 
                 return Ok(result);
             }

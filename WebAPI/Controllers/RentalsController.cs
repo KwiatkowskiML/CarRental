@@ -13,17 +13,19 @@ namespace WebAPI.Controllers;
 public class RentalsController : ControllerBase
 {
     private readonly IRentalConfirmationService _confirmationService;
+    private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RentalsController> _logger;
 
     public RentalsController(
         IRentalConfirmationService confirmationService,
         IUnitOfWork unitOfWork,
-        ILogger<RentalsController> logger)
+        ILogger<RentalsController> logger, IEmailService emailService)
     {
         _confirmationService = confirmationService;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _emailService = emailService;
     }
 
     [HttpPost("send-confirmation")]
@@ -147,7 +149,7 @@ public class RentalsController : ControllerBase
     {
         try
         {
-            var (isValid, offerId, _) = _confirmationService.ValidateConfirmationToken(token);
+            var (isValid, offerId, customerId) = _confirmationService.ValidateConfirmationToken(token);
 
             if (!isValid)
                 return BadRequest("Invalid or expired confirmation link");
@@ -158,11 +160,30 @@ public class RentalsController : ControllerBase
             {
                 return StatusCode(409, "Rental has already been confirmed");
             }
+            
+            // Get user information
+            var customer = await _unitOfWork.UsersRepository.GetCustomerAsync(customerId);
+            if (customer == null)
+                return NotFound("Customer not found");
+            
+            var userFilter = new UserFilter() { UserId = customer.UserId };
+            var users = await _unitOfWork.UsersRepository.GetUsersAsync(userFilter);
+            
+            if (users.Count == 0)
+                return NotFound("User not found");
+            
+            if (users.Count > 1)
+                return BadRequest("Multiple users found for the same ID");
+            
+            var user = users[0];
 
             // Create the rental
             var rental = await _unitOfWork.RentalsRepository.CreateRentalFromOfferAsync(offerId);
             if (rental == null)
                 return BadRequest("Failed to create rental");
+            
+            // Since rental has been successfully created, sending success email
+            await _emailService.SendRentalSuccessEmail(user.Email, user.FirstName, "placeholder");
 
             var result = RentalMapper.ToDto(rental);
             return Ok(result);
