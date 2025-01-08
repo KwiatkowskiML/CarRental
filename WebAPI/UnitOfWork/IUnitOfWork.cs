@@ -7,5 +7,6 @@ public interface IUnitOfWork
     IRentalRepository RentalsRepository { get; }
     IOfferRepository OffersRepository { get; }
     void LogError(Exception ex, string message);
+    void LogInformation(string message);
     void SaveChanges();
 }

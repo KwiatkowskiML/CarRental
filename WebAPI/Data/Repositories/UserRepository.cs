@@ -29,6 +29,8 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
         {
             IQueryable<User> query = Context.Users;
             
+            Logger.LogInformation("test\n");
+            
             if (!string.IsNullOrEmpty(filter.Email))
                 query = query.Where(u => u.Email.Contains(filter.Email));
             
@@ -38,10 +40,10 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
             if (!string.IsNullOrEmpty(filter.LastName))
                 query = query.Where(u => u.LastName.Contains(filter.LastName));
             
-            if (!filter.UserId.HasValue)
+            if (filter.UserId.HasValue)
                 query = query.Where(u => u.UserId == filter.UserId!.Value);
             
-            if (!filter.Age.HasValue)
+            if (filter.Age.HasValue)
                 query = query.Where(u => u.Age == filter.Age!.Value);
             
             return await query.AsNoTracking().ToListAsync();

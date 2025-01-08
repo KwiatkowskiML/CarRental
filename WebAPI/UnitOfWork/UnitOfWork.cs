@@ -19,6 +19,11 @@ public class UnitOfWork(CarRentalContext context, ILogger<UnitOfWork> logger) : 
     {
         Logger.LogError(ex, message);
     }
+    
+    public void LogInformation(string message)
+    {
+        Logger.LogInformation(message);
+    }
 
     public void SaveChanges() 
     {
