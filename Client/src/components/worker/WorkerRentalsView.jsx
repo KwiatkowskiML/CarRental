@@ -82,8 +82,10 @@ export function WorkerRentalsView() {
             }
 
             const data = await response.json();
+            console.log('API Response data:', data);
             setRentals(data);
         } catch (err) {
+            console.error('Error in fetchRentals:', err);
             setError(err.message);
         } finally {
             setLoading(false);
