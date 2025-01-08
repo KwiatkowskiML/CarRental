@@ -55,23 +55,13 @@ namespace WebAPI.Controllers
         {
             try
             {
-                // Add debug logging
-                foreach (var claim in User.Claims)
-                {
-                    _logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
-                }
-
                 var email = User.FindFirst(ClaimTypes.Email)?.Value;
-                _logger.LogInformation("Found email from claims: {Email}", email);
-
                 if (string.IsNullOrEmpty(email))
                 {
                     return Unauthorized();
                 }
 
                 var user = await _unitOfWork.UsersRepository.GetUserByEmailAsync(email);
-                _logger.LogInformation("Found user from database: {UserEmail}", user?.Email);
-
                 if (user == null)
                 {
                     return NotFound("User not found");

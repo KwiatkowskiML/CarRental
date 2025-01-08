@@ -161,21 +161,21 @@ public class RentalsController : ControllerBase
                 return StatusCode(409, "Rental has already been confirmed");
             }
             
-            // Get user information
-            var customer = await _unitOfWork.UsersRepository.GetCustomerAsync(customerId);
-            if (customer == null)
-                return NotFound("Customer not found");
-            
-            var userFilter = new UserFilter() { UserId = customer.UserId };
-            var users = await _unitOfWork.UsersRepository.GetUsersAsync(userFilter);
-            
-            if (users.Count == 0)
-                return NotFound("User not found");
-            
-            if (users.Count > 1)
-                return BadRequest("Multiple users found for the same ID");
-            
-            var user = users[0];
+            // // Get user information
+            // var customer = await _unitOfWork.UsersRepository.GetCustomerAsync(customerId);
+            // if (customer == null)
+            //     return NotFound("Customer not found");
+            //
+            // var userFilter = new UserFilter() { UserId = customer.UserId };
+            // var users = await _unitOfWork.UsersRepository.GetUsersAsync(userFilter);
+            //
+            // if (users.Count == 0)
+            //     return NotFound("User not found");
+            //
+            // if (users.Count > 1)
+            //     return BadRequest("Multiple users found for the same ID");
+            //
+            // var user = users[0];
 
             // Create the rental
             var rental = await _unitOfWork.RentalsRepository.CreateRentalFromOfferAsync(offerId);
@@ -183,7 +183,7 @@ public class RentalsController : ControllerBase
                 return BadRequest("Failed to create rental");
             
             // Since rental has been successfully created, sending success email
-            await _emailService.SendRentalSuccessEmail(user.Email, user.FirstName, "placeholder");
+            // await _emailService.SendRentalSuccessEmail(user.Email, user.FirstName, "placeholder");
 
             var result = RentalMapper.ToDto(rental);
             return Ok(result);
