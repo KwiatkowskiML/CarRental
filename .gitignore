@@ -15,6 +15,8 @@ obj/
 */appsettings.Development.json
 */appsettings.Deployment.json
 WebAPI/Properties/launchSettings.json
+*awesomecarrental-service-key.json
+
 # Node/React
 node_modules/
 dist/

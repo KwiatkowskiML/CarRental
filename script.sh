@@ -45,7 +45,7 @@ convert_gitignore_to_find_patterns() {
 
 # Function to get common code file extensions
 get_code_extensions() {
-    echo "-name '*.js' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' -o -name '*.cs' -o -name '*.css' -o -name '*.scss' -o -name '*.html' -o -name '*.py' -o -name '*.java' -o -name '*.cpp' -o -name '*.h' -o -name '*.c' -o -name '*.php' -o -name '*.rb' -o -name '*.go' -o -name '*.rs' -o -name '*.swift' -o -name '*.kt' -o -name '*.xml' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.sql'"
+    echo "-name '*.js' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' -o -name '*.cs' -o -name '*.css' -o -name '*.scss' -o -name '*.html' -o -name '*.py' -o -name '*.java' -o -name '*.cpp' -o -name '*.h' -o -name '*.c' -o -name '*.php' -o -name '*.rb' -o -name '*.go' -o -name '*.rs' -o -name '*.swift' -o -name '*.kt' -o -name '*.xml' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.sql' -o -name '*.md'"
 }
 
 # Main script

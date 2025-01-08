@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/Button';
+import PhotoUpload from './PhotoUpload';
 
 export function ReturnConfirmationDialog({ isOpen, onClose, onConfirm, isSubmitting }) {
     const [formData, setFormData] = useState({
@@ -7,10 +8,27 @@ export function ReturnConfirmationDialog({ isOpen, onClose, onConfirm, isSubmitt
         photoUrl: '',
         returnDate: new Date().toISOString().split('T')[0]
     });
+    const [error, setError] = useState(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!formData.photoUrl) {
+            setError('Please upload a photo of the returned vehicle');
+            return;
+        }
         onConfirm(formData);
+    };
+
+    const handlePhotoSelect = (url) => {
+        setFormData(prev => ({
+            ...prev,
+            photoUrl: url
+        }));
+        setError(null);
+    };
+
+    const handlePhotoError = (errorMessage) => {
+        setError(errorMessage);
     };
 
     if (!isOpen) return null;
@@ -35,13 +53,21 @@ export function ReturnConfirmationDialog({ isOpen, onClose, onConfirm, isSubmitt
                 width: '100%',
                 maxWidth: '500px'
             }}>
-                <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                <h2 style={{ 
+                    marginBottom: '20px', 
+                    fontSize: '1.5rem', 
+                    fontWeight: 'bold' 
+                }}>
                     Confirm Return
                 </h2>
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '8px',
+                            fontWeight: '500'
+                        }}>
                             Return Date:
                         </label>
                         <input
@@ -62,7 +88,11 @@ export function ReturnConfirmationDialog({ isOpen, onClose, onConfirm, isSubmitt
                     </div>
 
                     <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '8px',
+                            fontWeight: '500'
+                        }}>
                             Condition Description:
                         </label>
                         <textarea
@@ -84,25 +114,31 @@ export function ReturnConfirmationDialog({ isOpen, onClose, onConfirm, isSubmitt
                     </div>
 
                     <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
-                            Photo URL:
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '8px',
+                            fontWeight: '500'
+                        }}>
+                            Vehicle Photo:
                         </label>
-                        <input
-                            type="url"
-                            value={formData.photoUrl}
-                            onChange={(e) => setFormData(prev => ({
-                                ...prev,
-                                photoUrl: e.target.value
-                            }))}
-                            style={{
-                                width: '100%',
-                                padding: '8px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px'
-                            }}
-                            placeholder="Enter URL to vehicle photos..."
+                        <PhotoUpload 
+                            onPhotoSelect={handlePhotoSelect}
+                            onError={handlePhotoError}
                         />
                     </div>
+
+                    {error && (
+                        <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#fee2e2',
+                            color: '#dc2626',
+                            borderRadius: '4px',
+                            marginBottom: '16px',
+                            fontSize: '14px'
+                        }}>
+                            {error}
+                        </div>
+                    )}
 
                     <div style={{
                         display: 'flex',
