@@ -29,8 +29,6 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
         {
             IQueryable<User> query = Context.Users;
             
-            Logger.LogInformation("test\n");
-            
             if (!string.IsNullOrEmpty(filter.Email))
                 query = query.Where(u => u.Email.Contains(filter.Email));
             
