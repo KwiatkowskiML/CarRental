@@ -2,6 +2,7 @@ using CarRental.WebAPI.Services.Options;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using WebAPI.Data.DTOs;
 using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Services;
@@ -347,6 +348,119 @@ Car Rental Team",
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending return process initiated email to {Email}", toEmail);
+            throw;
+        }
+    }
+
+    public async Task SendReturnCompletionInvoiceEmail(string toEmail, string userName, RentalDto rentalDto)
+    {
+        try
+        {
+            // Generate the invoice details
+            var offer = rentalDto.Offer;
+            var invoiceAmount = offer?.TotalPrice ?? 0;
+            var rentalDuration =
+                offer?.EndDate.ToDateTime(new TimeOnly(0, 0)) - offer?.StartDate.ToDateTime(new TimeOnly(0, 0)) ??
+                TimeSpan.Zero;
+
+            var msg = new SendGridMessage()
+            {
+                From = new EmailAddress(_options.FromEmail, _options.FromName),
+                Subject = "Your Car Rental Return Invoice",
+                PlainTextContent = $@"
+    Hello {userName},
+
+    Your car rental return has been completed successfully. Here are the details:
+
+    Rental ID: {rentalDto.RentalId}
+    Rental Status: {rentalDto.RentalStatus}
+    Rental Duration: {rentalDuration.Days} days
+    Total Amount: ${invoiceAmount}
+
+    If you have any questions or concerns regarding your invoice, please do not hesitate to contact us.
+
+    Thank you for using our service!
+
+    Best regards,
+    Car Rental Team",
+                HtmlContent = $@"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ 
+                font-family: Arial, sans-serif; 
+                line-height: 1.6; 
+                color: #333; 
+                margin: 0; 
+                padding: 0; 
+            }}
+            .container {{ 
+                max-width: 600px; 
+                margin: 0 auto; 
+                padding: 20px; 
+            }}
+            .header {{
+                background-color: #8B4513;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                margin-bottom: 30px;
+            }}
+            .footer {{ 
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+                font-size: 0.9em;
+                color: #666;
+            }}
+            .invoice-details {{
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 4px;
+                margin: 20px 0;
+                font-size: 1em;
+                color: #333;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h1>Your Rental Return Invoice</h1>
+        </div>
+        <div class='container'>
+            <h2>Hello {userName},</h2>
+            <p>Your car rental return has been completed successfully. Here are the details:</p>
+
+            <div class='invoice-details'>
+                <p><strong>Rental ID:</strong> {rentalDto.RentalId}</p>
+                <p><strong>Rental Status:</strong> {rentalDto.RentalStatus}</p>
+                <p><strong>Rental Duration:</strong> {rentalDuration.Days} days</p>
+                <p><strong>Total Amount:</strong> ${invoiceAmount}</p>
+            </div>
+
+            <p>If you have any questions or concerns regarding your invoice, please do not hesitate to contact us.</p>
+
+            <div class='footer'>
+                <p>Thank you for using our service!</p>
+                <p>Best regards,<br>Car Rental Team</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+            };
+
+            msg.AddTo(new EmailAddress(toEmail));
+
+            var response = await _client.SendEmailAsync(msg);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to send email. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending return completion invoice email to {Email}", toEmail);
             throw;
         }
     }

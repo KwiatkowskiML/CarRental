@@ -5,13 +5,14 @@ using WebAPI.Exceptions;
 using WebAPI.filters;
 using WebAPI.Mappers;
 using WebAPI.Requests;
+using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkerController(IUnitOfWork unitOfWork) : ControllerBase
+    public class WorkerController(IUnitOfWork unitOfWork, IEmailService emailService) : ControllerBase
     {
         // TODO: rethink whether this should return the rentalDto with all rental info
         [HttpGet("rentals")]
@@ -46,7 +47,14 @@ namespace WebAPI.Controllers
                     return BadRequest("Return is not pending");
 
                 var completedReturn = await unitOfWork.RentalsRepository.ProcessReturn(request);
-                return Ok(ReturnMapper.ToDto(completedReturn));
+                var returnDto = ReturnMapper.ToDto(completedReturn);
+
+                var rentalDto = RentalMapper.ToDto(rental);
+                var email = rentalDto.Offer.Customer!.UserDto.Email;
+                var name = rentalDto.Offer.Customer!.UserDto.FirstName;
+                await emailService.SendReturnCompletionInvoiceEmail(email, name, rentalDto);
+                
+                return Ok(returnDto);
             }
             catch (DatabaseOperationException ex)
             {
