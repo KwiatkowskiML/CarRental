@@ -54,11 +54,16 @@ public class RentalsController : ControllerBase
             }
 
             // Get customer record for the user
-            var customer = await _unitOfWork.UsersRepository.GetCustomerByUserIdAsync(user.UserId);
-            if (customer == null)
-            {
+            var customerFilter = new CustomerFilter() { UserId = user.UserId };
+            var customersList = await _unitOfWork.CustomersRepository.GetCustomersAsync(customerFilter);
+            
+            if (customersList.Count == 0)
                 return NotFound($"Customer record not found for user {user.UserId}");
-            }
+            
+            if (customersList.Count > 1)
+                return StatusCode(500, $"Multiple customers found for user {user.UserId}");
+            
+            var customer = customersList.First();
 
             // Verify the offer exists and belongs to this customer
             var filter = new OfferFilter 
@@ -120,9 +125,16 @@ public class RentalsController : ControllerBase
             if (user == null)
                 return NotFound($"User with email address {currentUserEmail} not found");
             
-            var customer = await _unitOfWork.UsersRepository.GetCustomerByUserIdAsync(user.UserId);
-            if (customer == null)
-                return BadRequest("Customer record not found");
+            var customerFilter = new CustomerFilter() { UserId = user.UserId };
+            var customersList = await _unitOfWork.CustomersRepository.GetCustomersAsync(customerFilter);
+            
+            if (customersList.Count == 0)
+                return NotFound($"Customer record not found for user {user.UserId}");
+            
+            if (customersList.Count > 1)
+                return StatusCode(500, $"Multiple customers found for user {user.UserId}");
+            
+            var customer = customersList.First();
             
             if (customerId != customer.CustomerId)
                 return Unauthorized("This confirmation link is for a different user");
@@ -162,9 +174,16 @@ public class RentalsController : ControllerBase
             }
             
             // Get user information
-            var customer = await _unitOfWork.UsersRepository.GetCustomerAsync(customerId);
-            if (customer == null)
-                return NotFound("Customer not found");
+            var customerFilter = new CustomerFilter() { CustomerId = customerId };
+            var customersList = await _unitOfWork.CustomersRepository.GetCustomersAsync(customerFilter);
+            
+            if (customersList.Count == 0)
+                return NotFound($"Customer record not found for CustomerId {customerId}");
+            
+            if (customersList.Count > 1)
+                return StatusCode(500, $"Multiple customers found for CustomerId {customerId}");
+            
+            var customer = customersList.First();
             
             var userFilter = new UserFilter() { UserId = customer.UserId };
             var users = await _unitOfWork.UsersRepository.GetUsersAsync(userFilter);

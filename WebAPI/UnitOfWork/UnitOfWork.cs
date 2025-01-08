@@ -1,6 +1,7 @@
 using WebAPI.Data.Context;
 using WebAPI.Data.Repositories;
 using WebAPI.Data.Repositories.Interfaces;
+using WebAPI.filters;
 
 namespace WebAPI.UnitOfWork;
 
@@ -19,12 +20,14 @@ public class UnitOfWork : IUnitOfWork
         UsersRepository = new UserRepository(context, loggerFactory.CreateLogger<UserRepository>());
         RentalsRepository = new RentalRepository(context, loggerFactory.CreateLogger<RentalRepository>());
         OffersRepository = new OfferRepository(context, loggerFactory.CreateLogger<OfferRepository>());
+        CustomersRepository = new CustomerRepository(context, loggerFactory.CreateLogger<CustomerRepository>());
     }
 
     public ICarRepository CarsRepository { get; }
     public IUserRepository UsersRepository { get; }
     public IRentalRepository RentalsRepository { get; }
     public IOfferRepository OffersRepository { get; }
+    public ICustomerRepository CustomersRepository { get; }
 
     public void LogError(Exception ex, string message)
     {

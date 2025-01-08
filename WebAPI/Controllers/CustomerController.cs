@@ -36,13 +36,16 @@ namespace WebAPI.Controllers
         {
             try
             {
-                var customer = await unitOfWork.UsersRepository.GetCustomerByUserIdAsync(userId);
-
-                if (customer == null)
-                {
+                var customerFilter = new CustomerFilter() {UserId = userId};
+                var customersList = await unitOfWork.CustomersRepository.GetCustomersAsync(customerFilter);
+                
+                if (customersList.Count == 0)
                     return NotFound($"Customer with UserId {userId} not found");
-                }
-
+                
+                if (customersList.Count > 1)
+                    return StatusCode(500, $"Multiple customers found for UserId {userId}");
+                
+                var customer = customersList.First();
                 return Ok(CustomerMapper.ToDto(customer));
             }
             catch (DatabaseOperationException ex)
@@ -58,11 +61,16 @@ namespace WebAPI.Controllers
         {
             try
             {
-                var customer = await unitOfWork.UsersRepository.GetCustomerAsync(customerId);
-                if (customer == null)
-                {
+                var customerFilter = new CustomerFilter() { CustomerId = customerId };
+                var customersList = await unitOfWork.CustomersRepository.GetCustomersAsync(customerFilter);
+                
+                if (customersList.Count == 0)
                     return NotFound($"Customer with CustomerId {customerId} not found");
-                }
+                
+                if (customersList.Count > 1)
+                    return StatusCode(500, $"Multiple customers found for CustomerId {customerId}");
+                
+                var customer = customersList.First();
 
                 // Input data validation
                 var filter = new RentalFilter() { CustomerId = customerId, RentalId = rentalId };

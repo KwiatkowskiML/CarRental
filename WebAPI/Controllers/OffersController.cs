@@ -21,11 +21,17 @@ namespace WebAPI.Controllers
         {
             try
             {
-                var customer = await unitOfWork.UsersRepository.GetCustomerByUserIdAsync(request.UserId);
-
-                if (customer == null)
-                    return NotFound($"Customer with userId = {request.UserId} not found");
-
+                var customerFilter = new CustomerFilter() { UserId = request.UserId };
+                var customersList = await unitOfWork.CustomersRepository.GetCustomersAsync(customerFilter);
+                
+                if (customersList.Count == 0)
+                    return NotFound($"Customer with UserId {request.UserId} not found");
+                
+                if (customersList.Count > 1)
+                    return StatusCode(500, $"Multiple customers found for UserId {request.UserId}");
+                
+                var customer = customersList.First();
+                
                 // TODO: consider filtering by dto
                 var offerFilter = new OfferFilter
                 {

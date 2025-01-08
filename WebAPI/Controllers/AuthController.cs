@@ -67,7 +67,7 @@ public class AuthController : ControllerBase
                 DrivingLicenseYears = request.DrivingLicenseYears
             };
 
-            await _unitOfWork.UsersRepository.CreateCustomerAsync(customer);
+            await _unitOfWork.CustomersRepository.CreateCustomerAsync(customer);
 
             // Generate JWT token for the new user
             var authResult = await _authService.ValidateGoogleTokenAndGenerateJwt(request.GoogleToken);
