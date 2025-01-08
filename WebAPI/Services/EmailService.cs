@@ -372,8 +372,6 @@ Car Rental Team",
 
     Your car rental return has been completed successfully. Here are the details:
 
-    Rental ID: {rentalDto.RentalId}
-    Rental Status: {rentalDto.RentalStatus}
     Rental Duration: {rentalDuration.Days} days
     Total Amount: ${invoiceAmount}
 
@@ -433,8 +431,6 @@ Car Rental Team",
             <p>Your car rental return has been completed successfully. Here are the details:</p>
 
             <div class='invoice-details'>
-                <p><strong>Rental ID:</strong> {rentalDto.RentalId}</p>
-                <p><strong>Rental Status:</strong> {rentalDto.RentalStatus}</p>
                 <p><strong>Rental Duration:</strong> {rentalDuration.Days} days</p>
                 <p><strong>Total Amount:</strong> ${invoiceAmount}</p>
             </div>
