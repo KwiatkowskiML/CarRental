@@ -24,12 +24,12 @@ public class RentalConfirmationService : IRentalConfirmationService
         _logger = logger;
     }
 
-   public async Task SendConfirmationEmail(int offerId, int userId, string userEmail, string userName)
+   public async Task SendConfirmationEmail(int offerId, int customerId, string userEmail, string userName)
     {
         try 
         {
-            _logger.LogInformation("Generating token for offerId: {OfferId}, userId: {UserId}", offerId, userId);
-            var token = GenerateConfirmationToken(offerId, userId);
+            _logger.LogInformation("Generating token for offerId: {OfferId}, customerId: {CustomerId}", offerId, customerId);
+            var token = GenerateConfirmationToken(offerId, customerId);
             _logger.LogInformation("Generated raw token: {Token}", token);
 
             var frontendUrl = _configuration["FRONTEND_URL"] ?? "http://localhost:5173";
@@ -74,7 +74,7 @@ public class RentalConfirmationService : IRentalConfirmationService
         }
     }
 
-    public (bool isValid, int offerId, int userId) ValidateConfirmationToken(string token)
+    public (bool isValid, int offerId, int customerId) ValidateConfirmationToken(string token)
     {
         try
         {
@@ -100,9 +100,9 @@ public class RentalConfirmationService : IRentalConfirmationService
                 return (false, 0, 0);
             }
 
-            if (!int.TryParse(parts[1], out int userId))
+            if (!int.TryParse(parts[1], out int customerId))
             {
-                _logger.LogWarning("Failed to parse userId: {UserId}", parts[1]);
+                _logger.LogWarning("Failed to parse customerId: {CustomerId}", parts[1]);
                 return (false, 0, 0);
             }
 
@@ -113,8 +113,8 @@ public class RentalConfirmationService : IRentalConfirmationService
                 return (false, 0, 0);
             }
 
-            _logger.LogInformation("Parsed values - OfferId: {OfferId}, UserId: {UserId}, ExpirationDate: {ExpirationDate}", 
-                offerId, userId, expirationDate);
+            _logger.LogInformation("Parsed values - OfferId: {OfferId}, CustomerId: {CustomerId}, ExpirationDate: {ExpirationDate}", 
+                offerId, customerId, expirationDate);
 
             if (expirationDate < DateTime.UtcNow)
             {
@@ -125,7 +125,7 @@ public class RentalConfirmationService : IRentalConfirmationService
 
             // Validate hash
             var receivedHash = parts[3];
-            var tokenData = $"{offerId}_{userId}_{expirationDate:u}";
+            var tokenData = $"{offerId}_{customerId}_{expirationDate:u}";
             var key = _configuration["JWT_SECRET"];
 
             _logger.LogInformation("Recreating hash for validation. TokenData: {TokenData}", tokenData);
@@ -146,7 +146,7 @@ public class RentalConfirmationService : IRentalConfirmationService
             }
 
             _logger.LogInformation("Token validation successful");
-            return (true, offerId, userId);
+            return (true, offerId, customerId);
         }
         catch (Exception ex)
         {

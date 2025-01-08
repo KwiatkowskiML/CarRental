@@ -40,6 +40,7 @@ public class GoogleAuthService
                 ExpirationTimeClockTolerance = TimeSpan.FromMinutes(5)
             };
 
+            _logger.LogInformation($"Google token: {googleToken}");
             var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
             _logger.LogInformation("Google token payload email: {Email}", payload.Email);  // Add this
 

@@ -7,8 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://car-rental-api-795304686308.europe-west4.run.app',
-        // target: 'http://localhost:5024',
+        // target: 'https://car-rental-api-795304686308.europe-west4.run.app',
+        target: 'http://localhost:5024',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
