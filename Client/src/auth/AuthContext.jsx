@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isEmployee, setIsEmployee] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     console.log('AuthProvider useEffect - Checking stored token');
@@ -50,16 +51,24 @@ export const AuthProvider = ({ children }) => {
         if (!customerResponse.ok) {
           console.log('User is an employee (no customer record found)');
           setIsEmployee(true);
-          navigate('/worker/rentals');
+          // Przekieruj tylko jeśli użytkownik jest na stronie głównej lub logowania
+          if (location.pathname === '/' || location.pathname === '/login') {
+            navigate('/worker/rentals');
+          }
         } else {
           console.log('User is a customer');
           setIsEmployee(false);
-          navigate('/');
+          // Przekieruj tylko jeśli użytkownik jest na stronie głównej lub logowania
+          if (location.pathname === '/' || location.pathname === '/login') {
+            navigate('/');
+          }
         }
       } catch (error) {
         console.log('Error checking customer status, assuming employee:', error);
         setIsEmployee(true);
-        navigate('/worker/rentals');
+        if (location.pathname === '/' || location.pathname === '/login') {
+          navigate('/worker/rentals');
+        }
       }
     } catch (error) {
       console.error('Error in checkUserRole:', error);
