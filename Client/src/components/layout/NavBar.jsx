@@ -1,13 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 
 function NavBar() {
-  const { user, logout, isEmployee } = useAuth();
-
-  useEffect(() => {
-    console.log('NavBar: User role status:', { isEmployee, hasUser: !!user });
-  }, [user, isEmployee]);
+  const { user, logout } = useAuth();
 
   return (
     <nav style={{
@@ -22,24 +18,12 @@ function NavBar() {
       <div style={{ fontWeight: 'bold' }}>Car Rental</div>
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {isEmployee ? (
-            <>
-              {console.log('Rendering employee navigation')}
-              <Link to="/worker/rentals" style={{ textDecoration: 'none', color: 'black' }}>Rentals</Link>
-            </>
-          ) : (
-            <>
-              {console.log('Rendering customer navigation')}
-              <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Browser</Link>
-              <Link to="/rental/history" style={{ textDecoration: 'none', color: 'black' }}>Rental History</Link>
-            </>
-          )}
+          <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Browser</Link>
+          <Link to="/rental/history" style={{ textDecoration: 'none', color: 'black' }}>Rental History</Link>
+          <Link to="/worker/rentals" style={{ textDecoration: 'none', color: 'black' }}>Worker View</Link>
           <span>Welcome!</span>
           <button
-            onClick={() => {
-              console.log('Logout button clicked');
-              logout();
-            }}
+            onClick={logout}
             style={{
               padding: '0.5rem 1rem',
               backgroundColor: '#dc3545',
