@@ -6,22 +6,15 @@ namespace WebAPI.Data.Context;
 public partial class CarRentalContext(DbContextOptions<CarRentalContext> options) : DbContext(options)
 {
     public virtual DbSet<Car> Cars { get; set; }
-
     public virtual DbSet<CarProvider> CarProviders { get; set; }
-
     public virtual DbSet<Customer> Customers { get; set; }
-
     public virtual DbSet<Employee> Employees { get; set; }
-
     public virtual DbSet<Rental> Rentals { get; set; }
-
     public virtual DbSet<Return> Returns { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
-
     public virtual DbSet<Offer> Offers { get; set; }
-
     public virtual DbSet<Insurance> Insurances { get; set; }
+    public virtual DbSet<RentalStatus> RentalStatuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
