@@ -24,16 +24,24 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
                 .ThenInclude(o => o.Car)
                 .ThenInclude(c => c!.CarProvider)
                 .AsQueryable();
-                
+
             if (filter != null && filter.CustomerId.HasValue)
                 query = query.Where(r => r.Offer.Customer != null && r.Offer.Customer.CustomerId == filter.CustomerId);
-            
+
             if (filter != null && filter.RentalId.HasValue)
                 query = query.Where(r => r.RentalId == filter.RentalId);
-            
+
             if (filter != null && filter.RentalStatus.HasValue)
                 query = query.Where(r => r.RentalStatusId == filter.RentalStatus);
-            
+
+            if (!string.IsNullOrEmpty(filter.Brand) || !string.IsNullOrEmpty(filter.Model))
+            {
+                query = query.Where(r =>
+                    (string.IsNullOrEmpty(filter.Brand) || r.Offer.Car.Brand.ToLower().Contains(filter.Brand.ToLower())) &&
+                    (string.IsNullOrEmpty(filter.Model) || r.Offer.Car.Model.ToLower().Contains(filter.Model.ToLower()))
+                );
+            }
+
             query = query.OrderByDescending(r => r.CreatedAt);
 
             return await query.ToListAsync();
@@ -124,7 +132,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Insurance)
                 .FirstOrDefaultAsync(r => r.OfferId == offerId);
-            
+
             return rental;
         }
         catch (Exception ex)
@@ -133,7 +141,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             throw new DatabaseOperationException($"Failed to get rental for offer {offerId}", ex);
         }
     }
-    
+
     private async Task<bool> SetRentalStatus(int rentalId, int rentalStatusId)
     {
         try
@@ -143,10 +151,10 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             {
                 return false;
             }
-            
+
             rental.RentalStatusId = rentalStatusId;
             await Context.SaveChangesAsync();
-            
+
             return true;
         }
         catch (Exception ex)
@@ -154,8 +162,8 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             Logger.LogError(ex, $"Error setting rental status {rentalStatusId} for rentalId {rentalId}");
             throw new DatabaseOperationException($"Failed to set rental status for rentalId {rentalId}", ex);
         }
-    }   
-    
+    }
+
     // Customer's initialization of the return
     public async Task<bool> InitReturn(int rentalId)
     {
@@ -169,11 +177,11 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            Logger.LogError(ex, "Error initializing return for rentalId {RentalId}", rentalId);  
+            Logger.LogError(ex, "Error initializing return for rentalId {RentalId}", rentalId);
             throw new DatabaseOperationException($"Failed to initialize the return for rentalId {rentalId}", ex);
         }
     }
-    
+
     // Worker's processing of the return
     public async Task<Return> ProcessReturn(AcceptReturnRequest request)
     {
@@ -185,31 +193,31 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             {
                 throw new InvalidOperationException($"Failed to set rental status to completed for rentalId {request.RentalId}");
             }
-            
+
             var completedReturn = new Return
             {
                 RentalId = request.RentalId,
-                ReturnDate = request.ReturnDate, 
+                ReturnDate = request.ReturnDate,
                 ConditionDescription = request.ConditionDescription,
                 PhotoUrl = request.PhotoUrl,
                 ProcessedBy = request.EmployeeId,
                 CreatedAt = DateTime.UtcNow
             };
-            
+
             Context.Returns.Add(completedReturn);
 
             await Context.SaveChangesAsync();
             await transaction.CommitAsync();
-            
+
             return completedReturn;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            Logger.LogError(ex, "Error processing return for rentalId {RentalId}", request.RentalId);  
+            Logger.LogError(ex, "Error processing return for rentalId {RentalId}", request.RentalId);
             throw new DatabaseOperationException($"Failed to process return for rentalId {request.RentalId}", ex);
         }
     }
-    
-    
+
+
 }
