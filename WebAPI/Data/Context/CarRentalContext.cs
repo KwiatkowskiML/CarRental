@@ -259,7 +259,7 @@ public partial class CarRentalContext(DbContextOptions<CarRentalContext> options
 
             entity.Property(e => e.InsuranceId).HasColumnName("insurance_id");
             entity.Property(e => e.Price).HasColumnName("price");
-            entity.Property(e => e.name).HasColumnName("name");
+            entity.Property(e => e.Name).HasColumnName("name");
         });
         
         modelBuilder.Entity<RentalStatus>(entity =>
