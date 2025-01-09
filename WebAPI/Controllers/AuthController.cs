@@ -44,7 +44,8 @@ public class AuthController : ControllerBase
             return BadRequest("Invalid token");
         }
     }
-
+    
+    // TODO: user creation and customer creation should be within single transaction in unit of work
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
     {

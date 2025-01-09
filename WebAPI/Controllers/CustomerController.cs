@@ -14,6 +14,7 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class CustomerController(IUnitOfWork unitOfWork, IEmailService emailService) : ControllerBase
     {
+        // TODO: move to rentals controller
         [HttpGet("{customerId}/rentals")]
         public async Task<IActionResult> GetCustomerRentals(int customerId)
         {
@@ -55,7 +56,7 @@ namespace WebAPI.Controllers
             }
         }
         
-        
+        // TODO: move to return controller, and update the rental and create return in single transaction in unit of work
         [HttpPost("return/{rentalId}/{customerId}")]
         public async Task<IActionResult> ProcessReturn(int rentalId, int customerId)
         {

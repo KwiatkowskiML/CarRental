@@ -97,6 +97,8 @@ builder.Services.AddScoped<IPriceCalculator, PriceCalculator>();
 
 // Register Repositories
 builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IOfferRepository, OfferRepository>();
 
 // Register Services
 builder.Services.AddScoped<GoogleAuthService>();

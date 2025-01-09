@@ -7,7 +7,7 @@ using WebAPI.filters;
 
 namespace WebAPI.Data.Repositories;
 
-public class OfferRepository(CarRentalContext context, ILogger logger)
+public class OfferRepository(CarRentalContext context, ILogger<OfferRepository> logger)
     : BaseRepository<Offer>(context, logger), IOfferRepository
 {
     public async Task<Offer?> GetOfferAsync(OfferFilter filter)
