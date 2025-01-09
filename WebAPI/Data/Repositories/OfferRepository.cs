@@ -89,6 +89,9 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
 
             if (car == null)
                 throw new InvalidOperationException($"Car with ID {offer.CarId} not found");
+            
+            if (offer.StartDate > offer.EndDate)
+                throw new InvalidOperationException("Invalid date range");
 
             var hasConflict = await Context.Rentals
                 .AnyAsync(r => r.Offer.CarId == offer.CarId &&
