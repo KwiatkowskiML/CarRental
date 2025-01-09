@@ -24,9 +24,9 @@ export function CarDetails() {
         const response = await fetch('/api/User/current', {
           method: 'GET',
           headers: {
-              'Authorization': `Bearer ${user.token}`,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
+            'Authorization': `Bearer ${user.token}`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
           },
           cache: 'no-store'
         });
@@ -63,11 +63,8 @@ export function CarDetails() {
   }, [carId, user.token]);
 
   const handleGetOffer = async (options) => {
+    setError(null);
     try {
-
-      console.log('Options:', options);
-      console.log('Car ID:', carId);
-
       const response = await fetch('/api/Offers/get-offer', {
         method: 'POST',
         headers: {
@@ -84,38 +81,38 @@ export function CarDetails() {
           hasChildSeat: options.hasChildSeat
         })
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to get offer');
+        const errorText = await response.text();
+        if (errorText.includes('Car is not available for the selected dates')) {
+          throw new Error('The car is not available for the selected dates. Please choose different dates.');
+        }
+        throw new Error(errorText || 'Failed to get offer');
       }
-  
+
       const data = await response.json();
-      console.log('Offer response data:', data); // Debug log
-      setTotalPrice(data.totalPrice)
+      setTotalPrice(data.totalPrice);
       setOfferDetails(data);
       setIsDialogOpen(false);
     } catch (error) {
       console.error('Error getting offer:', error);
-      setError('Failed to get offer. Please try again.');
+      setError(error.message);
+      return Promise.reject(error);
     }
   };
 
   const handleRentMe = async () => {
     if (!offerDetails || !currentUser) return;
-  
+
     setIsSubmitting(true);
     setError(null);
-  
+
     try {
       const requestData = {
         offerId: offerDetails.offerId,
         userId: currentUser.userId
       };
-      
-      console.log('Offer object:', offerDetails); // Debug log
-      console.log('Current user object:', currentUser); // Debug log
-      console.log('Sending rental confirmation request:', requestData);
-  
+
       const response = await fetch('/api/Rentals/send-confirmation', {
         method: 'POST',
         headers: {
@@ -124,19 +121,17 @@ export function CarDetails() {
         },
         body: JSON.stringify(requestData)
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response from server:', errorText);
-        throw new Error(`Failed to initiate rental process: ${errorText}`);
+        throw new Error(errorText || 'Failed to initiate rental process');
       }
-  
-      // Show success message
+
       alert('Please check your email to confirm the rental.');
       navigate('/');
     } catch (error) {
       console.error('Error initiating rental:', error);
-      setError('Failed to initiate rental. Please try again.');
+      setError(error.message || 'Failed to initiate rental. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -146,14 +141,14 @@ export function CarDetails() {
   if (!car) return <div>Car not found</div>;
 
   return (
-    <div style={{ 
-      maxWidth: '1200px', 
-      margin: '0 auto', 
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
       padding: '20px'
     }}>
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
         marginBottom: '20px',
         gap: '10px'
       }}>
@@ -169,7 +164,7 @@ export function CarDetails() {
             fontSize: '16px'
           }}
         >
-          ← Oferty
+          ← Back to Offers
         </button>
       </div>
 
@@ -179,7 +174,7 @@ export function CarDetails() {
         gap: '40px',
         alignItems: 'start'
       }}>
-        <img 
+        <img
           src={car.images?.[0] ? car.images[0] : "/api/placeholder/400/320"}
           crossOrigin="anonymous"
           alt={`${car.brand} ${car.model}`}
@@ -191,20 +186,12 @@ export function CarDetails() {
         />
 
         <div>
-          <h1 style={{ 
-            fontSize: '32px', 
+          <h1 style={{
+            fontSize: '32px',
             marginBottom: '24px'
           }}>
             {car.brand} {car.model}
           </h1>
-
-          <h2 style={{ 
-            fontSize: '20px', 
-            color: '#666',
-            marginBottom: '16px'
-          }}>
-            Specyfikacja samochodu
-          </h2>
 
           <div style={{
             display: 'grid',
@@ -212,25 +199,38 @@ export function CarDetails() {
             fontSize: '16px',
             marginBottom: '32px'
           }}>
-            <DetailRow label="Pojemność" value={`${car.engineCapacity} l`} />
-            <DetailRow label="Moc" value={`${car.power} KM`} />
-            <DetailRow label="Paliwo" value={car.fuelType} />
-            <DetailRow label="Rok produkcji" value={car.year} />
-            <DetailRow label="Lokalizacja" value={car.location} />
-            <DetailRow label="Numer rejestracyjny" value={car.licensePlate} />
+            <DetailRow label="Engine Capacity" value={`${car.engineCapacity} l`} />
+            <DetailRow label="Power" value={`${car.power} HP`} />
+            <DetailRow label="Fuel Type" value={car.fuelType} />
+            <DetailRow label="Year" value={car.year} />
+            <DetailRow label="Location" value={car.location} />
+            <DetailRow label="License Plate" value={car.licensePlate} />
             <DetailRow label="Status" value={car.status} />
             {car.description && (
-              <DetailRow label="Opis" value={car.description} />
+              <DetailRow label="Description" value={car.description} />
             )}
             {car.carProvider && (
-              <DetailRow 
-                label="Dostawca" 
-                value={`${car.carProvider.name} (${car.carProvider.contactEmail})`} 
+              <DetailRow
+                label="Provider"
+                value={`${car.carProvider.name} (${car.carProvider.contactEmail})`}
               />
             )}
           </div>
 
-          <div style={{ 
+          {error && (
+            <div style={{
+              padding: '12px',
+              marginBottom: '20px',
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '16px'
@@ -242,21 +242,22 @@ export function CarDetails() {
                   fontWeight: 'bold',
                   color: '#8B4513'
                 }}>
-                  {totalPrice.toFixed(2)} PLN
+                  ${totalPrice.toFixed(2)}
                 </div>
-                <Button 
+                <Button
                   variant="primary"
                   onClick={handleRentMe}
+                  disabled={isSubmitting}
                 >
-                  Rent Me
+                  {isSubmitting ? 'Processing...' : 'Rent Now'}
                 </Button>
               </>
             ) : (
-              <Button 
+              <Button
                 variant="primary"
                 onClick={() => setIsDialogOpen(true)}
               >
-                Zapytaj o cenę
+                Check Availability & Price
               </Button>
             )}
           </div>
@@ -271,15 +272,16 @@ export function CarDetails() {
     </div>
   );
 }
+
 function DetailRow({ label, value }) {
   return (
-    <div style={{ 
+    <div style={{
       display: 'flex',
       borderBottom: '1px solid #eee',
       paddingBottom: '8px'
     }}>
-      <span style={{ 
-        minWidth: '150px', 
+      <span style={{
+        minWidth: '150px',
         fontWeight: 'bold'
       }}>
         {label}:
