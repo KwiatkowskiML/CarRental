@@ -1,3 +1,4 @@
+using WebAPI.Constants;
 using WebAPI.Data.Repositories.Interfaces;
 
 namespace WebAPI.Services;
@@ -17,16 +18,17 @@ public class OfferCleanupService : IHostedService, IDisposable
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("OfferCleanupService running.");
-        
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
-        
+
+        _timer = new Timer(DoWork, null, TimeSpan.Zero,
+            TimeSpan.FromMinutes(OfferCleanupConstants.CleanupIntervalMinutes));
+
         return Task.CompletedTask;
     }
 
     private async void DoWork(object? state)
     {
         _logger.LogInformation("OfferCleanupService is working.");
-        
+
         using var scope = _serviceProvider.CreateScope(); // Create a new DI scope
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 

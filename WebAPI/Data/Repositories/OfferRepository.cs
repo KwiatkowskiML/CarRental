@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WebAPI.Constants;
 using WebAPI.Data.Context;
 using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
@@ -137,7 +138,7 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
         await using var transaction = await Context.Database.BeginTransactionAsync();
         try
         {
-            var cutoffTime = DateTime.UtcNow.AddMinutes(-10);
+            var cutoffTime = DateTime.UtcNow.AddMinutes(-OfferCleanupConstants.UnusedOfferExpirationMinutes);
             
             var staleOffers = await Context.Offers
                 .Where(o => o.CreatedAt <= cutoffTime &&
