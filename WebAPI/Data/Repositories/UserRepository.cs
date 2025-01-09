@@ -87,6 +87,12 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
     {
         try
         {
+            var existingUser = await Context.Users
+                .FirstOrDefaultAsync(u => u.Email == user.Email);
+
+            if (existingUser != null)
+                throw new InvalidOperationException("A user with this email already exists.");
+            
             Context.Users.Add(user);
             await Context.SaveChangesAsync();
             return user;
@@ -102,6 +108,11 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
     {
         try
         {
+            var userExists = await Context.Users.AnyAsync(u => u.UserId == customer.UserId);
+
+            if (!userExists)
+                throw new InvalidOperationException($"User with ID {customer.UserId} does not exist.");
+
             Context.Customers.Add(customer);
             await Context.SaveChangesAsync();
             return customer;
