@@ -2,6 +2,7 @@ using CarRental.WebAPI.Services.Options;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using WebAPI.Data.DTOs;
 using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Services;
@@ -119,7 +120,7 @@ Car Rental Team",
 </body>
 </html>"
             };
-            
+
             msg.AddTo(new EmailAddress(toEmail));
 
             var response = await _client.SendEmailAsync(msg);
@@ -131,6 +132,331 @@ Car Rental Team",
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending rental confirmation email to {Email}", toEmail);
+            throw;
+        }
+    }
+
+    public async Task SendRentalSuccessEmail(string toEmail, string userName, string rentalManagementLink)
+    {
+        try
+        {
+            var msg = new SendGridMessage()
+            {
+                From = new EmailAddress(_options.FromEmail, _options.FromName),
+                Subject = "Your Car Rental is Confirmed!",
+                PlainTextContent = $@"
+    Hello {userName},
+
+    Great news! Your car rental has been successfully confirmed. 
+
+    You can manage your rental details, including viewing pickup instructions, modifying your reservation, or canceling if needed, through our rental management portal:
+
+    {rentalManagementLink}
+
+    If you have any questions or need assistance, please don't hesitate to contact our support team.
+
+    Thank you for choosing our car rental service!
+
+    Best regards,
+    Car Rental Team",
+                HtmlContent = $@"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ 
+                font-family: Arial, sans-serif; 
+                line-height: 1.6; 
+                color: #333;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{ 
+                max-width: 600px; 
+                margin: 0 auto; 
+                padding: 20px; 
+            }}
+            .header {{
+                background-color: #8B4513;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                margin-bottom: 30px;
+            }}
+            .button {{
+                display: inline-block;
+                padding: 12px 24px;
+                background-color: #8B4513;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+                margin: 20px 0;
+            }}
+            .note {{
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 4px;
+                margin: 20px 0;
+                font-size: 0.9em;
+                color: #666;
+            }}
+            .footer {{ 
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+                font-size: 0.9em;
+                color: #666;
+            }}
+            .success-icon {{
+                font-size: 48px;
+                color: #28a745;
+                text-align: center;
+                margin: 20px 0;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h1>Rental Successfully Confirmed!</h1>
+        </div>
+        <div class='container'>
+            <div class='success-icon'>✓</div>
+            <h2>Hello {userName},</h2>
+            <p>Great news! Your car rental has been successfully confirmed.</p>
+            
+            <p>You can now access our rental management portal to:</p>
+            <ul>
+                <li>View your rental details</li>
+                <li>Access pickup instructions</li>
+                <li>Modify your reservation</li>
+                <li>Cancel if needed</li>
+            </ul>
+
+            <p style='text-align: center;'>
+                <a href='{rentalManagementLink}' class='button'>Manage Your Rental</a>
+            </p>
+            
+            <div class='note'>
+                <p><strong>Need to access later?</strong></p>
+                <p>Bookmark this link to manage your rental:</p>
+                <p style='word-break: break-all;'><small>{rentalManagementLink}</small></p>
+            </div>
+
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            
+            <div class='footer'>
+                <p>Thank you for choosing our car rental service!</p>
+                <p>Best regards,<br>Car Rental Team</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+            };
+
+            msg.AddTo(new EmailAddress(toEmail));
+
+            var response = await _client.SendEmailAsync(msg);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to send email. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending rental success email to {Email}", toEmail);
+            throw;
+        }
+    }
+
+    public async Task SendReturnProcessInitiatedEmail(string toEmail, string userName)
+    {
+        try
+        {
+            var msg = new SendGridMessage()
+            {
+                From = new EmailAddress(_options.FromEmail, _options.FromName),
+                Subject = "Your Car Rental Return Process Has Started",
+                PlainTextContent = $@"
+    Hello {userName},
+
+    We have initiated the return process for your car rental. 
+
+    If you have any questions or need further assistance, feel free to reach out to our support team.
+
+    Thank you for using our car rental service.
+
+    Best regards,
+    Car Rental Team",
+                HtmlContent = $@"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ 
+                font-family: Arial, sans-serif; 
+                line-height: 1.6; 
+                color: #333; 
+                margin: 0; 
+                padding: 0; 
+            }}
+            .container {{ 
+                max-width: 600px; 
+                margin: 0 auto; 
+                padding: 20px; 
+            }}
+            .header {{
+                background-color: #8B4513;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                margin-bottom: 30px;
+            }}
+            .footer {{ 
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+                font-size: 0.9em;
+                color: #666;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h1>Return Process Started</h1>
+        </div>
+        <div class='container'>
+            <h2>Hello {userName},</h2>
+            <p>We have initiated the return process for your car rental.</p>
+            <p>If you have any questions or need further assistance, feel free to reach out to our support team.</p>
+            <div class='footer'>
+                <p>Thank you for using our car rental service!</p>
+                <p>Best regards,<br>Car Rental Team</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+            };
+
+            msg.AddTo(new EmailAddress(toEmail));
+
+            var response = await _client.SendEmailAsync(msg);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to send email. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending return process initiated email to {Email}", toEmail);
+            throw;
+        }
+    }
+
+    public async Task SendReturnCompletionInvoiceEmail(string toEmail, string userName, RentalDto rentalDto)
+    {
+        try
+        {
+            // Generate the invoice details
+            var offer = rentalDto.Offer;
+            var invoiceAmount = offer?.TotalPrice ?? 0;
+            var rentalDuration =
+                offer?.EndDate.ToDateTime(new TimeOnly(0, 0)) - offer?.StartDate.ToDateTime(new TimeOnly(0, 0)) ??
+                TimeSpan.Zero;
+
+            var msg = new SendGridMessage()
+            {
+                From = new EmailAddress(_options.FromEmail, _options.FromName),
+                Subject = "Your Car Rental Return Invoice",
+                PlainTextContent = $@"
+    Hello {userName},
+
+    Your car rental return has been completed successfully. Here are the details:
+
+    Rental Duration: {rentalDuration.Days} days
+    Total Amount: ${invoiceAmount}
+
+    If you have any questions or concerns regarding your invoice, please do not hesitate to contact us.
+
+    Thank you for using our service!
+
+    Best regards,
+    Car Rental Team",
+                HtmlContent = $@"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ 
+                font-family: Arial, sans-serif; 
+                line-height: 1.6; 
+                color: #333; 
+                margin: 0; 
+                padding: 0; 
+            }}
+            .container {{ 
+                max-width: 600px; 
+                margin: 0 auto; 
+                padding: 20px; 
+            }}
+            .header {{
+                background-color: #8B4513;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                margin-bottom: 30px;
+            }}
+            .footer {{ 
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+                font-size: 0.9em;
+                color: #666;
+            }}
+            .invoice-details {{
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 4px;
+                margin: 20px 0;
+                font-size: 1em;
+                color: #333;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h1>Your Rental Return Invoice</h1>
+        </div>
+        <div class='container'>
+            <h2>Hello {userName},</h2>
+            <p>Your car rental return has been completed successfully. Here are the details:</p>
+
+            <div class='invoice-details'>
+                <p><strong>Rental Duration:</strong> {rentalDuration.Days} days</p>
+                <p><strong>Total Amount:</strong> ${invoiceAmount}</p>
+            </div>
+
+            <p>If you have any questions or concerns regarding your invoice, please do not hesitate to contact us.</p>
+
+            <div class='footer'>
+                <p>Thank you for using our service!</p>
+                <p>Best regards,<br>Car Rental Team</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+            };
+
+            msg.AddTo(new EmailAddress(toEmail));
+
+            var response = await _client.SendEmailAsync(msg);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to send email. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending return completion invoice email to {Email}", toEmail);
             throw;
         }
     }

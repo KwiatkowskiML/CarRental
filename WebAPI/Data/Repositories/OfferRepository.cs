@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WebAPI.Constants;
 using WebAPI.Data.Context;
 using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
@@ -88,6 +89,9 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
 
             if (car == null)
                 throw new InvalidOperationException($"Car with ID {offer.CarId} not found");
+            
+            if (offer.StartDate > offer.EndDate)
+                throw new InvalidOperationException("Invalid date range");
 
             var hasConflict = await Context.Rentals
                 .AnyAsync(r => r.Offer.CarId == offer.CarId &&
@@ -129,6 +133,38 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
             await transaction.RollbackAsync();
             Logger.LogError(ex, "Error creating offer for car {CarId}", offer.CarId);
             throw new DatabaseOperationException("Failed to create offer", ex);
+        }
+    }
+    
+    public async Task DeleteExpiredOffersAsync()
+    {
+        await using var transaction = await Context.Database.BeginTransactionAsync();
+        try
+        {
+            var cutoffTime = DateTime.UtcNow.AddMinutes(-OfferCleanupConstants.UnusedOfferExpirationMinutes);
+            
+            var staleOffers = await Context.Offers
+                .Where(o => o.CreatedAt <= cutoffTime &&
+                            !Context.Rentals.Any(r => r.OfferId == o.OfferId))
+                .ToListAsync();
+
+            if (staleOffers.Any())
+            {
+                Context.Offers.RemoveRange(staleOffers);
+                var deletedCount = await Context.SaveChangesAsync();
+                Logger.LogInformation(
+                    "Deleted {Count} stale offers created before {CutoffTime}", 
+                    deletedCount, 
+                    cutoffTime);
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Logger.LogError(ex, "Error deleting stale offers");
+            throw new DatabaseOperationException("Failed to delete stale offers", ex);
         }
     }
 }

@@ -44,7 +44,8 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
 
             query = query.OrderByDescending(r => r.CreatedAt);
 
-            return await query.ToListAsync();
+            var result = await query.ToListAsync();
+            return result;
         }
         catch (Exception ex)
         {
@@ -68,6 +69,12 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
 
             if (offer.Car!.Status != "available")
                 throw new InvalidOperationException("Car is not available for rental");
+            
+            var existingRental = await Context.Rentals
+                .FirstOrDefaultAsync(r => r.OfferId == offerId);
+
+            if (existingRental != null)
+                throw new InvalidOperationException("Rental already exists for this offer");
 
             var hasOverlap = await Context.Rentals
                 .AnyAsync(r => r.Offer.CarId == offer.CarId &&
@@ -93,7 +100,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             await transaction.CommitAsync();
 
             // Load necessary navigation properties for the DTO
-            return await Context.Rentals
+            var finalRental = await Context.Rentals
                 .Include(r => r.RentalStatus)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Car)
@@ -104,6 +111,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Insurance)
                 .FirstOrDefaultAsync(r => r.RentalId == rental.RentalId);
+            return finalRental;
         }
         catch (Exception ex)
         {

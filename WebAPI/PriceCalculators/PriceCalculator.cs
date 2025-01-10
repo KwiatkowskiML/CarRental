@@ -17,6 +17,9 @@ public class PriceCalculator: IPriceCalculator
     
     public decimal CalculatePrice(decimal carPrice, decimal insurancePrice, int drivingYears, GetOfferRequest request)
     {
+        if (drivingYears < 0)
+            throw new ArgumentException("Driving years cannot be negative");
+        
         int numberOfDays = request.EndDate.DayNumber - request.StartDate.DayNumber + 1;
         decimal basePrice = carPrice * numberOfDays;
         decimal additionalTax = drivingYears > 0 ? basePrice / drivingYears : basePrice;

@@ -6,5 +6,5 @@ public class Insurance
 
     public decimal Price { get; set; }
 
-    public string name { get; set; } = null!;
+    public string Name { get; set; } = null!;
 }

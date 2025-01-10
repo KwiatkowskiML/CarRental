@@ -20,7 +20,79 @@ export function RentalConfirmationPage() {
       return;
     }
 
+    // Add a cleanup function
+    let isSubscribed = true;
+
+    const validateAndConfirm = async (token) => {
+      try {
+        // First just validate the token
+        const validateResponse = await fetch(`/api/Rentals/validate-token?token=${encodeURIComponent(token)}`, {
+          headers: {
+            'Authorization': `Bearer ${user.token}`
+          }
+        });
+
+        if (!validateResponse.ok) {
+          const errorText = await validateResponse.text();
+          throw new Error(errorText);
+        }
+
+        const validationData = await validateResponse.json();
+
+        // Check if component is still mounted before proceeding
+        if (!isSubscribed) return;
+
+        // If validation successful and rental doesn't exist yet, try to confirm
+        try {
+          const confirmResponse = await fetch(`/api/Rentals/confirm?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${user.token}`
+            }
+          });
+
+          // If we get a 409, it means the rental was already confirmed
+          if (confirmResponse.status === 409) {
+            setRentalDetails(validationData);
+            setStatus('success');
+            return;
+          }
+
+          if (!confirmResponse.ok) {
+            const errorText = await confirmResponse.text();
+            throw new Error(errorText);
+          }
+
+          // Check if component is still mounted before updating state
+          if (!isSubscribed) return;
+
+          const data = await confirmResponse.json();
+          setRentalDetails(data);
+          setStatus('success');
+        } catch (confirmError) {
+          if (!isSubscribed) return;
+          // If we get here with a 409, it's not really an error
+          if (confirmError.message?.includes('already confirmed')) {
+            setRentalDetails(validationData);
+            setStatus('success');
+            return;
+          }
+          throw confirmError;
+        }
+      } catch (error) {
+        if (!isSubscribed) return;
+        console.error('Error processing rental:', error);
+        setError(error.message || 'An unexpected error occurred');
+        setStatus('error');
+      }
+    };
+
     validateAndConfirm(token);
+
+    // Cleanup function to handle unmounting
+    return () => {
+      isSubscribed = false;
+    };
   }, [searchParams, user]);
 
   const validateAndConfirm = async (token) => {
