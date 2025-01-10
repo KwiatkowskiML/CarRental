@@ -34,13 +34,11 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
             if (filter != null && filter.RentalStatus.HasValue)
                 query = query.Where(r => r.RentalStatusId == filter.RentalStatus);
 
-            if (!string.IsNullOrEmpty(filter.Brand) || !string.IsNullOrEmpty(filter.Model))
-            {
-                query = query.Where(r =>
-                    (string.IsNullOrEmpty(filter.Brand) || r.Offer.Car.Brand.ToLower().Contains(filter.Brand.ToLower())) &&
-                    (string.IsNullOrEmpty(filter.Model) || r.Offer.Car.Model.ToLower().Contains(filter.Model.ToLower()))
-                );
-            }
+            if (filter != null && !string.IsNullOrEmpty(filter.Brand))
+                query = query.Where(r => r.Offer.Car != null && r.Offer.Car.Brand.ToLower().Contains(filter.Brand.ToLower()));
+            
+            if (filter != null && !string.IsNullOrEmpty(filter.Model))
+                query = query.Where(r => r.Offer.Car != null && r.Offer.Car.Model.ToLower().Contains(filter.Model.ToLower()));
 
             query = query.OrderByDescending(r => r.CreatedAt);
 
