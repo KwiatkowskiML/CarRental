@@ -15,9 +15,7 @@ import NavBar from './components/layout/NavBar';
 // Move route guards outside the main App component
 const CustomerRoute = ({ children }) => {
   const { isEmployee } = useAuth();
-  console.log('CustomerRoute - isEmployee:', isEmployee);
   if (isEmployee) {
-    console.log('Employee attempting to access customer route - redirecting to worker view');
     return <Navigate to="/worker/rentals" replace />;
   }
   return children;
@@ -25,9 +23,7 @@ const CustomerRoute = ({ children }) => {
 
 const EmployeeRoute = ({ children }) => {
   const { isEmployee } = useAuth();
-  console.log('EmployeeRoute - isEmployee:', isEmployee);
   if (!isEmployee) {
-    console.log('Customer attempting to access employee route - redirecting to home');
     return <Navigate to="/" replace />;
   }
   return children;
@@ -41,14 +37,11 @@ function App() {
     return <div>Error: Google Client ID not configured</div>;
   }
 
-  console.log('App initialized with Google Client ID:', clientId ? 'Present' : 'Missing');
-
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <BrowserRouter>
         <AuthProvider>
           <div>
-            {console.log('Rendering App layout')}
             <NavBar />
             <Routes>
               <Route path="/login" element={<LoginPage />} />
@@ -57,7 +50,6 @@ function App() {
               <Route path="/" element={
                 <AuthGuard>
                   <CustomerRoute>
-                    {console.log('Rendering CarList route')}
                     <CarList />
                   </CustomerRoute>
                 </AuthGuard>
@@ -65,7 +57,6 @@ function App() {
               <Route path="/cars/:carId" element={
                 <AuthGuard>
                   <CustomerRoute>
-                    {console.log('Rendering CarDetails route')}
                     <CarDetails />
                   </CustomerRoute>
                 </AuthGuard>
@@ -73,7 +64,6 @@ function App() {
               <Route path="/rental-confirm" element={
                 <AuthGuard>
                   <CustomerRoute>
-                    {console.log('Rendering RentalConfirmation route')}
                     <RentalConfirmationPage />
                   </CustomerRoute>
                 </AuthGuard>
@@ -81,7 +71,6 @@ function App() {
               <Route path="/rental/history" element={
                 <AuthGuard>
                   <CustomerRoute>
-                    {console.log('Rendering RentalHistory route')}
                     <RentalHistory />
                   </CustomerRoute>
                 </AuthGuard>
@@ -91,7 +80,6 @@ function App() {
               <Route path="/worker/rentals" element={
                 <AuthGuard>
                   <EmployeeRoute>
-                    {console.log('Rendering WorkerRentalsView route')}
                     <WorkerRentalsView />
                   </EmployeeRoute>
                 </AuthGuard>
@@ -99,7 +87,6 @@ function App() {
               <Route path="/worker/rentals/:rentalId" element={
                 <AuthGuard>
                   <EmployeeRoute>
-                    {console.log('Rendering RentalDetails (worker) route')}
                     <RentalDetails />
                   </EmployeeRoute>
                 </AuthGuard>

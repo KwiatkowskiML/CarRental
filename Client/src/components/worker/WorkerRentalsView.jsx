@@ -16,7 +16,6 @@ export function WorkerRentalsView() {
     const { user } = useAuth();
 
     const fetchRentals = async (currentFilters) => {
-        console.log('fetchRentals called with filters:', currentFilters);
         try {
             setLoading(true);
             const queryParams = new URLSearchParams();
@@ -47,8 +46,6 @@ export function WorkerRentalsView() {
                 queryParams.append('Model', currentFilters.model);
             }
 
-            console.log('API Request URL:', `/api/Worker/rentals?${queryParams.toString()}`);
-
             const response = await fetch(`/api/Worker/rentals?${queryParams.toString()}`, {
                 headers: {
                     'Authorization': `Bearer ${user.token}`
@@ -60,7 +57,6 @@ export function WorkerRentalsView() {
             }
 
             const data = await response.json();
-            console.log('API Response data:', data);
             setRentals(data);
         } catch (err) {
             console.error('Error in fetchRentals:', err);
@@ -71,24 +67,20 @@ export function WorkerRentalsView() {
     };
 
     useEffect(() => {
-        console.log('useEffect triggered with filters:', filters);
         fetchRentals(filters);
     }, [filters.status]);
 
     const handleSearch = (searchValues) => {
-        console.log('handleSearch called with:', searchValues);
         const newFilters = {
             ...filters,
             brand: searchValues.brand,
             model: searchValues.model
         };
-        console.log('Setting new filters:', newFilters);
         setFilters(newFilters);
         fetchRentals(newFilters);
     };
 
     const handleStatusChange = (e) => {
-        console.log('Status changed to:', e.target.value);
         setFilters(prev => ({ ...prev, status: e.target.value }));
     };
 
@@ -96,7 +88,7 @@ export function WorkerRentalsView() {
         <Page>
             <div className="max-w-7xl mx-auto px-4">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-6">Lista Wynajmów</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-6">Rental History</h1>
 
                     <div className="space-y-4">
                         <SearchForm onSearch={handleSearch} />
@@ -106,7 +98,7 @@ export function WorkerRentalsView() {
                             onChange={handleStatusChange}
                             className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
                         >
-                            <option value="">Wszystkie statusy</option>
+                            <option value="">All statuses</option>
                             <option value="confirmed">Confirmed</option>
                             <option value="pending">Pending Return</option>
                             <option value="completed">Completed</option>
@@ -130,7 +122,7 @@ export function WorkerRentalsView() {
                     </div>
                 ) : (
                     <div className="text-center py-12 bg-white rounded-lg shadow">
-                        <p className="text-gray-500">Brak wynajmów spełniających kryteria wyszukiwania.</p>
+                        <p className="text-gray-500">No rentals matching your search criteria.</p>
                     </div>
                 )}
             </div>

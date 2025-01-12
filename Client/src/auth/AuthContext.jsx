@@ -11,22 +11,17 @@ export const AuthProvider = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
-    console.log('AuthProvider useEffect - Checking stored token');
     const token = localStorage.getItem('token');
     if (token) {
-      console.log('Found stored token, setting user and checking role');
       setUser({ token });
       checkUserRole(token);
     } else {
-      console.log('No stored token found');
     }
     setLoading(false);
   }, []);
 
   const checkUserRole = async (token) => {
-    console.log('Checking user role with token:', token);
     try {
-      console.log('Fetching current user data...');
       const userResponse = await fetch('/api/User/current', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -38,10 +33,8 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Failed to get user');
       }
       const userData = await userResponse.json();
-      console.log('User data received:', userData);
 
       try {
-        console.log('Checking if user is customer with userId:', userData.userId);
         const customerResponse = await fetch(`/api/Customer/id?userId=${userData.userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -49,22 +42,17 @@ export const AuthProvider = ({ children }) => {
         });
 
         if (!customerResponse.ok) {
-          console.log('User is an employee (no customer record found)');
           setIsEmployee(true);
-          // Przekieruj tylko jeśli użytkownik jest na stronie głównej lub logowania
           if (location.pathname === '/' || location.pathname === '/login') {
             navigate('/worker/rentals');
           }
         } else {
-          console.log('User is a customer');
           setIsEmployee(false);
-          // Przekieruj tylko jeśli użytkownik jest na stronie głównej lub logowania
           if (location.pathname === '/' || location.pathname === '/login') {
             navigate('/');
           }
         }
       } catch (error) {
-        console.log('Error checking customer status, assuming employee:', error);
         setIsEmployee(true);
         if (location.pathname === '/' || location.pathname === '/login') {
           navigate('/worker/rentals');
@@ -76,7 +64,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (googleToken) => {
-    console.log('Processing login with Google token');
     try {
       const response = await fetch('/api/Auth/google', {
         method: 'POST',
@@ -87,10 +74,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log('Login response:', data);
 
       if (response.status === 404 && data.needsRegistration) {
-        console.log('New user needs registration');
         return {
           needsRegistration: true,
           userData: data.userData
@@ -102,7 +87,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Login failed');
       }
 
-      console.log('Login successful, storing token and checking role');
       localStorage.setItem('token', data.token);
       setUser({ token: data.token });
       await checkUserRole(data.token);
@@ -114,7 +98,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    console.log('Logging out user');
     localStorage.removeItem('token');
     setUser(null);
     setIsEmployee(false);
@@ -122,7 +105,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   if (loading) {
-    console.log('Auth provider still loading');
     return <div>Loading...</div>;
   }
 

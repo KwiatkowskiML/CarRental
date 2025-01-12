@@ -5,7 +5,7 @@ export function CarCard({ car }) {
   const navigate = useNavigate();
 
   return (
-    <div 
+    <div
       style={{
         display: 'flex',
         backgroundColor: 'white',
@@ -17,7 +17,7 @@ export function CarCard({ car }) {
         gap: '20px'
       }}
     >
-      <img 
+      <img
         src={car.images?.[0] ? car.images[0] : "/api/placeholder/400/320"}
         alt={`${car.brand} ${car.model}`}
         crossOrigin="anonymous"
@@ -39,11 +39,11 @@ export function CarCard({ car }) {
           {car.description || '(opis)'}
         </p>
       </div>
-      <Button 
+      <Button
         variant="primary"
         onClick={() => navigate(`/cars/${car.carId}`)}
       >
-        Zobacz szczegóły
+        View Details
       </Button>
     </div>
   );
