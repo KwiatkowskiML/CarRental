@@ -84,7 +84,6 @@ export function WorkerRentalsView() {
             const data = await response.json();
             setRentals(data);
         } catch (err) {
-            console.error('Error in fetchRentals:', err);
             setError(err.message);
         } finally {
             setLoading(false);
