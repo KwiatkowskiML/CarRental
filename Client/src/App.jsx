@@ -37,8 +37,6 @@ function App() {
     return <div>Error: Google Client ID not configured</div>;
   }
 
-  console.log('App initialized with Google Client ID:', clientId ? 'Present' : 'Missing');
-
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <BrowserRouter>

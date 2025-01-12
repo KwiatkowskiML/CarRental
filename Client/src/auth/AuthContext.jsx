@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      console.log('Found stored token, setting user and checking role');
       setUser({ token });
       checkUserRole(token);
     } else {
@@ -65,7 +64,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (googleToken) => {
-    console.log('Processing login with Google token');
     try {
       const response = await fetch('/api/Auth/google', {
         method: 'POST',
@@ -100,7 +98,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    console.log('Logging out user');
     localStorage.removeItem('token');
     setUser(null);
     setIsEmployee(false);
@@ -108,7 +105,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   if (loading) {
-    console.log('Auth provider still loading');
     return <div>Loading...</div>;
   }
 
