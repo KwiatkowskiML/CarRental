@@ -2,48 +2,73 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { Page } from '../layout/Page';
 import WorkerRentalCard from './WorkerRentalCard';
-import { SearchForm } from './SearchForm';
+import { WorkerSearchFilters } from './WorkerSearchFilters';
 
 export function WorkerRentalsView() {
     const [rentals, setRentals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filters, setFilters] = useState({
-        status: '',
         brand: '',
-        model: ''
+        model: '',
+        status: ''
     });
+
+    const [availableFilters, setAvailableFilters] = useState({
+        brands: [],
+        models: []
+    });
+
     const { user } = useAuth();
 
-    const fetchRentals = async (currentFilters) => {
+    useEffect(() => {
+        const fetchFilterOptions = async () => {
+            try {
+                const response = await fetch('/api/Cars', {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const cars = await response.json();
+                    setAvailableFilters({
+                        brands: [...new Set(cars.map(car => car.brand))].sort(),
+                        models: [...new Set(cars
+                            .filter(car => !filters.brand || car.brand === filters.brand)
+                            .map(car => car.model))
+                        ].sort()
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching filter options:', err);
+            }
+        };
+
+        fetchFilterOptions();
+    }, [user.token, filters.brand]);
+
+    const fetchRentals = async () => {
         try {
             setLoading(true);
             const queryParams = new URLSearchParams();
 
-            if (currentFilters.status) {
+            if (filters.brand) {
+                queryParams.append('brand', filters.brand);
+            }
+            if (filters.model) {
+                queryParams.append('model', filters.model);
+            }
+            if (filters.status) {
                 let statusId;
-                switch (currentFilters.status) {
-                    case 'confirmed':
-                        statusId = 1;
-                        break;
-                    case 'pending':
-                        statusId = 2;
-                        break;
-                    case 'completed':
-                        statusId = 3;
-                        break;
+                switch (filters.status) {
+                    case 'confirmed': statusId = 1; break;
+                    case 'pending': statusId = 2; break;
+                    case 'completed': statusId = 3; break;
                 }
                 if (statusId) {
-                    queryParams.append('RentalStatus', statusId.toString());
+                    queryParams.append('rentalStatus', statusId.toString());
                 }
-            }
-
-            if (currentFilters.brand) {
-                queryParams.append('Brand', currentFilters.brand);
-            }
-
-            if (currentFilters.model) {
-                queryParams.append('Model', currentFilters.model);
             }
 
             const response = await fetch(`/api/Worker/rentals?${queryParams.toString()}`, {
@@ -59,7 +84,6 @@ export function WorkerRentalsView() {
             const data = await response.json();
             setRentals(data);
         } catch (err) {
-            console.error('Error in fetchRentals:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -67,17 +91,15 @@ export function WorkerRentalsView() {
     };
 
     useEffect(() => {
-        fetchRentals(filters);
-    }, [filters.status]);
+        fetchRentals();
+    }, [filters]);
 
-    const handleSearch = (searchValues) => {
-        const newFilters = {
-            ...filters,
-            brand: searchValues.brand,
-            model: searchValues.model
-        };
-        setFilters(newFilters);
-        fetchRentals(newFilters);
+    const handleBrandChange = (brand) => {
+        setFilters(prev => ({ ...prev, brand, model: '' }));
+    };
+
+    const handleModelChange = (model) => {
+        setFilters(prev => ({ ...prev, model }));
     };
 
     const handleStatusChange = (e) => {
@@ -86,17 +108,30 @@ export function WorkerRentalsView() {
 
     return (
         <Page>
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-6">Rental History</h1>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+                <div style={{ marginBottom: '24px' }}>
+                    <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>
+                        Lista Wynajmów
+                    </h1>
 
-                    <div className="space-y-4">
-                        <SearchForm onSearch={handleSearch} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <WorkerSearchFilters
+                            filters={filters}
+                            onBrandChange={handleBrandChange}
+                            onModelChange={handleModelChange}
+                            availableBrands={availableFilters.brands}
+                            availableModels={availableFilters.models}
+                        />
 
                         <select
                             value={filters.status}
                             onChange={handleStatusChange}
-                            className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
+                            style={{
+                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid #ddd',
+                                minWidth: '150px'
+                            }}
                         >
                             <option value="">All statuses</option>
                             <option value="confirmed">Confirmed</option>
@@ -107,22 +142,20 @@ export function WorkerRentalsView() {
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-12">
-                        <div className="text-xl">Loading...</div>
-                    </div>
+                    <div style={{ textAlign: 'center', padding: '48px 0' }}>Loading...</div>
                 ) : rentals.length > 0 ? (
-                    <div className="space-y-6">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {rentals.map((rental) => (
                             <WorkerRentalCard
                                 key={rental.rentalId}
                                 rental={rental}
-                                onStatusUpdate={() => fetchRentals(filters)}
+                                onStatusUpdate={fetchRentals}
                             />
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-12 bg-white rounded-lg shadow">
-                        <p className="text-gray-500">No rentals matching your search criteria.</p>
+                    <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                        <p>No rentals matching your search criteria.</p>
                     </div>
                 )}
             </div>

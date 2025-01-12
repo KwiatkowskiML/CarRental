@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ReturnConfirmationDialog } from './ReturnConfirmationDialog';
 import { useAuth } from '../../auth/AuthContext';
 import { Button } from '../ui/Button';
@@ -8,49 +8,14 @@ function WorkerRentalCard({ rental, onStatusUpdate }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [employeeId, setEmployeeId] = useState(null);
 
     const { offer } = rental;
     const { car, startDate, endDate, totalPrice, hasGps, hasChildSeat, insurance } = offer;
     const { brand, model, year, description, carProvider } = car;
 
-    // Fetch employee ID when component mounts
-    useEffect(() => {
-        const fetchEmployeeId = async () => {
-            try {
-                const response = await fetch('/api/User/current', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${user.token}`,
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache'
-                    },
-                    cache: 'no-store'
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setEmployeeId(data.userId);
-                }
-            } catch (err) {
-                console.error('Error fetching employee ID:', err);
-                setError('Failed to fetch employee information');
-            }
-        };
-
-        fetchEmployeeId();
-    }, [user.token]);
-
     const handleAcceptReturn = async (returnData) => {
         setIsSubmitting(true);
         setError(null);
-
-        const requestBody = {
-            rentalId: rental.rentalId,
-            employeeId: employeeId,
-            conditionDescription: returnData.conditionDescription,
-            photoUrl: returnData.photoUrl,
-            returnDate: returnData.returnDate
-        };
 
         try {
             const response = await fetch('/api/Worker/accept-return', {
@@ -59,22 +24,20 @@ function WorkerRentalCard({ rental, onStatusUpdate }) {
                     'Authorization': `Bearer ${user.token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({
+                    ...returnData,
+                    rentalId: rental.rentalId
+                })
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Failed to accept return');
+                throw new Error('Failed to accept return');
             }
 
             setIsDialogOpen(false);
-
-            if (onStatusUpdate) {
-                onStatusUpdate();
-            }
+            onStatusUpdate();
         } catch (err) {
-            console.error('Error accepting return:', err);
-            setError(err.message || 'Failed to accept return. Please try again.');
+            setError(err.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -96,10 +59,16 @@ function WorkerRentalCard({ rental, onStatusUpdate }) {
     };
 
     return (
-        <div className="rental-card" style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+        <div style={{
+            border: '1px solid #ddd',
+            borderRadius: '8px',
+            padding: '16px',
+            backgroundColor: 'white',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                    <h2 style={{ marginBottom: '12px', fontSize: '24px' }}>
+                    <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>
                         {brand} {model} ({year})
                     </h2>
                     <div style={{
@@ -114,42 +83,41 @@ function WorkerRentalCard({ rental, onStatusUpdate }) {
                         {rental.rentalStatus?.description || 'Unknown'}
                     </div>
                 </div>
+
                 {rental.rentalStatus?.description === 'Pending return' && (
                     <Button
-                        variant="primary"
                         onClick={() => setIsDialogOpen(true)}
                         disabled={isSubmitting}
-                        style={{ minWidth: '120px' }}
                     >
                         Accept Return
                     </Button>
                 )}
-
-                <ReturnConfirmationDialog
-                    isOpen={isDialogOpen}
-                    onClose={() => setIsDialogOpen(false)}
-                    onConfirm={handleAcceptReturn}
-                    isSubmitting={isSubmitting}
-                />
             </div>
 
-            {description && (
-                <div style={{ marginBottom: '8px', color: '#666' }}>
-                    {description}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                <div>
+                    <DetailRow label="Start Date" value={new Date(startDate).toLocaleDateString()} />
+                    <DetailRow label="End Date" value={new Date(endDate).toLocaleDateString()} />
+                    <DetailRow label="Total Price" value={`${totalPrice.toFixed(2)} PLN`} />
                 </div>
-            )}
-
-            <div style={detailsGridStyle}>
-                <DetailRow label="Start Date" value={new Date(startDate).toLocaleDateString()} />
-                <DetailRow label="End Date" value={new Date(endDate).toLocaleDateString()} />
-                <DetailRow label="Total Price" value={`${totalPrice.toFixed(2)} PLN`} />
-                <DetailRow label="GPS" value={hasGps ? 'Yes' : 'No'} />
-                <DetailRow label="Child Seat" value={hasChildSeat ? 'Yes' : 'No'} />
-                <DetailRow label="Insurance" value={insurance ? insurance.name : 'None'} />
-                <DetailRow label="Provider" value={carProvider.name} />
-                <DetailRow label="Contact" value={carProvider.contactEmail} />
-                <DetailRow label="Rental ID" value={rental.rentalId} />
+                <div>
+                    <DetailRow label="GPS" value={hasGps ? 'Yes' : 'No'} />
+                    <DetailRow label="Child Seat" value={hasChildSeat ? 'Yes' : 'No'} />
+                    <DetailRow label="Insurance" value={insurance ? insurance.name : 'None'} />
+                </div>
+                <div>
+                    <DetailRow label="Provider" value={carProvider.name} />
+                    <DetailRow label="Contact" value={carProvider.contactEmail} />
+                    <DetailRow label="Rental ID" value={rental.rentalId} />
+                </div>
             </div>
+
+            <ReturnConfirmationDialog
+                isOpen={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+                onConfirm={handleAcceptReturn}
+                isSubmitting={isSubmitting}
+            />
 
             {error && (
                 <div style={{
@@ -168,7 +136,7 @@ function WorkerRentalCard({ rental, onStatusUpdate }) {
 
 function DetailRow({ label, value }) {
     return (
-        <div style={{ marginBottom: '4px' }}>
+        <div style={{ marginBottom: '8px' }}>
             <span style={{ fontWeight: 'bold', marginRight: '8px', color: '#666' }}>
                 {label}:
             </span>
@@ -176,21 +144,5 @@ function DetailRow({ label, value }) {
         </div>
     );
 }
-
-const cardStyle = {
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '16px',
-    margin: '16px 0',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    backgroundColor: 'white'
-};
-
-const detailsGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '12px',
-    marginTop: '16px'
-};
 
 export default WorkerRentalCard;
