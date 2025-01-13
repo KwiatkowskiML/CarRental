@@ -50,7 +50,7 @@ function NavBar() {
                     ':hover': { backgroundColor: '#f0f0f0' }
                   }}
                 >
-                  Rentals
+                  Rentals Management
                 </Link>
               ) : (
                 <>
