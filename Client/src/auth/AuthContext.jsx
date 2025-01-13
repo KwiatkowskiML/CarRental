@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
     setIsEmployee(false);
-    navigate('/login');
+    navigate('/');
   };
 
   if (loading) {
