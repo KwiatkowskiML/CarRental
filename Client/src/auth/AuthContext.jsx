@@ -15,12 +15,13 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       setUser({ token });
       checkUserRole(token);
-    } else {
     }
     setLoading(false);
   }, []);
 
   const checkUserRole = async (token) => {
+    if (!token) return;
+
     try {
       const userResponse = await fetch('/api/User/current', {
         headers: {
@@ -29,9 +30,15 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!userResponse.ok) {
-        console.error('Failed to get user data:', userResponse.status);
+        if (userResponse.status === 401) {
+          localStorage.removeItem('token');
+          setUser(null);
+          setIsEmployee(false);
+          return;
+        }
         throw new Error('Failed to get user');
       }
+
       const userData = await userResponse.json();
 
       try {
@@ -41,20 +48,13 @@ export const AuthProvider = ({ children }) => {
           }
         });
 
-        if (!customerResponse.ok) {
-          setIsEmployee(true);
-          if (location.pathname === '/' || location.pathname === '/login') {
-            navigate('/worker/rentals');
-          }
-        } else {
-          setIsEmployee(false);
-          if (location.pathname === '/' || location.pathname === '/login') {
-            navigate('/');
-          }
+        setIsEmployee(!customerResponse.ok);
+        if (location.pathname === '/') {
+          navigate(customerResponse.ok ? '/' : '/worker/rentals');
         }
       } catch (error) {
         setIsEmployee(true);
-        if (location.pathname === '/' || location.pathname === '/login') {
+        if (location.pathname === '/') {
           navigate('/worker/rentals');
         }
       }

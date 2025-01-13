@@ -45,15 +45,16 @@ function App() {
             <NavBar />
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/" element={<CarList />} />
 
               {/* Customer Routes */}
-              <Route path="/" element={
+              {/* <Route path="/" element={
                 <AuthGuard>
                   <CustomerRoute>
                     <CarList />
                   </CustomerRoute>
                 </AuthGuard>
-              } />
+              } /> */}
               <Route path="/cars/:carId" element={
                 <AuthGuard>
                   <CustomerRoute>

@@ -111,7 +111,7 @@ export function WorkerRentalsView() {
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
                 <div style={{ marginBottom: '24px' }}>
                     <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>
-                        Lista Wynajmów
+                        Rental History
                     </h1>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

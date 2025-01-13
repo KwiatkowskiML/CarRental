@@ -1,54 +1,118 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { Button } from '../ui/Button';
 
 function NavBar() {
   const { user, logout, isEmployee } = useAuth();
-
-  useEffect(() => {
-  }, [user, isEmployee]);
 
   return (
     <nav style={{
       padding: '1rem',
       backgroundColor: '#f8f9fa',
       borderBottom: '1px solid #dee2e6',
-      marginBottom: '2rem',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
+      marginBottom: '2rem'
     }}>
-      <div style={{ fontWeight: 'bold' }}>Car Rental</div>
-      {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {isEmployee ? (
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <Link
+          to="/"
+          style={{
+            fontWeight: 'bold',
+            color: '#8B4513',
+            fontSize: '1.5rem',
+            textDecoration: 'none'
+          }}
+        >
+          Car Rental
+        </Link>
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem'
+        }}>
+          {user ? (
             <>
-              <Link to="/worker/rentals" style={{ textDecoration: 'none', color: 'black' }}>Rentals</Link>
+              {isEmployee ? (
+                <Link
+                  to="/worker/rentals"
+                  style={{
+                    textDecoration: 'none',
+                    color: '#333',
+                    padding: '0.5rem',
+                    borderRadius: '0.25rem',
+                    ':hover': { backgroundColor: '#f0f0f0' }
+                  }}
+                >
+                  Rentals
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/"
+                    style={{
+                      textDecoration: 'none',
+                      color: '#333',
+                      padding: '0.5rem',
+                      borderRadius: '0.25rem'
+                    }}
+                  >
+                    Browse
+                  </Link>
+                  <Link
+                    to="/rental/history"
+                    style={{
+                      textDecoration: 'none',
+                      color: '#333',
+                      padding: '0.5rem',
+                      borderRadius: '0.25rem'
+                    }}
+                  >
+                    Rental History
+                  </Link>
+                </>
+              )}
+              <span style={{ color: '#666' }}>Welcome!</span>
+              <Button
+                onClick={logout}
+                style={{
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.25rem',
+                  cursor: 'pointer',
+                  ':hover': { backgroundColor: '#c82333' }
+                }}
+              >
+                Logout
+              </Button>
             </>
           ) : (
-            <>
-              <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Browser</Link>
-              <Link to="/rental/history" style={{ textDecoration: 'none', color: 'black' }}>Rental History</Link>
-            </>
+            <Link to="/login">
+              <Button
+                style={{
+                  backgroundColor: '#8B4513',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.25rem',
+                  cursor: 'pointer',
+                  ':hover': { backgroundColor: '#704012' }
+                }}
+              >
+                Login
+              </Button>
+            </Link>
           )}
-          <span>Welcome!</span>
-          <button
-            onClick={() => {
-              logout();
-            }}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Logout
-          </button>
         </div>
-      )}
+      </div>
     </nav>
   );
 }
