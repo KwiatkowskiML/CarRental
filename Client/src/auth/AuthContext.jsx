@@ -12,9 +12,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+
     if (token) {
       setUser({ token });
-      checkUserRole(token);
+      if (redirectUrl) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectUrl);
+      } else {
+        checkUserRole(token);
+      }
     }
     setLoading(false);
   }, []);
@@ -65,6 +72,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (googleToken) => {
     try {
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
       const response = await fetch('/api/Auth/google', {
         method: 'POST',
         headers: {
@@ -78,18 +86,44 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 404 && data.needsRegistration) {
         return {
           needsRegistration: true,
-          userData: data.userData
+          userData: data.userData,
         };
-      }
-
-      if (!response.ok) {
-        console.error('Login failed:', response.status);
-        throw new Error('Login failed');
       }
 
       localStorage.setItem('token', data.token);
       setUser({ token: data.token });
-      await checkUserRole(data.token);
+
+      const userResponse = await fetch('/api/User/current', {
+        headers: {
+          'Authorization': `Bearer ${data.token}`
+        }
+      });
+      const userData = await userResponse.json();
+
+      try {
+        const customerResponse = await fetch(`/api/Customer/id?userId=${userData.userId}`, {
+          headers: {
+            'Authorization': `Bearer ${data.token}`
+          }
+        });
+
+        const isEmployee = !customerResponse.ok;
+        setIsEmployee(isEmployee);
+
+        if (isEmployee) {
+          navigate('/worker/rentals');
+        } else if (redirectUrl) {
+          navigate(redirectUrl);
+          localStorage.removeItem('redirectAfterLogin');
+        } else {
+          navigate('/');
+        }
+
+      } catch (error) {
+        setIsEmployee(true);
+        navigate('/worker/rentals');
+      }
+
       return { token: data.token };
     } catch (error) {
       console.error('Login error:', error);

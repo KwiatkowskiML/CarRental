@@ -47,15 +47,13 @@ function App() {
                   <CarList />
                 </CustomerRoute>
               } />
+              <Route path="/cars/:carId" element={
+                <CustomerRoute allowUnauthorized>
+                  <CarDetails />
+                </CustomerRoute>
+              } />
 
               {/* Customer Routes - require auth */}
-              <Route path="/cars/:carId" element={
-                <AuthGuard>
-                  <CustomerRoute>
-                    <CarDetails />
-                  </CustomerRoute>
-                </AuthGuard>
-              } />
               <Route path="/rental-confirm" element={
                 <AuthGuard>
                   <CustomerRoute>

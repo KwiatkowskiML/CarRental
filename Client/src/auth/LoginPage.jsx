@@ -12,21 +12,29 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectUrl);
+      } else {
+        navigate('/');
+      }
     }
   }, [user, navigate]);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      console.log("At login start, redirect URL:", redirectUrl);
+
       const result = await login(credentialResponse.credential);
       if (result.needsRegistration) {
         setGoogleData({
           ...result.userData,
-          token: credentialResponse.credential
+          token: credentialResponse.credential,
+          redirectUrl
         });
         setShowRegistration(true);
-      } else if (result.token) {
-        navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -41,17 +49,17 @@ export const LoginPage = () => {
   };
 
   if (showRegistration) {
-    return <RegistrationForm 
-      googleData={googleData} 
+    return <RegistrationForm
+      googleData={googleData}
       onRegistrationComplete={handleRegistrationComplete}
     />;
   }
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
       minHeight: '100vh',
       backgroundColor: '#f5f5f5'
     }}>
