@@ -54,6 +54,21 @@ check_requirements() {
     }
 }
 
+# Run .NET tests
+run_tests() {
+    log "Running .NET tests..."
+
+    # Run tests with detailed output
+    log "Executing tests..."
+    dotnet test --no-restore --verbosity normal || {
+        error "Tests failed"
+        return 1
+    }
+    
+    log "All tests passed successfully"
+    return 0
+}
+
 # Deploy backend
 deploy_backend() {
     log "Starting backend deployment..."
@@ -136,6 +151,12 @@ main() {
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         log "Deployment cancelled"
+        exit 1
+    fi
+    
+    # Run tests first
+    if ! run_tests; then
+        error "Tests failed - aborting deployment"
         exit 1
     fi
 
