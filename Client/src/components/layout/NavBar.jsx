@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 
 function NavBar() {
-  const { user, logout } = useAuth();
+  const { user, logout, isEmployee } = useAuth();
+
+  useEffect(() => {
+  }, [user, isEmployee]);
 
   return (
     <nav style={{
@@ -18,12 +21,21 @@ function NavBar() {
       <div style={{ fontWeight: 'bold' }}>Car Rental</div>
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Browser</Link>
-          <Link to="/rental/history" style={{ textDecoration: 'none', color: 'black' }}>Rental History</Link>
-          <Link to="/worker/rentals" style={{ textDecoration: 'none', color: 'black' }}>Worker View</Link>
+          {isEmployee ? (
+            <>
+              <Link to="/worker/rentals" style={{ textDecoration: 'none', color: 'black' }}>Rentals</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Browser</Link>
+              <Link to="/rental/history" style={{ textDecoration: 'none', color: 'black' }}>Rental History</Link>
+            </>
+          )}
           <span>Welcome!</span>
           <button
-            onClick={logout}
+            onClick={() => {
+              logout();
+            }}
             style={{
               padding: '0.5rem 1rem',
               backgroundColor: '#dc3545',

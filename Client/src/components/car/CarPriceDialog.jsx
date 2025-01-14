@@ -3,8 +3,8 @@ import { Button } from '../ui/Button';
 import { useAuth } from '../../auth/AuthContext';
 
 const INSURANCE_TYPES = [
-  { insurance_id: 1, name: 'Standard Insurance', price: 50.00 },
-  { insurance_id: 2, name: 'Full Insurance', price: 100.00 }
+  { insurance_id: 1, name: 'Standard Insurance' },
+  { insurance_id: 2, name: 'Full Insurance' }
 ];
 
 export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
@@ -23,13 +23,12 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
     setError(null);
 
     try {
-      // Get user ID from backend using the token
       const userResponse = await fetch('/api/User/current', {
         method: 'GET',
         headers: {
-            'Authorization': `Bearer ${user.token}`,
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+          'Authorization': `Bearer ${user.token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         },
         cache: 'no-store'
       });
@@ -49,8 +48,16 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
         userId: userData.userId
       };
 
-      await onSubmit(formData);
-      onClose();
+      try {
+        await onSubmit(formData);
+        onClose();
+      } catch (submitError) {
+        if (submitError.message?.includes('not available for the selected dates')) {
+          setError('Car is not available for the selected dates. Please choose different dates for your rental period.');
+        } else {
+          throw submitError;
+        }
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       setError('Failed to submit form. Please try again.');
@@ -83,36 +90,43 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
         width: '100%',
         maxWidth: '500px'
       }}>
-        <h2 style={{ marginBottom: '20px' }}>Dodatkowe opcje</h2>
-        
+        <h2 style={{ marginBottom: '20px' }}>Rental Options</h2>
+
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px' }}>
-              Data rozpoczęcia:*
+              Start Date:*
             </label>
             <input
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                setError(null);
+              }}
               style={{
                 width: '100%',
                 padding: '8px',
                 borderRadius: '4px',
                 border: '1px solid #ddd'
               }}
+              min={new Date().toISOString().split('T')[0]}
               required
             />
           </div>
 
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px' }}>
-              Data zakończenia:*
+              End Date:*
             </label>
             <input
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              min={startDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                setError(null);
+              }}
+              min={startDate || new Date().toISOString().split('T')[0]}
               style={{
                 width: '100%',
                 padding: '8px',
@@ -125,11 +139,14 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
 
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px' }}>
-              Typ ubezpieczenia:*
+              Insurance Type:*
             </label>
             <select
               value={insuranceId}
-              onChange={(e) => setInsuranceId(e.target.value)}
+              onChange={(e) => {
+                setInsuranceId(e.target.value);
+                setError(null);
+              }}
               style={{
                 width: '100%',
                 padding: '8px',
@@ -138,7 +155,7 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
               }}
               required
             >
-              <option value="">Wybierz ubezpieczenie</option>
+              <option value="">Select Insurance</option>
               {INSURANCE_TYPES.map(insurance => (
                 <option key={insurance.insurance_id} value={insurance.insurance_id}>
                   {insurance.name}
@@ -148,37 +165,51 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'flex', 
+            <label style={{
+              display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}>
               <input
                 type="checkbox"
                 checked={hasGps}
-                onChange={(e) => setHasGps(e.target.checked)}
+                onChange={(e) => setHasGps(e.checked)}
               />
-              GPS
+              GPS Navigation
             </label>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'flex', 
+            <label style={{
+              display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}>
               <input
                 type="checkbox"
                 checked={hasChildSeat}
-                onChange={(e) => setHasChildSeat(e.target.checked)}
+                onChange={(e) => setHasChildSeat(e.checked)}
               />
-              Fotelik dla dziecka
+              Child Seat
             </label>
           </div>
 
-          <div style={{ 
-            display: 'flex', 
+          {error && (
+            <div style={{
+              padding: '16px',
+              backgroundColor: '#fee2e2',
+              border: '1px solid #dc2626',
+              borderRadius: '4px',
+              marginBottom: '16px'
+            }}>
+              <p style={{ color: '#dc2626' }}>
+                {error}
+              </p>
+            </div>
+          )}
+
+          <div style={{
+            display: 'flex',
             justifyContent: 'flex-end',
             gap: '12px'
           }}>
@@ -187,14 +218,14 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
               variant="secondary"
               onClick={onClose}
             >
-              Anuluj
+              Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
-              disabled={!isFormValid}
+              disabled={!isFormValid || loading}
             >
-              Zapytaj o cenę
+              {loading ? 'Processing...' : 'Get Price'}
             </Button>
           </div>
         </form>
