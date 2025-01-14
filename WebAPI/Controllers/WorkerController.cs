@@ -77,7 +77,7 @@ namespace WebAPI.Controllers
                     return BadRequest("Invalid file type");
 
                 // Validate file size (5MB)
-                if (file.Length > 5 * 1024 * 1024)
+                if (file.Length > 100 * 1024 * 1024)
                     return BadRequest("File size exceeds limit");
 
                 // Generate unique filename

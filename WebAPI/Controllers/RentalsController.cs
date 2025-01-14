@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.filters;
 using WebAPI.Mappers;
+using WebAPI.Exceptions;
 using WebAPI.Requests;
 using WebAPI.Services.Interfaces;
 
@@ -192,6 +193,32 @@ public class RentalsController : ControllerBase
         {
             _logger.LogError(ex, "Error confirming rental");
             return StatusCode(500, "An error occurred while confirming the rental");
+        }
+    }
+
+    [HttpGet("{rentalId}/return-info")]
+    public async Task<IActionResult> GetReturnInfo(int rentalId)
+    {
+        try
+        {
+            var rentalFilter = new RentalFilter { RentalId = rentalId };
+            var rentals = await _unitOfWork.RentalsRepository.GetRentalsAsync(rentalFilter);
+
+            if (!rentals.Any())
+                return NotFound($"Rental with ID {rentalId} not found");
+
+            var rental = rentals.First();
+            var latestReturn = rental.Returns.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
+
+            if (latestReturn == null)
+                return NotFound($"No return found for rental {rentalId}");
+
+            return Ok(ReturnMapper.ToDto(latestReturn));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching return information for rental {RentalId}", rentalId);
+            return StatusCode(500, "An error occurred while fetching return information");
         }
     }
 }
