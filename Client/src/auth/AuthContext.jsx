@@ -12,15 +12,23 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+
     if (token) {
       setUser({ token });
-      checkUserRole(token);
-    } else {
+      if (redirectUrl) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectUrl);
+      } else {
+        checkUserRole(token);
+      }
     }
     setLoading(false);
   }, []);
 
   const checkUserRole = async (token) => {
+    if (!token) return;
+
     try {
       const userResponse = await fetch('/api/User/current', {
         headers: {
@@ -29,9 +37,15 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!userResponse.ok) {
-        console.error('Failed to get user data:', userResponse.status);
+        if (userResponse.status === 401) {
+          localStorage.removeItem('token');
+          setUser(null);
+          setIsEmployee(false);
+          return;
+        }
         throw new Error('Failed to get user');
       }
+
       const userData = await userResponse.json();
 
       try {
@@ -41,20 +55,13 @@ export const AuthProvider = ({ children }) => {
           }
         });
 
-        if (!customerResponse.ok) {
-          setIsEmployee(true);
-          if (location.pathname === '/' || location.pathname === '/login') {
-            navigate('/worker/rentals');
-          }
-        } else {
-          setIsEmployee(false);
-          if (location.pathname === '/' || location.pathname === '/login') {
-            navigate('/');
-          }
+        setIsEmployee(!customerResponse.ok);
+        if (location.pathname === '/') {
+          navigate(customerResponse.ok ? '/' : '/worker/rentals');
         }
       } catch (error) {
         setIsEmployee(true);
-        if (location.pathname === '/' || location.pathname === '/login') {
+        if (location.pathname === '/') {
           navigate('/worker/rentals');
         }
       }
@@ -65,6 +72,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (googleToken) => {
     try {
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
       const response = await fetch('/api/Auth/google', {
         method: 'POST',
         headers: {
@@ -78,18 +86,44 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 404 && data.needsRegistration) {
         return {
           needsRegistration: true,
-          userData: data.userData
+          userData: data.userData,
         };
-      }
-
-      if (!response.ok) {
-        console.error('Login failed:', response.status);
-        throw new Error('Login failed');
       }
 
       localStorage.setItem('token', data.token);
       setUser({ token: data.token });
-      await checkUserRole(data.token);
+
+      const userResponse = await fetch('/api/User/current', {
+        headers: {
+          'Authorization': `Bearer ${data.token}`
+        }
+      });
+      const userData = await userResponse.json();
+
+      try {
+        const customerResponse = await fetch(`/api/Customer/id?userId=${userData.userId}`, {
+          headers: {
+            'Authorization': `Bearer ${data.token}`
+          }
+        });
+
+        const isEmployee = !customerResponse.ok;
+        setIsEmployee(isEmployee);
+
+        if (isEmployee) {
+          navigate('/worker/rentals');
+        } else if (redirectUrl) {
+          navigate(redirectUrl);
+          localStorage.removeItem('redirectAfterLogin');
+        } else {
+          navigate('/');
+        }
+
+      } catch (error) {
+        setIsEmployee(true);
+        navigate('/worker/rentals');
+      }
+
       return { token: data.token };
     } catch (error) {
       console.error('Login error:', error);
@@ -101,7 +135,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
     setIsEmployee(false);
-    navigate('/login');
+    navigate('/');
   };
 
   if (loading) {

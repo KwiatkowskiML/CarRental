@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Button } from '../ui/Button';
 import { CarPriceDialog } from './CarPriceDialog';
 
 export function CarDetails() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { carId } = useParams();
   const { user } = useAuth();
   const [car, setCar] = useState(null);
@@ -15,7 +17,6 @@ export function CarDetails() {
   const [offerDetails, setOfferDetails] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   // Fetch current user data
   useEffect(() => {
@@ -45,11 +46,7 @@ export function CarDetails() {
   }, [user]);
 
   useEffect(() => {
-    fetch('/api/Cars', {
-      headers: {
-        'Authorization': `Bearer ${user.token}`
-      }
-    })
+    fetch('/api/Cars')
       .then(res => res.json())
       .then(data => {
         const foundCar = data.find(car => car.carId === parseInt(carId));
@@ -60,7 +57,17 @@ export function CarDetails() {
         console.error('Error fetching cars:', error);
         setLoading(false);
       });
-  }, [carId, user.token]);
+  }, [carId]);
+
+  const handleCheckAvailability = () => {
+    if (!user) {
+      const redirectUrl = location.pathname;
+      localStorage.setItem('redirectAfterLogin', redirectUrl);
+      setTimeout(() => navigate('/login'), 0);
+      return;
+    }
+    setIsDialogOpen(true);
+  };
 
   const handleGetOffer = async (options) => {
     setError(null);
@@ -255,7 +262,7 @@ export function CarDetails() {
             ) : (
               <Button
                 variant="primary"
-                onClick={() => setIsDialogOpen(true)}
+                onClick={handleCheckAvailability}
               >
                 Check Availability & Price
               </Button>
@@ -265,7 +272,7 @@ export function CarDetails() {
       </div>
 
       <CarPriceDialog
-        isOpen={isDialogOpen}
+        isOpen={isDialogOpen && user}
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleGetOffer}
       />

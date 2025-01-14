@@ -6,19 +6,20 @@ import { CarCard } from './CarCard';
 import { Pagination } from './Pagination';
 
 export function CarList() {
+  const { user } = useAuth();
   const [cars, setCars] = useState([]);
   const [filteredCars, setFilteredCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const carsPerPage = 5;
-  const { user } = useAuth();
 
   useEffect(() => {
-    fetch('/api/Cars', {
-      headers: {
-        'Authorization': `Bearer ${user.token}`
-      }
-    })
+    const headers = {};
+    if (user?.token) {
+      headers.Authorization = `Bearer ${user.token}`;
+    }
+
+    fetch('/api/Cars', { headers })
       .then(res => res.json())
       .then(data => {
         const availableCars = data.filter(car => car.status === 'available');
@@ -30,7 +31,7 @@ export function CarList() {
         console.error('Error fetching cars:', error);
         setLoading(false);
       });
-  }, [user.token]);
+  }, [user]);
 
   const handleSearch = (filters) => {
     let filtered = [...cars];
@@ -39,7 +40,7 @@ export function CarList() {
       const searchTerms = filters.searchText.toLowerCase().split(' ');
       filtered = filtered.filter(car => {
         const carFullName = `${car.brand} ${car.model}`.toLowerCase();
-        return searchTerms.every(term => 
+        return searchTerms.every(term =>
           carFullName.includes(term) ||
           car.brand.toLowerCase().includes(term) ||
           car.model.toLowerCase().includes(term)
@@ -90,10 +91,10 @@ export function CarList() {
   return (
     <Page>
       <h1>Available Cars</h1>
-      
+
       <SearchBar cars={cars} onSearch={handleSearch} />
 
-      <div style={{ 
+      <div style={{
         display: 'flex',
         flexDirection: 'column',
         gap: '20px',
@@ -104,7 +105,7 @@ export function CarList() {
             {currentCars.map(car => (
               <CarCard key={car.carId} car={car} />
             ))}
-            
+
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

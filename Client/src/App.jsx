@@ -32,11 +32,6 @@ const EmployeeRoute = ({ children }) => {
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-  if (!clientId) {
-    console.error('Google Client ID not found in environment variables');
-    return <div>Error: Google Client ID not configured</div>;
-  }
-
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <BrowserRouter>
@@ -46,21 +41,19 @@ function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
 
-              {/* Customer Routes */}
+              {/* Public route - accessible to unauthorized users and customers */}
               <Route path="/" element={
-                <AuthGuard>
-                  <CustomerRoute>
-                    <CarList />
-                  </CustomerRoute>
-                </AuthGuard>
+                <CustomerRoute allowUnauthorized>
+                  <CarList />
+                </CustomerRoute>
               } />
               <Route path="/cars/:carId" element={
-                <AuthGuard>
-                  <CustomerRoute>
-                    <CarDetails />
-                  </CustomerRoute>
-                </AuthGuard>
+                <CustomerRoute allowUnauthorized>
+                  <CarDetails />
+                </CustomerRoute>
               } />
+
+              {/* Customer Routes - require auth */}
               <Route path="/rental-confirm" element={
                 <AuthGuard>
                   <CustomerRoute>
