@@ -108,7 +108,7 @@ export function SearchBar({ onSearch }) {
     >
       <input
         type="text"
-        placeholder="Search by brand and model (e.g. 'BMW M3')"
+        placeholder="Search by brand or model"
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
         style={{
