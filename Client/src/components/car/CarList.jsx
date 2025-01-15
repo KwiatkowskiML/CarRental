@@ -8,77 +8,82 @@ import { Pagination } from './Pagination';
 export function CarList() {
   const { user } = useAuth();
   const [cars, setCars] = useState([]);
-  const [filteredCars, setFilteredCars] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const carsPerPage = 5;
 
-  useEffect(() => {
-    const headers = {};
-    if (user?.token) {
-      headers.Authorization = `Bearer ${user.token}`;
-    }
+  const fetchCars = async (filters = {}) => {
+    setLoading(true);
+    setError(null);
 
-    fetch('/api/Cars', { headers })
-      .then(res => res.json())
-      .then(data => {
-        const availableCars = data.filter(car => car.status === 'available');
-        setCars(availableCars);
-        setFilteredCars(availableCars);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching cars:', error);
-        setLoading(false);
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters.brand) {
+        queryParams.append('brand', filters.brand);
+      }
+      if (filters.model) {
+        queryParams.append('model', filters.model);
+      }
+      if (filters.minYear) {
+        queryParams.append('minYear', filters.minYear.toString());
+      }
+      if (filters.maxYear) {
+        queryParams.append('maxYear', filters.maxYear.toString());
+      }
+      if (filters.fuelType) {
+        queryParams.append('fuelType', filters.fuelType);
+      }
+      if (filters.location) {
+        queryParams.append('location', filters.location);
+      }
+
+      const headers = {};
+      if (user?.token) {
+        headers.Authorization = `Bearer ${user.token}`;
+      }
+
+      const response = await fetch(`/api/Cars?${queryParams.toString()}`, {
+        headers
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch cars');
+      }
+
+      const data = await response.json();
+      setCars(data.filter(car => car.status === 'available'));
+      setCurrentPage(1);
+    } catch (err) {
+      setError('Error fetching cars. Please try again.');
+      console.error('Error fetching cars:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCars();
   }, [user]);
 
   const handleSearch = (filters) => {
-    let filtered = [...cars];
+    const apiFilters = {
+      brand: filters.brand || '',
+      model: filters.model || '',
+      fuelType: filters.fuelType || '',
+      location: filters.location || '',
+      minYear: filters.year ? parseInt(filters.year) : null,
+      maxYear: filters.year ? parseInt(filters.year) : null
+    };
 
-    if (filters.searchText) {
-      const searchTerms = filters.searchText.toLowerCase().split(' ');
-      filtered = filtered.filter(car => {
-        const carFullName = `${car.brand} ${car.model}`.toLowerCase();
-        return searchTerms.every(term =>
-          carFullName.includes(term) ||
-          car.brand.toLowerCase().includes(term) ||
-          car.model.toLowerCase().includes(term)
-        );
-      });
-    }
-
-    if (filters.brand) {
-      filtered = filtered.filter(car => car.brand === filters.brand);
-    }
-
-    if (filters.model) {
-      filtered = filtered.filter(car => car.model === filters.model);
-    }
-
-    if (filters.year) {
-      filtered = filtered.filter(car => car.year.toString() === filters.year);
-    }
-
-    if (filters.fuelType) {
-      filtered = filtered.filter(car => car.fuelType === filters.fuelType);
-    }
-
-    if (filters.power.min !== null) {
-      filtered = filtered.filter(car => car.power >= filters.power.min);
-    }
-    if (filters.power.max !== null) {
-      filtered = filtered.filter(car => car.power <= filters.power.max);
-    }
-
-    setFilteredCars(filtered);
-    setCurrentPage(1);
+    fetchCars(apiFilters);
   };
 
   const indexOfLastCar = currentPage * carsPerPage;
   const indexOfFirstCar = indexOfLastCar - carsPerPage;
-  const currentCars = filteredCars.slice(indexOfFirstCar, indexOfLastCar);
-  const totalPages = Math.ceil(filteredCars.length / carsPerPage);
+  const currentCars = cars.slice(indexOfFirstCar, indexOfLastCar);
+  const totalPages = Math.ceil(cars.length / carsPerPage);
 
   const paginate = (pageNumber) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
@@ -86,13 +91,23 @@ export function CarList() {
     window.scrollTo(0, 0);
   };
 
-  if (loading) return <div>Loading...</div>;
-
   return (
     <Page>
       <h1>Available Cars</h1>
 
-      <SearchBar cars={cars} onSearch={handleSearch} />
+      <SearchBar onSearch={handleSearch} />
+
+      {error && (
+        <div style={{
+          padding: '12px',
+          marginBottom: '20px',
+          backgroundColor: '#fee2e2',
+          color: '#dc2626',
+          borderRadius: '4px'
+        }}>
+          {error}
+        </div>
+      )}
 
       <div style={{
         display: 'flex',
@@ -100,7 +115,9 @@ export function CarList() {
         gap: '20px',
         marginTop: '20px'
       }}>
-        {currentCars.length > 0 ? (
+        {loading ? (
+          <div>Loading...</div>
+        ) : currentCars.length > 0 ? (
           <>
             {currentCars.map(car => (
               <CarCard key={car.carId} car={car} />

@@ -2,64 +2,72 @@ import { useState, useEffect } from 'react';
 import { SearchFilters } from './SearchFilters';
 import { Button } from '../../ui/Button';
 
-export function SearchBar({ cars, onSearch }) {
-  const [searchText, setSearchText] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
-  const [selectedFuelType, setSelectedFuelType] = useState('');
-  const [powerRange, setPowerRange] = useState({
-    min: '',
-    max: ''
+export function SearchBar({ onSearch }) {
+  const [filters, setFilters] = useState({
+    brand: '',
+    model: '',
+    year: '',
+    fuelType: '',
+    location: ''
+  });
+
+  const [availableFilters, setAvailableFilters] = useState({
+    brands: [],
+    models: [],
+    years: [],
+    fuelTypes: [],
+    locations: []
   });
 
   useEffect(() => {
-    setSelectedModel('');
-  }, [selectedBrand]);
+    // Fetch initial filter options from the API
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await fetch('/api/Cars');
+        if (response.ok) {
+          const cars = await response.json();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    const filters = {
-      searchText,
-      brand: selectedBrand,
-      model: selectedModel,
-      year: selectedYear,
-      fuelType: selectedFuelType,
-      power: {
-        min: powerRange.min ? parseInt(powerRange.min) : null,
-        max: powerRange.max ? parseInt(powerRange.max) : null
+          setAvailableFilters({
+            brands: [...new Set(cars.map(car => car.brand))].sort(),
+            models: [...new Set(cars
+              .filter(car => !filters.brand || car.brand === filters.brand)
+              .map(car => car.model))
+            ].sort(),
+            years: [...new Set(cars.map(car => car.year))].sort((a, b) => b - a),
+            fuelTypes: [...new Set(cars.map(car => car.fuelType))].sort(),
+            locations: [...new Set(cars.map(car => car.location).filter(Boolean))].sort()
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching filter options:', error);
       }
     };
 
+    fetchFilterOptions();
+  }, [filters.brand]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
     onSearch(filters);
   };
 
   const handleClear = () => {
-    setSearchText('');
-    setSelectedBrand('');
-    setSelectedModel('');
-    setSelectedYear('');
-    setSelectedFuelType('');
-    setPowerRange({ min: '', max: '' });
-    
-    onSearch({
-      searchText: '',
+    setFilters({
       brand: '',
       model: '',
       year: '',
       fuelType: '',
-      power: { min: null, max: null }
+      location: ''
     });
+    onSearch({});
   };
 
   const isAnyFilterActive = () => {
-    return searchText || selectedBrand || selectedModel || selectedYear || 
-           selectedFuelType || powerRange.min || powerRange.max;
+    return Object.values(filters).some(value => value !== '');
   };
 
   return (
-    <form 
+    <form
       onSubmit={handleSubmit}
       style={{
         display: 'flex',
@@ -71,31 +79,14 @@ export function SearchBar({ cars, onSearch }) {
         borderRadius: '8px'
       }}
     >
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '4px',
-          border: '1px solid #ddd',
-          width: '100%'
-        }}
-      />
-
       <SearchFilters
-        cars={cars}
-        selectedBrand={selectedBrand}
-        selectedModel={selectedModel}
-        selectedYear={selectedYear}
-        selectedFuelType={selectedFuelType}
-        powerRange={powerRange}
-        onBrandChange={setSelectedBrand}
-        onModelChange={setSelectedModel}
-        onYearChange={setSelectedYear}
-        onFuelTypeChange={setSelectedFuelType}
-        onPowerRangeChange={setPowerRange}
+        filters={filters}
+        availableFilters={availableFilters}
+        onBrandChange={(brand) => setFilters(prev => ({ ...prev, brand, model: '' }))}
+        onModelChange={(model) => setFilters(prev => ({ ...prev, model }))}
+        onYearChange={(year) => setFilters(prev => ({ ...prev, year }))}
+        onFuelTypeChange={(fuelType) => setFilters(prev => ({ ...prev, fuelType }))}
+        onLocationChange={(location) => setFilters(prev => ({ ...prev, location }))}
       />
 
       <div style={{ display: 'flex', gap: '10px' }}>
