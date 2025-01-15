@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Google.Cloud.Storage.V1;
+using WebAPI.Constants;
 using WebAPI.Data.Models;
 using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
@@ -82,15 +83,15 @@ namespace WebAPI.Controllers
 
                 // Generate unique filename
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-                var bucketName = "car-images-dev-0"; // From storage_buckets.md
 
                 // Upload to Google Cloud Storage
                 using var stream = file.OpenReadStream();
                 var storageClient = await StorageClient.CreateAsync();
-                var obj = await storageClient.UploadObjectAsync(bucketName, fileName, file.ContentType, stream);
+                var obj = await storageClient.UploadObjectAsync(StorageConstants.BucketName, fileName, 
+                    file.ContentType, stream);
 
                 // Generate public URL
-                var publicUrl = $"https://storage.googleapis.com/{bucketName}/{fileName}";
+                var publicUrl = $"{StorageConstants.PublicUrlPrefix}/{StorageConstants.BucketName}/{fileName}";
 
                 return Ok(new { url = publicUrl });
             }
