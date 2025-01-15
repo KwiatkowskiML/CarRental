@@ -23,6 +23,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
                 .Include(r => r.Offer)
                 .ThenInclude(o => o.Car)
                 .ThenInclude(c => c!.CarProvider)
+                .Include(r => r.Returns)
                 .AsQueryable();
 
             if (filter != null && filter.CustomerId.HasValue)

@@ -61,6 +61,9 @@ cp .env.example .env
 VITE_GOOGLE_CLIENT_ID=your-client-id-from-google-console.apps.googleusercontent.com
 ```
 
+3. Make sure the target in vite.config.js is set to your desired api address.
+
+
 > ⚠️ IMPORTANT: Never commit `appsettings.json`, `appsettings.Development.json`, or `.env` files to version control as they contain sensitive information!
 
 ### Getting Google OAuth Credentials - this is running on our GCP.
@@ -134,19 +137,19 @@ The frontend will be available at http://localhost:5173
 For local development, you'll need to run both the backend and frontend:
 
 Start the database:
-bash
+```bash
 docker-compose up -d
-
+```
 Start the backend (in a new terminal):
-bash
+```bash
 cd WebAPI
 dotnet run
-
+```
 Start the frontend (in a new terminal):
-bash
+```bash
 cd Client
 npm run dev
-
+```
 
 ## Project Structure
 TODO

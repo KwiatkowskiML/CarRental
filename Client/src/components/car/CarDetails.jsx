@@ -181,8 +181,8 @@ export function CarDetails() {
         gap: '40px',
         alignItems: 'start'
       }}>
-        <img
-          src={car.images?.[0] ? car.images[0] : "/api/placeholder/400/320"}
+        <img 
+          src={car.images?.[0] ? car.images[0] : ""}
           crossOrigin="anonymous"
           alt={`${car.brand} ${car.model}`}
           style={{
