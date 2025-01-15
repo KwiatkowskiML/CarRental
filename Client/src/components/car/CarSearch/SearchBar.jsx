@@ -3,6 +3,7 @@ import { SearchFilters } from './SearchFilters';
 import { Button } from '../../ui/Button';
 
 export function SearchBar({ onSearch }) {
+  const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({
     brand: '',
     model: '',
@@ -20,7 +21,6 @@ export function SearchBar({ onSearch }) {
   });
 
   useEffect(() => {
-    // Fetch initial filter options from the API
     const fetchFilterOptions = async () => {
       try {
         const response = await fetch('/api/Cars');
@@ -48,10 +48,23 @@ export function SearchBar({ onSearch }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSearch(filters);
+    let finalFilters = { ...filters };
+
+    if (searchText.trim()) {
+      const words = searchText.trim().split(/\s+/);
+      if (words.length >= 1) {
+        finalFilters.brand = words[0];
+        if (words.length >= 2) {
+          finalFilters.model = words.slice(1).join(' ');
+        }
+      }
+    }
+
+    onSearch(finalFilters);
   };
 
   const handleClear = () => {
+    setSearchText('');
     setFilters({
       brand: '',
       model: '',
@@ -63,7 +76,7 @@ export function SearchBar({ onSearch }) {
   };
 
   const isAnyFilterActive = () => {
-    return Object.values(filters).some(value => value !== '');
+    return Object.values(filters).some(value => value !== '') || searchText.trim() !== '';
   };
 
   return (
@@ -79,11 +92,31 @@ export function SearchBar({ onSearch }) {
         borderRadius: '8px'
       }}
     >
+      <input
+        type="text"
+        placeholder="Search by brand and model (e.g. 'BMW M3')"
+        value={searchText}
+        onChange={(e) => setSearchText(e.target.value)}
+        style={{
+          padding: '12px',
+          borderRadius: '4px',
+          border: '1px solid #ddd',
+          width: '100%',
+          fontSize: '16px'
+        }}
+      />
+
       <SearchFilters
         filters={filters}
         availableFilters={availableFilters}
-        onBrandChange={(brand) => setFilters(prev => ({ ...prev, brand, model: '' }))}
-        onModelChange={(model) => setFilters(prev => ({ ...prev, model }))}
+        onBrandChange={(brand) => {
+          setFilters(prev => ({ ...prev, brand, model: '' }));
+          setSearchText('');
+        }}
+        onModelChange={(model) => {
+          setFilters(prev => ({ ...prev, model }));
+          setSearchText('');
+        }}
         onYearChange={(year) => setFilters(prev => ({ ...prev, year }))}
         onFuelTypeChange={(fuelType) => setFilters(prev => ({ ...prev, fuelType }))}
         onLocationChange={(location) => setFilters(prev => ({ ...prev, location }))}
@@ -91,7 +124,7 @@ export function SearchBar({ onSearch }) {
 
       <div style={{ display: 'flex', gap: '10px' }}>
         <Button type="submit" variant="primary">
-          Apply Filters
+          Search
         </Button>
         {isAnyFilterActive() && (
           <Button type="button" variant="secondary" onClick={handleClear}>
