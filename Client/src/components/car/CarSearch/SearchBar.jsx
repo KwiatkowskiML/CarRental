@@ -52,12 +52,26 @@ export function SearchBar({ onSearch }) {
 
     if (searchText.trim()) {
       const words = searchText.trim().split(/\s+/);
-      if (words.length >= 1) {
-        finalFilters.brand = words[0];
-        if (words.length >= 2) {
-          finalFilters.model = words.slice(1).join(' ');
+
+      if (words.length === 1) {
+        const matchingBrand = availableFilters.brands.find(brand =>
+          brand.toLowerCase().includes(words[0].toLowerCase())
+        );
+        if (matchingBrand) {
+          finalFilters.brand = matchingBrand;
+        } else {
+          finalFilters.model = words[0];
         }
       }
+      else if (words.length > 1) {
+        finalFilters.brand = words[0];
+        finalFilters.model = words.slice(1).join(' ');
+      }
+    }
+
+    if (filters.brand) {
+      finalFilters.brand = filters.brand;
+      finalFilters.model = searchText.trim();
     }
 
     onSearch(finalFilters);
