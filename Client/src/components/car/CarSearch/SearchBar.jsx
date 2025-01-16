@@ -23,20 +23,21 @@ export function SearchBar({ onSearch }) {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const response = await fetch('/api/Cars');
+        const response = await fetch('/api/Cars/filter-options');
         if (response.ok) {
           const data = await response.json();
-          const cars = data.cars; // Extract cars array from response
-
           setAvailableFilters({
-            brands: [...new Set(cars.map(car => car.brand))].sort(),
-            models: [...new Set(cars
-              .filter(car => !filters.brand || car.brand === filters.brand)
-              .map(car => car.model))
-            ].sort(),
-            years: [...new Set(cars.map(car => car.year))].sort((a, b) => b - a),
-            fuelTypes: [...new Set(cars.map(car => car.fuelType))].sort(),
-            locations: [...new Set(cars.map(car => car.location).filter(Boolean))].sort()
+            brands: data.brands,
+            models: filters.brand
+              ? data.models.filter(model =>
+                data.cars?.some(car =>
+                  car.brand === filters.brand && car.model === model
+                )
+              )
+              : data.models,
+            years: data.years,
+            fuelTypes: data.fuelTypes,
+            locations: data.locations
           });
         }
       } catch (error) {
@@ -73,6 +74,12 @@ export function SearchBar({ onSearch }) {
     if (filters.brand) {
       finalFilters.brand = filters.brand;
       finalFilters.model = searchText.trim();
+    }
+
+    if (finalFilters.year) {
+      finalFilters.minYear = parseInt(finalFilters.year);
+      finalFilters.maxYear = parseInt(finalFilters.year);
+      delete finalFilters.year;
     }
 
     onSearch(finalFilters);

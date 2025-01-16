@@ -33,4 +33,30 @@ public class CarsController(IUnitOfWork unitOfWork) : ControllerBase
             return StatusCode(500, "An error occurred while fetching cars");
         }
     }
+
+    [HttpGet("filter-options")]
+    public async Task<IActionResult> GetFilterOptions()
+    {
+        try
+        {
+            var allCars = await unitOfWork.CarsRepository.GetCarsAsync(new CarFilter());
+
+            var filterOptions = new
+            {
+                brands = allCars.Select(c => c.Brand).Distinct().OrderBy(b => b).ToList(),
+                models = allCars.Select(c => c.Model).Distinct().OrderBy(m => m).ToList(),
+                years = allCars.Select(c => c.Year).Distinct().OrderByDescending(y => y).ToList(),
+                fuelTypes = allCars.Select(c => c.FuelType).Distinct().OrderBy(f => f).ToList(),
+                locations = allCars.Select(c => c.Location).Where(l => !string.IsNullOrEmpty(l))
+                    .Distinct().OrderBy(l => l).ToList()
+            };
+
+            return Ok(filterOptions);
+        }
+        catch (DatabaseOperationException ex)
+        {
+            unitOfWork.LogError(ex, "Error fetching filter options");
+            return StatusCode(500, "An error occurred while fetching filter options");
+        }
+    }
 }
