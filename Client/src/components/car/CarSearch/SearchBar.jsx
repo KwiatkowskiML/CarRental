@@ -25,7 +25,8 @@ export function SearchBar({ onSearch }) {
       try {
         const response = await fetch('/api/Cars');
         if (response.ok) {
-          const cars = await response.json();
+          const data = await response.json();
+          const cars = data.cars; // Extract cars array from response
 
           setAvailableFilters({
             brands: [...new Set(cars.map(car => car.brand))].sort(),
