@@ -16,7 +16,7 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
             IQueryable<Car> query = Context.Cars
                 .Include(c => c.CarProvider)
                 .Where(c => c.Status == "available");
-            
+
             if (filter.CarId.HasValue)
                 query = query.Where(c => c.CarId == filter.CarId.Value);
 
@@ -24,10 +24,10 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
                 query = query.Where(c => c.Location == filter.Location);
 
             if (!string.IsNullOrEmpty(filter.Brand))
-                query = query.Where(c => c.Brand.Contains(filter.Brand));
+                query = query.Where(c => c.Brand.ToLower().Contains(filter.Brand.ToLower()));
 
             if (!string.IsNullOrEmpty(filter.Model))
-                query = query.Where(c => c.Model.Contains(filter.Model));
+                query = query.Where(c => c.Model.ToLower().Contains(filter.Model.ToLower()));
 
             if (filter.MinYear.HasValue)
                 query = query.Where(c => c.Year >= filter.MinYear.Value);
@@ -42,10 +42,10 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
             {
                 var startDate = DateOnly.FromDateTime(filter.StartDate.Value);
                 var endDate = DateOnly.FromDateTime(filter.EndDate.Value);
-                    
+
                 // get rid of magic numbers
-                query = query.Where(c => !c.Offers.Any(o => 
-                    o.Rental != null && 
+                query = query.Where(c => !c.Offers.Any(o =>
+                    o.Rental != null &&
                     o.Rental.RentalStatusId != RentalStatus.GetCompletedId() &&
                     o.StartDate <= endDate && o.EndDate >= startDate
                 ));
@@ -59,7 +59,7 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
             throw new DatabaseOperationException("Failed to fetch available cars", ex);
         }
     }
-    
+
     public async Task<Car?> GetCarByIdAsync(int carId)
     {
         try

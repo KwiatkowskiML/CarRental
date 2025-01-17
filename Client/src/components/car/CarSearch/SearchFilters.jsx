@@ -1,124 +1,81 @@
 import React from 'react';
 
-export function SearchFilters({ 
-  cars, 
-  selectedBrand,
-  selectedModel,
-  selectedYear,
-  selectedFuelType,
-  powerRange,
+export function SearchFilters({
+  filters,
+  availableFilters,
   onBrandChange,
   onModelChange,
   onYearChange,
   onFuelTypeChange,
-  onPowerRangeChange 
+  onLocationChange
 }) {
-  const uniqueBrands = [...new Set(cars.map(car => car.brand))].sort();
-  const uniqueModels = [...new Set(cars
-    .filter(car => !selectedBrand || car.brand === selectedBrand)
-    .map(car => car.model))
-  ].sort();
-  const uniqueYears = [...new Set(cars.map(car => car.year))].sort((a, b) => b - a);
-  const uniqueFuelTypes = [...new Set(cars.map(car => car.fuelType))].sort();
+  const selectStyle = {
+    padding: '8px 12px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+    minWidth: '150px'
+  };
 
   return (
     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
       <select
-        value={selectedBrand}
+        value={filters.brand}
         onChange={(e) => onBrandChange(e.target.value)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '4px',
-          border: '1px solid #ddd',
-          minWidth: '150px'
-        }}
+        style={selectStyle}
       >
         <option value="">All Brands</option>
-        {uniqueBrands.map(brand => (
+        {availableFilters.brands.map(brand => (
           <option key={brand} value={brand}>{brand}</option>
         ))}
       </select>
 
       <select
-        value={selectedModel}
+        value={filters.model}
         onChange={(e) => onModelChange(e.target.value)}
-        disabled={!selectedBrand}
+        disabled={!filters.brand}
         style={{
-          padding: '8px 12px',
-          borderRadius: '4px',
-          border: '1px solid #ddd',
-          minWidth: '150px',
-          backgroundColor: !selectedBrand ? '#f5f5f5' : 'white'
+          ...selectStyle,
+          backgroundColor: !filters.brand ? '#f5f5f5' : 'white'
         }}
       >
         <option value="">All Models</option>
-        {uniqueModels.map(model => (
+        {availableFilters.models.map(model => (
           <option key={model} value={model}>{model}</option>
         ))}
       </select>
 
       <select
-        value={selectedYear}
+        value={filters.year}
         onChange={(e) => onYearChange(e.target.value)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '4px',
-          border: '1px solid #ddd',
-          minWidth: '100px'
-        }}
+        style={selectStyle}
       >
         <option value="">All Years</option>
-        {uniqueYears.map(year => (
+        {availableFilters.years.map(year => (
           <option key={year} value={year}>{year}</option>
         ))}
       </select>
 
       <select
-        value={selectedFuelType}
+        value={filters.fuelType}
         onChange={(e) => onFuelTypeChange(e.target.value)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '4px',
-          border: '1px solid #ddd',
-          minWidth: '150px'
-        }}
+        style={selectStyle}
       >
         <option value="">All Fuel Types</option>
-        {uniqueFuelTypes.map(fuel => (
+        {availableFilters.fuelTypes.map(fuel => (
           <option key={fuel} value={fuel}>{fuel}</option>
         ))}
       </select>
 
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <span>Power range (HP):</span>
-        <input
-          type="number"
-          placeholder="Min"
-          value={powerRange.min}
-          onChange={(e) => onPowerRangeChange({ ...powerRange, min: e.target.value })}
-          style={{
-            padding: '8px 12px',
-            borderRadius: '4px',
-            border: '1px solid #ddd',
-            width: '100px'
-          }}
-          min="0"
-        />
-        <span>-</span>
-        <input
-          type="number"
-          placeholder="Max"
-          value={powerRange.max}
-          onChange={(e) => onPowerRangeChange({ ...powerRange, max: e.target.value })}
-          style={{
-            padding: '8px 12px',
-            borderRadius: '4px',
-            border: '1px solid #ddd',
-            width: '100px'
-          }}
-          min="0"
-        />
-      </div>
+      <select
+        value={filters.location}
+        onChange={(e) => onLocationChange(e.target.value)}
+        style={selectStyle}
+      >
+        <option value="">All Locations</option>
+        {availableFilters.locations.map(location => (
+          <option key={location} value={location}>{location}</option>
+        ))}
+      </select>
     </div>
   );
 }
