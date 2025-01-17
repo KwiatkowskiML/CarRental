@@ -86,6 +86,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
 
             int totalCount = await query.CountAsync();
             var rentals = await query
+                .OrderByDescending(r => r.RentalId)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
