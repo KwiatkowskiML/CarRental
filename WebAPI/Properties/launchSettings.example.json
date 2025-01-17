@@ -23,7 +23,9 @@
         "EMAIL_FROM_EMAIL": "sender_email",
         "EMAIL_FROM_NAME": "Car Rental Service",
         "BASE_URL": "http://localhost:5024",
-        "FRONTEND_URL": "http://localhost:5173"
+        "FRONTEND_URL": "http://localhost:5173",
+        "STORAGE_BUCKET_NAME": "car-images-dev-0",
+        "STORAGE_BUCKET_PREFIX": "https://storage.googleapis.com"
       }
     },
     "https": {
@@ -48,7 +50,9 @@
         "EMAIL_FROM_EMAIL": "sender_email",
         "EMAIL_FROM_NAME": "Car Rental Service",
         "BASE_URL": "http://localhost:5024",
-        "FRONTEND_URL": "http://localhost:5173"
+        "FRONTEND_URL": "http://localhost:5173",
+        "STORAGE_BUCKET_NAME": "car-images-dev-0",
+        "STORAGE_BUCKET_PREFIX": "https://storage.googleapis.com"
       }
     }
   }
