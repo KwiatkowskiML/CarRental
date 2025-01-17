@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "awesomecarrental"
+  },
+  "targets": {
+    "awesomecarrental": {
+      "hosting": {
+        "dev": [
+          "awesomecarrental-dev"
+        ],
+        "prod": [
+          "awesomecarrental"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
