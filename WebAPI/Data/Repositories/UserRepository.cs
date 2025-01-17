@@ -41,8 +41,8 @@ public class UserRepository(CarRentalContext context, ILogger logger) : BaseRepo
             if (filter.UserId.HasValue)
                 query = query.Where(u => u.UserId == filter.UserId!.Value);
             
-            if (filter.Age.HasValue)
-                query = query.Where(u => u.Age == filter.Age!.Value);
+            if (filter.BirthDate.HasValue)
+                query = query.Where(u => u.BirthDate == filter.BirthDate!.Value);
             
             return await query.AsNoTracking().ToListAsync();
         }
