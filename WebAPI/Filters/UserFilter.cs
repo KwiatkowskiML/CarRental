@@ -10,7 +10,7 @@ public class UserFilter
 
     public string? LastName { get; set; } = null!;
 
-    public int? Age { get; set; }
+    public DateOnly? BirthDate { get; set; }
 
     public string? Location { get; set; }
 }
