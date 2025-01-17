@@ -89,15 +89,12 @@ export function CarList() {
   return (
     <Page>
       <h1 className="text-2xl font-bold mb-6">Available Cars</h1>
-
       <SearchBar onSearch={handleSearch} />
-
       {error && (
         <div className="p-3 mb-5 bg-red-100 text-red-700 rounded-md">
           {error}
         </div>
       )}
-
       <div className="flex flex-col gap-5 mt-5">
         {loading ? (
           <div>Loading...</div>
@@ -114,6 +111,17 @@ export function CarList() {
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
+              </div>
+            )}
+
+            {totalCount > 0 && (
+              <div style={{
+                textAlign: 'center',
+                marginTop: '16px',
+                color: '#666',
+                fontSize: '14px'
+              }}>
+                Showing {Math.min(pageSize * (currentPage - 1) + 1, totalCount)} to {Math.min(pageSize * currentPage, totalCount)} of {totalCount} rentals
               </div>
             )}
           </>

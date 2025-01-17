@@ -109,6 +109,17 @@ function RentalHistory() {
                             onPageChange={handlePageChange}
                         />
                     )}
+
+                    {rentals.length > 0 && (
+                        <div style={{
+                            textAlign: 'center',
+                            marginTop: '16px',
+                            color: '#666',
+                            fontSize: '14px'
+                        }}>
+                            Showing {Math.min(pageSize * (currentPage - 1) + 1, pageSize * totalPages)} to {Math.min(pageSize * currentPage, pageSize * totalPages - 1)} of {pageSize * totalPages - 1} rentals
+                        </div>
+                    )}
                 </>
             )}
         </Page>
