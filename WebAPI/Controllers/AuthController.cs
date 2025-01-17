@@ -55,7 +55,7 @@ public class AuthController : ControllerBase
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-request.Age)),
+                BirthDate = request.BirthDate,
                 CreatedAt = DateTime.UtcNow
             };
 
