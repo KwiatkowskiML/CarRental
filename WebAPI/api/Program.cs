@@ -10,6 +10,7 @@ using WebAPI.PriceCalculators;
 using WebAPI.Services;
 using WebAPI.Services.Interfaces;
 using WebAPI.UnitOfWork;
+using WebAPI.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,15 @@ builder.Services.Configure<EmailOptions>(options => {
     options.FromName = builder.Configuration["EMAIL_FROM_NAME"] 
         ?? throw new InvalidOperationException("EMAIL_FROM_NAME is not configured");
 });
+
+// Storage configuration
+var bucketName = builder.Configuration["STORAGE_BUCKET_NAME"]
+    ?? throw new InvalidOperationException("STORAGE_BUCKET_NAME is not configured");
+var storagePrefix = builder.Configuration["STORAGE_BUCKET_PREFIX"]
+    ?? throw new InvalidOperationException("STORAGE_BUCKET_PREFIX is not configured");
+
+// Initialize storage constants
+StorageConstants.Initialize(bucketName, storagePrefix);
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
