@@ -16,7 +16,6 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class WorkerController(IUnitOfWork unitOfWork, IEmailService emailService, ILogger<WorkerController> logger) : ControllerBase
     {
-        // TODO: rethink whether this should return the rentalDto with all rental info
         [HttpGet("rentals")]
         public async Task<IActionResult> GetUserRentals([FromQuery] RentalFilter request, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
