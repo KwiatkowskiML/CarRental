@@ -5,24 +5,36 @@ using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
 using WebAPI.filters;
 using WebAPI.Mappers;
-using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class CustomerController(IUnitOfWork unitOfWork, IEmailService emailService) : ControllerBase
+    public class CustomerController(IUnitOfWork unitOfWork) : ControllerBase
     {
         [HttpGet("{customerId}/rentals")]
-        public async Task<IActionResult> GetCustomerRentals(int customerId)
+        public async Task<IActionResult> GetCustomerRentals(
+            int customerId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 5)
         {
             try
             {
                 var rentalFilter = new RentalFilter() { CustomerId = customerId };
-                var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(rentalFilter);
+                var (rentals, totalCount) = await unitOfWork.RentalsRepository
+                    .GetPaginatedRentalsAsync(rentalFilter, page, pageSize);
+
                 var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
-                return Ok(rentalDtos);
+
+                return Ok(new
+                {
+                    rentals = rentalDtos,
+                    totalCount = totalCount,
+                    currentPage = page,
+                    pageSize = pageSize,
+                    totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                });
             }
             catch (DatabaseOperationException ex)
             {
@@ -51,8 +63,7 @@ namespace WebAPI.Controllers
                 return StatusCode(500, "An error occurred while fetching CustomerId");
             }
         }
-        
-        
+
         [HttpPost("return/{rentalId}/{customerId}")]
         public async Task<IActionResult> ProcessReturn(int rentalId, int customerId)
         {
@@ -75,7 +86,7 @@ namespace WebAPI.Controllers
                 {
                     return StatusCode(500, $"Multiple rentals found for RentalId {rentalId} and CustomerId {customerId}");
                 }
-                
+
                 var rental = rentals.First();
                 if (rental.RentalStatusId != RentalStatus.GetConfirmedId())
                 {
@@ -88,17 +99,7 @@ namespace WebAPI.Controllers
                 {
                     return StatusCode(500, $"Error initializing return for RentalId: {rentalId} and CustomerId: {customerId}");
                 }
-                
-                // If return has been correctly initialized, send an email to the customer
-                var userFilter = new UserFilter() { UserId = customer.UserId };
-                var users = await unitOfWork.UsersRepository.GetUsersAsync(userFilter);
-                if (users.Count == 0)
-                    return NotFound("User not found");
-                if (users.Count > 1)
-                    return BadRequest("Multiple users found for the same ID");
-                var user = users[0];
-                await emailService.SendReturnProcessInitiatedEmail(user.Email, user.FirstName);
-                
+
                 return Ok(result);
             }
             catch (DatabaseOperationException ex)
@@ -107,6 +108,5 @@ namespace WebAPI.Controllers
                 return StatusCode(500, "An error occurred while initializing the return");
             }
         }
-        
     }
 }
