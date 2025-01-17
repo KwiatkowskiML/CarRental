@@ -189,7 +189,7 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
               <input
                 type="checkbox"
                 checked={hasGps}
-                onChange={(e) => setHasGps(e.checked)}
+                onChange={(e) => setHasGps(e.target.checked)}
               />
               GPS Navigation
             </label>
@@ -204,7 +204,7 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
               <input
                 type="checkbox"
                 checked={hasChildSeat}
-                onChange={(e) => setHasChildSeat(e.checked)}
+                onChange={(e) => setHasChildSeat(e.target.checked)}
               />
               Child Seat
             </label>
