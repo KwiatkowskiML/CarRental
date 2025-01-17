@@ -26,6 +26,7 @@ namespace WebAPI.Controllers
                 if (customer == null)
                     return NotFound($"Customer with userId = {request.UserId} not found");
 
+                // TODO: consider filtering by dto
                 var offerFilter = new OfferFilter
                 {
                     CarId = request.CarId,

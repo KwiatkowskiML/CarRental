@@ -12,7 +12,7 @@ public static class UserMapper
             Email = u.Email,
             FirstName = u.FirstName,
             LastName = u.LastName,
-            BirthDate = u.BirthDate
+            Age = u.Age
         };
     }
 }

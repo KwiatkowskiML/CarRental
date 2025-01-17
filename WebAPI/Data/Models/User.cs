@@ -12,7 +12,7 @@ public class User
 
     public string LastName { get; set; } = null!;
 
-    public DateOnly BirthDate { get; set; }
+    public int Age { get; set; }
 
     public string? Location { get; set; }
 

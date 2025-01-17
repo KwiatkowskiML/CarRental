@@ -193,7 +193,7 @@ public partial class CarRentalContext(DbContextOptions<CarRentalContext> options
             entity.HasIndex(e => e.Email, "users_email_key").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.BirthDate).HasColumnName("birth_date");
+            entity.Property(e => e.Age).HasColumnName("age");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone")

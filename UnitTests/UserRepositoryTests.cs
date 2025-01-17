@@ -36,7 +36,7 @@ public class UserRepositoryTests : IDisposable
             Email = "test@example.com",
             FirstName = "John",
             LastName = "Doe",
-            BirthDate = new DateOnly(1990, 1, 1),
+            Age = 30,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -101,13 +101,13 @@ public class UserRepositoryTests : IDisposable
         // Arrange
         String name = "John";
         String lastName = "Doe";
-        DateOnly birthDate = new DateOnly(1990, 1, 1);
+        int age = 30;
         
         var filter = new UserFilter
         {
             FirstName = name,
             LastName = lastName,
-            BirthDate = birthDate
+            Age = age
         };
 
         // Act
@@ -119,7 +119,7 @@ public class UserRepositoryTests : IDisposable
         {
             Assert.Contains(name, u.FirstName);
             Assert.Contains(lastName, u.LastName);
-            Assert.Equal(birthDate, u.BirthDate);
+            Assert.Equal(age, u.Age);
         });
     }
 
@@ -130,7 +130,7 @@ public class UserRepositoryTests : IDisposable
         var email = "new@example.com";
         var firstName = "Jane";
         var lastName = "Smith";
-        var birthDate = new DateOnly(1990, 1, 1);
+        var age = 25;
         var createdAt = DateTime.UtcNow;
 
         var newUser = new User
@@ -138,7 +138,7 @@ public class UserRepositoryTests : IDisposable
             Email = email,
             FirstName = firstName,
             LastName = lastName,
-            BirthDate = birthDate,
+            Age = age,
             CreatedAt = createdAt
         };
 

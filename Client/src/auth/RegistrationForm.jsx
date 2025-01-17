@@ -5,41 +5,22 @@ export function RegistrationForm({ googleData, onRegistrationComplete }) {
   const [formData, setFormData] = useState({
     firstName: googleData.firstName || '',
     lastName: googleData.lastName || '',
-    birthdate: '',
+    age: '',
     drivingLicenseYears: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const calculateAge = (birthdate) => {
-    const today = new Date();
-    const birthDate = new Date(birthdate);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    
-    return age;
-  };
-  
   const validateForm = () => {
     const newErrors = {};
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.birthdate) {
-      newErrors.birthdate = 'Birthdate is required';
-    }
-    if (!formData.drivingLicenseYears) {
-      newErrors.drivingLicenseYears = 'Years of driving license is required';
-    } else if (formData.drivingLicenseYears < 0) {
-      newErrors.drivingLicenseYears = 'Invalid number of years';
-    } else if (formData.birthdate) {
-      const age = calculateAge(formData.birthdate);
-      if (formData.drivingLicenseYears > age - 18) {
-        newErrors.drivingLicenseYears = 'Cannot exceed years since turning 18';
-      }
+    if (!formData.age) newErrors.age = 'Age is required';
+    else if (formData.age < 18) newErrors.age = 'Must be at least 18 years old';
+    if (!formData.drivingLicenseYears) newErrors.drivingLicenseYears = 'Years of driving license is required';
+    else if (formData.drivingLicenseYears < 0) newErrors.drivingLicenseYears = 'Invalid number of years';
+    else if (formData.drivingLicenseYears > formData.age - 18) {
+      newErrors.drivingLicenseYears = 'Cannot exceed years since turning 18';
     }
     
     setErrors(newErrors);
@@ -61,7 +42,7 @@ export function RegistrationForm({ googleData, onRegistrationComplete }) {
           email: googleData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          birthdate: formData.birthdate, // Send birthdate instead of age
+          age: parseInt(formData.age),
           drivingLicenseYears: parseInt(formData.drivingLicenseYears),
           googleToken: googleData.token
         })
@@ -95,11 +76,6 @@ export function RegistrationForm({ googleData, onRegistrationComplete }) {
     focus:outline-none focus:ring-2 focus:ring-brown-500
     ${error ? 'border-red-500' : 'border-gray-300'}
   `;
-
-  // Calculate max date (18 years ago from today)
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() - 18);
-  const maxDateString = maxDate.toISOString().split('T')[0];
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -141,17 +117,18 @@ export function RegistrationForm({ googleData, onRegistrationComplete }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Birthdate</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
             <input
-              type="date"
-              name="birthdate"
-              value={formData.birthdate}
+              type="number"
+              name="age"
+              value={formData.age}
               onChange={handleChange}
-              max={maxDateString}
-              className={inputClassName(errors.birthdate)}
+              min="18"
+              className={inputClassName(errors.age)}
+              placeholder="Enter your age"
             />
-            {errors.birthdate && (
-              <p className="mt-1 text-sm text-red-500">{errors.birthdate}</p>
+            {errors.age && (
+              <p className="mt-1 text-sm text-red-500">{errors.age}</p>
             )}
           </div>
 
