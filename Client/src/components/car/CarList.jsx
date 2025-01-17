@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { Page } from '../layout/Page';
 import { SearchBar } from './CarSearch';
@@ -19,25 +19,11 @@ export function CarList() {
 
     try {
       const queryParams = new URLSearchParams();
-
-      if (filters.brand) {
-        queryParams.append('brand', filters.brand);
-      }
-      if (filters.model) {
-        queryParams.append('model', filters.model);
-      }
-      if (filters.minYear) {
-        queryParams.append('minYear', filters.minYear.toString());
-      }
-      if (filters.maxYear) {
-        queryParams.append('maxYear', filters.maxYear.toString());
-      }
-      if (filters.fuelType) {
-        queryParams.append('fuelType', filters.fuelType);
-      }
-      if (filters.location) {
-        queryParams.append('location', filters.location);
-      }
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          queryParams.append(key, value.toString());
+        }
+      });
 
       const headers = {};
       if (user?.token) {
@@ -53,8 +39,15 @@ export function CarList() {
       }
 
       const data = await response.json();
-      setCars(data.filter(car => car.status === 'available'));
-      setCurrentPage(1);
+      
+      // Add unique identifiers for cars that don't have them
+      const carsWithIds = data.map((car, index) => ({
+        ...car,
+        uniqueId: car.carId || `external-${car.carProvider.name}-${car.brand}-${car.model}-${index}`
+      }));
+
+      setCars(carsWithIds.filter(car => car.status === 'available'));
+      setCurrentPage(1); // Reset to first page when new data is loaded
     } catch (err) {
       setError('Error fetching cars. Please try again.');
       console.error('Error fetching cars:', err);
@@ -73,17 +66,32 @@ export function CarList() {
       model: filters.model || '',
       fuelType: filters.fuelType || '',
       location: filters.location || '',
-      minYear: filters.year ? parseInt(filters.year) : null,
-      maxYear: filters.year ? parseInt(filters.year) : null
+      minYear: filters.year || null,
+      maxYear: filters.year || null
     };
 
     fetchCars(apiFilters);
   };
 
-  const indexOfLastCar = currentPage * carsPerPage;
-  const indexOfFirstCar = indexOfLastCar - carsPerPage;
-  const currentCars = cars.slice(indexOfFirstCar, indexOfLastCar);
-  const totalPages = Math.ceil(cars.length / carsPerPage);
+  // Memoize the pagination calculations to avoid unnecessary recalculations
+  const {
+    currentCars,
+    totalPages,
+    indexOfFirstCar,
+    indexOfLastCar
+  } = useMemo(() => {
+    const indexOfLastCar = currentPage * carsPerPage;
+    const indexOfFirstCar = indexOfLastCar - carsPerPage;
+    const currentCars = cars.slice(indexOfFirstCar, indexOfLastCar);
+    const totalPages = Math.ceil(cars.length / carsPerPage);
+
+    return {
+      currentCars,
+      totalPages,
+      indexOfFirstCar,
+      indexOfLastCar
+    };
+  }, [cars, currentPage, carsPerPage]);
 
   const paginate = (pageNumber) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
@@ -120,7 +128,10 @@ export function CarList() {
         ) : currentCars.length > 0 ? (
           <>
             {currentCars.map(car => (
-              <CarCard key={car.carId} car={car} />
+              <CarCard 
+                key={car.uniqueId} 
+                car={car}
+              />
             ))}
 
             <Pagination
@@ -128,6 +139,15 @@ export function CarList() {
               totalPages={totalPages}
               onPageChange={paginate}
             />
+
+            <div style={{ 
+              textAlign: 'center', 
+              color: '#666', 
+              marginTop: '10px',
+              fontSize: '0.875rem'
+            }}>
+              Showing {indexOfFirstCar + 1} to {Math.min(indexOfLastCar, cars.length)} of {cars.length} cars
+            </div>
           </>
         ) : (
           <div>No cars found matching your search criteria</div>
