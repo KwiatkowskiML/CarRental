@@ -92,5 +92,20 @@ namespace WebAPI.Controllers
                 return StatusCode(500, "An error occurred while calculating the rental price");
             }
         }
+
+        [HttpGet("insurances")]
+        public async Task<IActionResult> GetInsurances()
+        {
+            try
+            {
+                var insurances = await unitOfWork.OffersRepository.GetInsurancesAsync();
+                return Ok(insurances);
+            }
+            catch (DatabaseOperationException ex)
+            {
+                unitOfWork.LogError(ex, "Error fetching insurances");
+                return StatusCode(500, "An error occurred while fetching insurances");
+            }
+        }
     }
 }

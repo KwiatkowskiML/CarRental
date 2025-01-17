@@ -7,6 +7,7 @@ public interface IOfferRepository
 {
     Task<Offer?> GetOfferAsync(OfferFilter filter);
     Task<Insurance?> GetInsuranceByIdAsync(int insuranceId);
+    Task<List<Insurance>> GetInsurancesAsync();
     Task CreateOfferAsync(Offer offer);
     Task DeleteExpiredOffersAsync();
 }
