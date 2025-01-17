@@ -52,6 +52,7 @@ public class CarRepository(CarRentalContext context, ILogger logger) : BaseRepos
 
             int totalCount = await query.CountAsync();
             var cars = await query
+                .OrderBy(car => car.CarId)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .AsNoTracking()
