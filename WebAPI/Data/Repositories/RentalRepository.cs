@@ -37,7 +37,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
 
             if (filter != null && !string.IsNullOrEmpty(filter.Brand))
                 query = query.Where(r => r.Offer.Car != null && r.Offer.Car.Brand.ToLower().Contains(filter.Brand.ToLower()));
-            
+
             if (filter != null && !string.IsNullOrEmpty(filter.Model))
                 query = query.Where(r => r.Offer.Car != null && r.Offer.Car.Model.ToLower().Contains(filter.Model.ToLower()));
 
@@ -50,6 +50,53 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
         {
             Logger.LogError(ex, "Error fetching rentals");
             throw new DatabaseOperationException($"Failed to fetch rentals", ex);
+        }
+    }
+
+    public async Task<(List<Rental> Rentals, int TotalCount)> GetPaginatedRentalsAsync(RentalFilter? filter, int page, int pageSize)
+    {
+        try
+        {
+            var query = Context.Rentals
+                .Include(r => r.RentalStatus)
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Customer)
+                .ThenInclude(cust => cust!.User)
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Car)
+                .ThenInclude(c => c!.CarProvider)
+                .AsQueryable();
+
+            if (filter != null && filter.CustomerId.HasValue)
+                query = query.Where(r => r.Offer.Customer != null && r.Offer.Customer.CustomerId == filter.CustomerId);
+
+            if (filter != null && filter.RentalId.HasValue)
+                query = query.Where(r => r.RentalId == filter.RentalId);
+
+            if (filter != null && filter.RentalStatus.HasValue)
+                query = query.Where(r => r.RentalStatusId == filter.RentalStatus);
+
+            if (filter != null && !string.IsNullOrEmpty(filter.Brand))
+                query = query.Where(r => r.Offer.Car != null && r.Offer.Car.Brand.ToLower().Contains(filter.Brand.ToLower()));
+
+            if (filter != null && !string.IsNullOrEmpty(filter.Model))
+                query = query.Where(r => r.Offer.Car != null && r.Offer.Car.Model.ToLower().Contains(filter.Model.ToLower()));
+
+            query = query.OrderByDescending(r => r.CreatedAt);
+
+            int totalCount = await query.CountAsync();
+            var rentals = await query
+                .OrderByDescending(r => r.RentalId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (rentals, totalCount);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching paginated rentals");
+            throw new DatabaseOperationException($"Failed to fetch paginated rentals", ex);
         }
     }
 
@@ -68,7 +115,7 @@ public class RentalRepository(CarRentalContext context, ILogger logger)
 
             if (offer.Car!.Status != "available")
                 throw new InvalidOperationException("Car is not available for rental");
-            
+
             var existingRental = await Context.Rentals
                 .FirstOrDefaultAsync(r => r.OfferId == offerId);
 

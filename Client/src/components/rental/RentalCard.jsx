@@ -53,10 +53,18 @@ function RentalCard({ rental, customerId, onStatusUpdate }) {
     };
 
     return (
-        <div className="rental-card" style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+        <div style={{
+            border: '1px solid #ddd',
+            borderRadius: '8px',
+            padding: '16px',
+            backgroundColor: 'white',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                    <h2 style={{ marginBottom: '12px' }}>{brand} {model} ({year})</h2>
+                    <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>
+                        {brand} {model} ({year})
+                    </h2>
                     <div style={{
                         display: 'inline-block',
                         padding: '4px 8px',
@@ -69,29 +77,33 @@ function RentalCard({ rental, customerId, onStatusUpdate }) {
                         {rental.rentalStatus?.description || 'Unknown'}
                     </div>
                 </div>
+
                 {rental.rentalStatus?.description === 'Confirmed' && (
                     <Button
-                        variant="secondary"
                         onClick={handleReturn}
                         disabled={isSubmitting}
-                        style={{ minWidth: '120px' }}
                     >
                         {isSubmitting ? 'Processing...' : 'Return Car'}
                     </Button>
                 )}
             </div>
 
-            <div style={{ marginBottom: '8px' }}>{description}</div>
-
-            <div style={detailsGridStyle}>
-                <DetailRow label="Start Date" value={new Date(startDate).toLocaleDateString()} />
-                <DetailRow label="End Date" value={new Date(endDate).toLocaleDateString()} />
-                <DetailRow label="Total Price" value={`$${totalPrice.toFixed(2)}`} />
-                <DetailRow label="GPS" value={hasGps ? 'Yes' : 'No'} />
-                <DetailRow label="Child Seat" value={hasChildSeat ? 'Yes' : 'No'} />
-                <DetailRow label="Insurance" value={insurance ? insurance.name : 'None'} />
-                <DetailRow label="Provider" value={carProvider.name} />
-                <DetailRow label="Contact" value={carProvider.contactEmail} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                <div>
+                    <DetailRow label="Start Date" value={new Date(startDate).toLocaleDateString()} />
+                    <DetailRow label="End Date" value={new Date(endDate).toLocaleDateString()} />
+                    <DetailRow label="Total Price" value={`$${totalPrice.toFixed(2)}`} />
+                </div>
+                <div>
+                    <DetailRow label="GPS" value={hasGps ? 'Yes' : 'No'} />
+                    <DetailRow label="Child Seat" value={hasChildSeat ? 'Yes' : 'No'} />
+                    <DetailRow label="Insurance" value={insurance ? insurance.name : 'None'} />
+                </div>
+                <div>
+                    <DetailRow label="Provider" value={carProvider.name} />
+                    <DetailRow label="Contact" value={carProvider.contactEmail} />
+                    <DetailRow label="Rental ID" value={rental.rentalId} />
+                </div>
             </div>
 
             {error && (
@@ -111,27 +123,13 @@ function RentalCard({ rental, customerId, onStatusUpdate }) {
 
 function DetailRow({ label, value }) {
     return (
-        <div style={{ marginBottom: '4px' }}>
-            <span style={{ fontWeight: 'bold', marginRight: '8px' }}>{label}:</span>
+        <div style={{ marginBottom: '8px' }}>
+            <span style={{ fontWeight: 'bold', marginRight: '8px', color: '#666' }}>
+                {label}:
+            </span>
             <span>{value}</span>
         </div>
     );
 }
-
-const cardStyle = {
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '16px',
-    margin: '16px 0',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    backgroundColor: 'white'
-};
-
-const detailsGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '12px',
-    marginTop: '16px'
-};
 
 export default RentalCard;

@@ -1,14 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../auth/AuthContext';
 
-const INSURANCE_TYPES = [
-  { insurance_id: 1, name: 'Standard Insurance' },
-  { insurance_id: 2, name: 'Full Insurance' }
-];
-
 export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
   const { user } = useAuth();
+  const [insurances, setInsurances] = useState([]);
   const [insuranceId, setInsuranceId] = useState('');
   const [hasGps, setHasGps] = useState(false);
   const [hasChildSeat, setHasChildSeat] = useState(false);
@@ -16,6 +12,26 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
   const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchInsurances = async () => {
+      try {
+        const response = await fetch('/api/Offers/insurances');
+        if (!response.ok) {
+          throw new Error('Failed to fetch insurances');
+        }
+        const data = await response.json();
+        setInsurances(data);
+      } catch (err) {
+        console.error('Error fetching insurances:', err);
+        setError('Failed to load insurance options');
+      }
+    };
+
+    if (isOpen) {
+      fetchInsurances();
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -156,9 +172,9 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
               required
             >
               <option value="">Select Insurance</option>
-              {INSURANCE_TYPES.map(insurance => (
-                <option key={insurance.insurance_id} value={insurance.insurance_id}>
-                  {insurance.name}
+              {insurances.map(insurance => (
+                <option key={insurance.insuranceId} value={insurance.insuranceId}>
+                  {insurance.name} (${insurance.price})
                 </option>
               ))}
             </select>
@@ -173,7 +189,7 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
               <input
                 type="checkbox"
                 checked={hasGps}
-                onChange={(e) => setHasGps(e.checked)}
+                onChange={(e) => setHasGps(e.target.checked)}
               />
               GPS Navigation
             </label>
@@ -188,7 +204,7 @@ export function CarPriceDialog({ isOpen, onClose, onSubmit }) {
               <input
                 type="checkbox"
                 checked={hasChildSeat}
-                onChange={(e) => setHasChildSeat(e.checked)}
+                onChange={(e) => setHasChildSeat(e.target.checked)}
               />
               Child Seat
             </label>

@@ -18,13 +18,21 @@ namespace WebAPI.Controllers
     {
         // TODO: rethink whether this should return the rentalDto with all rental info
         [HttpGet("rentals")]
-        public async Task<IActionResult> GetUserRentals([FromQuery] RentalFilter request)
+        public async Task<IActionResult> GetUserRentals([FromQuery] RentalFilter request, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
             try
             {
-                var rentals = await unitOfWork.RentalsRepository.GetRentalsAsync(request);
+                var (rentals, totalCount) = await unitOfWork.RentalsRepository.GetPaginatedRentalsAsync(request, page, pageSize);
                 var rentalDtos = rentals.Select(RentalMapper.ToDto).ToList();
-                return Ok(rentalDtos);
+
+                return Ok(new
+                {
+                    rentals = rentalDtos,
+                    totalCount = totalCount,
+                    currentPage = page,
+                    pageSize = pageSize,
+                    totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                });
             }
             catch (DatabaseOperationException ex)
             {
@@ -55,7 +63,7 @@ namespace WebAPI.Controllers
                 var email = rentalDto.Offer.Customer!.UserDto.Email;
                 var name = rentalDto.Offer.Customer!.UserDto.FirstName;
                 await emailService.SendReturnCompletionInvoiceEmail(email, name, rentalDto);
-                
+
                 return Ok(returnDto);
             }
             catch (DatabaseOperationException ex)

@@ -53,7 +53,7 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
 
             if (filter.HasChildSeat.HasValue)
                 query = query.Where(o => o.HasChildSeat == filter.HasChildSeat);
-            
+
             var offer = await query.FirstOrDefaultAsync();
             return offer;
         }
@@ -61,6 +61,22 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
         {
             Logger.LogError(ex, "Error fetching offer with filter");
             throw new DatabaseOperationException("Failed to fetch offer with specified filter", ex);
+        }
+    }
+
+    public async Task<List<Insurance>> GetInsurancesAsync()
+    {
+        try
+        {
+            return await Context.Insurances
+                .AsNoTracking()
+                .OrderBy(i => i.Price)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching insurances");
+            throw new DatabaseOperationException("Failed to fetch insurances", ex);
         }
     }
 
@@ -89,7 +105,7 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
 
             if (car == null)
                 throw new InvalidOperationException($"Car with ID {offer.CarId} not found");
-            
+
             if (offer.StartDate > offer.EndDate)
                 throw new InvalidOperationException("Invalid date range");
 
@@ -101,7 +117,7 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
 
             if (hasConflict)
                 throw new InvalidOperationException("Car is not available for the selected dates");
-            
+
             var customerExists = await Context.Customers
                 .AnyAsync(c => c.CustomerId == offer.CustomerId);
 
@@ -135,14 +151,14 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
             throw new DatabaseOperationException("Failed to create offer", ex);
         }
     }
-    
+
     public async Task DeleteExpiredOffersAsync()
     {
         await using var transaction = await Context.Database.BeginTransactionAsync();
         try
         {
             var cutoffTime = DateTime.UtcNow.AddMinutes(-OfferCleanupConstants.UnusedOfferExpirationMinutes);
-            
+
             var staleOffers = await Context.Offers
                 .Where(o => o.CreatedAt <= cutoffTime &&
                             !Context.Rentals.Any(r => r.OfferId == o.OfferId))
@@ -153,8 +169,8 @@ public class OfferRepository(CarRentalContext context, ILogger logger)
                 Context.Offers.RemoveRange(staleOffers);
                 var deletedCount = await Context.SaveChangesAsync();
                 Logger.LogInformation(
-                    "Deleted {Count} stale offers created before {CutoffTime}", 
-                    deletedCount, 
+                    "Deleted {Count} stale offers created before {CutoffTime}",
+                    deletedCount,
                     cutoffTime);
             }
 

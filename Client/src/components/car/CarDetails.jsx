@@ -18,7 +18,6 @@ export function CarDetails() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch current user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -46,17 +45,28 @@ export function CarDetails() {
   }, [user]);
 
   useEffect(() => {
-    fetch('/api/Cars')
-      .then(res => res.json())
-      .then(data => {
-        const foundCar = data.find(car => car.carId === parseInt(carId));
+    const fetchCarDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/Cars?carId=${carId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch car details');
+        }
+        const data = await response.json();
+        const foundCar = data.cars[0];
+        if (!foundCar) {
+          throw new Error('Car not found');
+        }
         setCar(foundCar);
+      } catch (error) {
+        console.error('Error fetching car details:', error);
+        setError(error.message);
+      } finally {
         setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching cars:', error);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchCarDetails();
   }, [carId]);
 
   const handleCheckAvailability = () => {
