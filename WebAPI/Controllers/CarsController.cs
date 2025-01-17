@@ -11,7 +11,9 @@ namespace WebAPI.Controllers;
 public class CarsController(IUnitOfWork unitOfWork) : ControllerBase
 {
     [HttpGet]
+    [ResponseCache(Duration = 600)]
     public async Task<IActionResult> GetCars([FromQuery] CarFilter filter, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+
     {
         try
         {
