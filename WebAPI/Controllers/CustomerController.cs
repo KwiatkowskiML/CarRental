@@ -5,6 +5,7 @@ using WebAPI.Data.Repositories.Interfaces;
 using WebAPI.Exceptions;
 using WebAPI.filters;
 using WebAPI.Mappers;
+using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
