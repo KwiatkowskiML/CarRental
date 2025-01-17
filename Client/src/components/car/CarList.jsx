@@ -116,10 +116,6 @@ export function CarList() {
                 />
               </div>
             )}
-
-            <div className="text-sm text-gray-600 text-center mt-4">
-              Showing {Math.min(pageSize * (currentPage - 1) + 1, totalCount)} to {Math.min(pageSize * currentPage, totalCount)} of {totalCount} cars
-            </div>
           </>
         ) : (
           <div className="text-center py-8 text-gray-600">
