@@ -105,6 +105,10 @@ builder.Services.AddHostedService<OfferCleanupService>();
 // Register HttpClient for SendGrid
 builder.Services.AddHttpClient();
 
+// Register providers
+builder.Services.AddScoped<IExternalCarProvider, SuperRentalCarProvider>();
+builder.Services.AddScoped<CarProviderAggregator>();
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
