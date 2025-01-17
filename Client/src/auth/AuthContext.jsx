@@ -32,7 +32,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const userResponse = await fetch('/api/User/current', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
 
@@ -95,7 +97,9 @@ export const AuthProvider = ({ children }) => {
 
       const userResponse = await fetch('/api/User/current', {
         headers: {
-          'Authorization': `Bearer ${data.token}`
+          'Authorization': `Bearer ${data.token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
       const userData = await userResponse.json();

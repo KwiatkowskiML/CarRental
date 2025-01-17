@@ -71,11 +71,13 @@ builder.Services.Configure<EmailOptions>(options => {
 });
 
 // Storage configuration
-var bucketName = builder.Configuration["STORAGE_BUCKET_NAME"] 
+var bucketName = builder.Configuration["STORAGE_BUCKET_NAME"]
     ?? throw new InvalidOperationException("STORAGE_BUCKET_NAME is not configured");
+var storagePrefix = builder.Configuration["STORAGE_BUCKET_PREFIX"]
+    ?? throw new InvalidOperationException("STORAGE_BUCKET_PREFIX is not configured");
 
 // Initialize storage constants
-StorageConstants.Initialize(bucketName);
+StorageConstants.Initialize(bucketName, storagePrefix);
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

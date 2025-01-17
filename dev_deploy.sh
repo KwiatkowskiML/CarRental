@@ -129,10 +129,9 @@ deploy_frontend() {
 
     # Deploy to Firebase
     log "Deploying to Firebase..."
-    firebase deploy || {
+    if ! firebase deploy --only hosting:dev --project "$PROJECT_ID"; then
         error "Failed to deploy to Firebase"
-        return 1
-    }
+    fi
 
     cd ..
     log "Frontend deployment completed successfully"
