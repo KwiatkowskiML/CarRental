@@ -21,31 +21,52 @@ export function SearchBar({ onSearch }) {
   });
 
   useEffect(() => {
-    const fetchFilterOptions = async () => {
+    const fetchInitialFilters = async () => {
       try {
         const response = await fetch('/api/Cars/filter-options');
         if (response.ok) {
           const data = await response.json();
-          setAvailableFilters({
+          setAvailableFilters(prev => ({
+            ...prev,
             brands: data.brands,
-            models: filters.brand
-              ? data.models.filter(model =>
-                data.cars?.some(car =>
-                  car.brand === filters.brand && car.model === model
-                )
-              )
-              : data.models,
             years: data.years,
             fuelTypes: data.fuelTypes,
             locations: data.locations
-          });
+          }));
         }
       } catch (error) {
         console.error('Error fetching filter options:', error);
       }
     };
 
-    fetchFilterOptions();
+    fetchInitialFilters();
+  }, []);
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await fetch(`/api/Cars?brand=${encodeURIComponent(filters.brand)}`);
+        if (response.ok) {
+          const data = await response.json();
+          const availableModels = [...new Set(data.cars.map(car => car.model))];
+          setAvailableFilters(prev => ({
+            ...prev,
+            models: availableModels
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching models:', error);
+      }
+    };
+
+    if (filters.brand) {
+      fetchFilterOptions();
+    } else {
+      setAvailableFilters(prev => ({
+        ...prev,
+        models: []
+      }));
+    }
   }, [filters.brand]);
 
   const handleSubmit = (e) => {
